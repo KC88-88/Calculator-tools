@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title id="pageTitle">跑步配速換算器｜配速、時間、距離互算｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals 跑步配速換算器：輸入距離與時間，快速計算配速（min/km）與平均速度（km/h）。也可由配速反推完賽時間。支援中英切換。" />
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
+      --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
+      --radius:16px;
+    }
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+    .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
+    .sub{color:var(--muted);line-height:1.6;margin-top:6px}
+    .lang{display:flex;gap:8px}
+    .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:14px}
+    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    h2{margin:0 0 10px;font-size:16px}
+    label{font-size:13px;color:#374151}
+    input,select{
+      width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px;background:#fff;outline:none
+    }
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+    .metric{background:#f3f4f6;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+    .metric .k{font-size:12px;color:var(--muted)}
+    .metric .v{font-size:20px;font-weight:900;margin-top:6px}
+    .pill{
+      display:inline-block;background:#111827;color:#fff;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800
+    }
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.row3{grid-template-columns:1fr}}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="title" data-i18n="h1">跑步配速換算器</h1>
+        <div class="sub" data-i18n="sub">距離、時間、配速互算（min/km），並提供平均速度（km/h）。</div>
+      </div>
+      <div class="lang">
+        <button class="btn" onclick="setLang('zh')">中文</button>
+        <button class="btn" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2 data-i18n="inputTitle">輸入</h2>
+
+        <div class="form">
+          <div class="full">
+            <label data-i18n="modeLbl">計算模式</label>
+            <select id="mode" onchange="onModeChange()">
+              <option value="pace" data-i18n-opt="modePace">距離＋時間 → 配速</option>
+              <option value="time" data-i18n-opt="modeTime">距離＋配速 → 完賽時間</option>
+              <option value="dist" data-i18n-opt="modeDist">時間＋配速 → 距離</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label data-i18n="distLbl">距離</label>
+            <div class="row3">
+              <input id="dist" type="number" step="0.01" placeholder="例如 10">
+              <select id="distUnit">
+                <option value="km">km</option>
+                <option value="m">m</option>
+                <option value="mile">mile</option>
+              </select>
+              <div class="note" style="margin:0;align-self:center" data-i18n="distHint">mile 會自動換算為 km</div>
+            </div>
+          </div>
+
+          <div class="full" id="timeBlock">
+            <label data-i18n="timeLbl">時間</label>
+            <div class="row3">
+              <input id="hh" type="number" min="0" step="1" placeholder="hh">
+              <input id="mm" type="number" min="0" step="1" placeholder="mm">
+              <input id="ss" type="number" min="0" step="1" placeholder="ss">
+            </div>
+          </div>
+
+          <div class="full" id="paceBlock">
+            <label data-i18n="paceLbl">配速（min/km）</label>
+            <div class="row3">
+              <input id="paceMin" type="number" min="0" step="1" placeholder="min">
+              <input id="paceSec" type="number" min="0" step="1" placeholder="sec">
+              <div class="note" style="margin:0;align-self:center" data-i18n="paceHint">例如 5:30 → min=5, sec=30</div>
+            </div>
+          </div>
+
+          <div class="full actions">
+            <button class="btn primary" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+            <span class="pill" id="tipPill"></span>
+          </div>
+
+          <div class="full note" data-i18n="methodNote">
+            ※ 配速以 min/km 表示。速度以 km/h 表示。結果四捨五入至合理位數。
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="resultTitle">結果</h2>
+
+        <div class="metric">
+          <div class="k" data-i18n="outPace">配速（min/km）</div>
+          <div class="v" id="outPaceV">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="outSpeed">平均速度（km/h）</div>
+          <div class="v" id="outSpeedV">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="outTime">時間（hh:mm:ss）</div>
+          <div class="v" id="outTimeV">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="outDist">距離（km）</div>
+          <div class="v" id="outDistV">—</div>
+        </div>
+
+        <div class="note" data-i18n="disclaimer">
+          ※ 試算僅供參考。實際配速可能受地形、氣候、補給與配速策略影響。
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------- helpers ----------
+  function clamp0(n){ return isFinite(n) && n >= 0 ? n : 0; }
+
+  function toKm(distance, unit){
+    const d = Number(distance);
+    if(!isFinite(d) || d <= 0) return null;
+    if(unit === 'km') return d;
+    if(unit === 'm') return d / 1000;
+    if(unit === 'mile') return d * 1.609344;
+    return null;
+  }
+
+  function timeToSeconds(hh, mm, ss){
+    const h = clamp0(Number(hh));
+    const m = clamp0(Number(mm));
+    const s = clamp0(Number(ss));
+    return Math.round(h*3600 + m*60 + s);
+  }
+
+  function secondsToHMS(total){
+    const t = Math.max(0, Math.round(total));
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = t % 60;
+    const pad = (x)=> String(x).padStart(2,'0');
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+
+  function paceToSecPerKm(min, sec){
+    const m = clamp0(Number(min));
+    const s = clamp0(Number(sec));
+    const total = Math.round(m*60 + s);
+    return total > 0 ? total : null;
+  }
+
+  function secPerKmToPaceText(spk){
+    const t = Math.max(0, Math.round(spk));
+    const m = Math.floor(t / 60);
+    const s = t % 60;
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  function kmhFrom(distKm, timeSec){
+    if(!(distKm > 0) || !(timeSec > 0)) return null;
+    return (distKm / (timeSec/3600));
+  }
+
+  // ---------- i18n ----------
+  let lang = "zh";
+  const dict = {
+    zh: {
+      seoTitle: "跑步配速換算器｜配速、時間、距離互算｜AnyCals",
+      seoDesc: "AnyCals 跑步配速換算器：輸入距離與時間，快速計算配速（min/km）與平均速度（km/h）。也可由配速反推完賽時間。",
+      h1: "跑步配速換算器",
+      sub: "距離、時間、配速互算（min/km），並提供平均速度（km/h）。",
+      inputTitle: "輸入",
+      modeLbl: "計算模式",
+      modePace: "距離＋時間 → 配速",
+      modeTime: "距離＋配速 → 完賽時間",
+      modeDist: "時間＋配速 → 距離",
+      distLbl: "距離",
+      distHint: "mile 會自動換算為 km",
+      timeLbl: "時間",
+      paceLbl: "配速（min/km）",
+      paceHint: "例如 5:30 → min=5, sec=30",
+      calcBtn: "計算",
+      resetBtn: "清除",
+      methodNote: "※ 配速以 min/km 表示。速度以 km/h 表示。結果四捨五入至合理位數。",
+      resultTitle: "結果",
+      outPace: "配速（min/km）",
+      outSpeed: "平均速度（km/h）",
+      outTime: "時間（hh:mm:ss）",
+      outDist: "距離（km）",
+      disclaimer: "※ 試算僅供參考。實際配速可能受地形、氣候、補給與配速策略影響。",
+      tipPace: "提示：可用 10km / 5K / 半馬 / 全馬",
+      tipTime: "提示：由配速反推完賽時間",
+      tipDist: "提示：由時間與配速反推距離"
+    },
+    en: {
+      seoTitle: "Running Pace Calculator | Pace, Time & Distance | AnyCals",
+      seoDesc: "AnyCals running pace calculator: compute pace (min/km) and speed (km/h) from distance and time, or estimate finish time from pace.",
+      h1: "Running Pace Calculator",
+      sub: "Convert between distance, time, and pace (min/km), plus average speed (km/h).",
+      inputTitle: "Inputs",
+      modeLbl: "Mode",
+      modePace: "Distance + Time → Pace",
+      modeTime: "Distance + Pace → Finish Time",
+      modeDist: "Time + Pace → Distance",
+      distLbl: "Distance",
+      distHint: "Miles will be converted to km",
+      timeLbl: "Time",
+      paceLbl: "Pace (min/km)",
+      paceHint: "e.g., 5:30 → min=5, sec=30",
+      calcBtn: "Calculate",
+      resetBtn: "Reset",
+      methodNote: "* Pace is shown as min/km; speed as km/h. Results are rounded reasonably.",
+      resultTitle: "Results",
+      outPace: "Pace (min/km)",
+      outSpeed: "Avg Speed (km/h)",
+      outTime: "Time (hh:mm:ss)",
+      outDist: "Distance (km)",
+      disclaimer: "* For reference only. Real pace varies with terrain, weather, fueling, and pacing strategy.",
+      tipPace: "Tip: try 10K / 5K / Half / Full",
+      tipTime: "Tip: estimate finish time from pace",
+      tipDist: "Tip: estimate distance from time and pace"
+    }
+  };
+
+  function setLang(l){
+    lang = l;
+    document.documentElement.lang = (l === "zh") ? "zh-Hant-TW" : "en";
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    document.querySelectorAll("[data-i18n-opt]").forEach(el=>{
+      const k = el.dataset.i18nOpt;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    document.getElementById("pageTitle").textContent = dict[l].seoTitle;
+    document.getElementById("pageDesc").setAttribute("content", dict[l].seoDesc);
+    updateTipPill();
+  }
+
+  // ---------- UI logic ----------
+  function onModeChange(){
+    const mode = document.getElementById("mode").value;
+    const timeBlock = document.getElementById("timeBlock");
+    const paceBlock = document.getElementById("paceBlock");
+
+    if(mode === "pace"){ // dist + time -> pace
+      timeBlock.style.display = "";
+      paceBlock.style.display = "none";
+    }else if(mode === "time"){ // dist + pace -> time
+      timeBlock.style.display = "none";
+      paceBlock.style.display = "";
+    }else{ // dist = time + pace
+      timeBlock.style.display = "";
+      paceBlock.style.display = "";
+    }
+
+    // Clear outputs each time user changes mode (reduces confusion)
+    clearOutputs();
+    updateTipPill();
+  }
+
+  function updateTipPill(){
+    const mode = document.getElementById("mode").value;
+    const pill = document.getElementById("tipPill");
+    if(mode === "pace") pill.textContent = dict[lang].tipPace;
+    else if(mode === "time") pill.textContent = dict[lang].tipTime;
+    else pill.textContent = dict[lang].tipDist;
+  }
+
+  function clearOutputs(){
+    document.getElementById("outPaceV").textContent = "—";
+    document.getElementById("outSpeedV").textContent = "—";
+    document.getElementById("outTimeV").textContent = "—";
+    document.getElementById("outDistV").textContent = "—";
+  }
+
+  function resetAll(){
+    document.getElementById("mode").value = "pace";
+    document.getElementById("dist").value = "";
+    document.getElementById("distUnit").value = "km";
+    document.getElementById("hh").value = "";
+    document.getElementById("mm").value = "";
+    document.getElementById("ss").value = "";
+    document.getElementById("paceMin").value = "";
+    document.getElementById("paceSec").value = "";
+    onModeChange();
+  }
+
+  function calc(){
+    const mode = document.getElementById("mode").value;
+
+    const distKm = toKm(document.getElementById("dist").value, document.getElementById("distUnit").value);
+
+    // outputs always show all four fields; non-computed remain as computed/blank
+    clearOutputs();
+
+    if(mode === "pace"){
+      if(!distKm){ alert(lang==="zh" ? "請輸入有效距離（>0）" : "Please enter a valid distance (>0)."); return; }
+      const tSec = timeToSeconds(hh.value, mm.value, ss.value);
+      if(!(tSec > 0)){ alert(lang==="zh" ? "請輸入有效時間（至少 1 秒）" : "Please enter a valid time (>= 1 second)."); return; }
+
+      const secPerKm = tSec / distKm;
+      document.getElementById("outPaceV").textContent = secPerKmToPaceText(secPerKm);
+      const kmh = kmhFrom(distKm, tSec);
+      document.getElementById("outSpeedV").textContent = kmh ? kmh.toFixed(2) : "—";
+      document.getElementById("outTimeV").textContent = secondsToHMS(tSec);
+      document.getElementById("outDistV").textContent = distKm.toFixed(2);
+
+    }else if(mode === "time"){
+      if(!distKm){ alert(lang==="zh" ? "請輸入有效距離（>0）" : "Please enter a valid distance (>0)."); return; }
+      const spk = paceToSecPerKm(paceMin.value, paceSec.value);
+      if(!spk){ alert(lang==="zh" ? "請輸入有效配速（至少 0:01）" : "Please enter a valid pace (>= 0:01)."); return; }
+
+      const tSec = distKm * spk;
+      document.getElementById("outTimeV").textContent = secondsToHMS(tSec);
+      document.getElementById("outPaceV").textContent = secPerKmToPaceText(spk);
+      const kmh = kmhFrom(distKm, tSec);
+      document.getElementById("outSpeedV").textContent = kmh ? kmh.toFixed(2) : "—";
+      document.getElementById("outDistV").textContent = distKm.toFixed(2);
+
+    }else{ // mode === "dist"
+      const tSec = timeToSeconds(hh.value, mm.value, ss.value);
+      if(!(tSec > 0)){ alert(lang==="zh" ? "請輸入有效時間（至少 1 秒）" : "Please enter a valid time (>= 1 second)."); return; }
+      const spk = paceToSecPerKm(paceMin.value, paceSec.value);
+      if(!spk){ alert(lang==="zh" ? "請輸入有效配速（至少 0:01）" : "Please enter a valid pace (>= 0:01)."); return; }
+
+      const dist = tSec / spk; // km
+      document.getElementById("outDistV").textContent = dist.toFixed(2);
+      document.getElementById("outTimeV").textContent = secondsToHMS(tSec);
+      document.getElementById("outPaceV").textContent = secPerKmToPaceText(spk);
+      const kmh = kmhFrom(dist, tSec);
+      document.getElementById("outSpeedV").textContent = kmh ? kmh.toFixed(2) : "—";
+    }
+  }
+
+  // init
+  onModeChange(); // also sets tip
+</script>
+</body>
+</html>
