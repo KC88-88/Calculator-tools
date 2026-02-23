@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title id="pageTitle">房貸試算器｜月付金、總利息、攤還表｜AnyCals</title>
-  <meta name="description" id="pageDesc" content="AnyCals 房貸試算器：支援本息均攤 / 本金均攤，可設定寬限期（只繳息），輸出月付金、總利息與攤還表。" />
+  <meta name="description" id="pageDesc" content="AnyCals 房貸試算器：支援本息均攤 / 本金均攤，可設定寬限期（只繳息），支援提前還本金（縮期/減額），輸出月付金、總利息與攤還表。" />
 
   <style>
     :root{
@@ -21,6 +21,7 @@
     .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
     .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:14px}
     .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
+    .btn.danger{border-color:#ef4444;color:#ef4444}
     .pill{
       display:inline-block;background:var(--card);border:1px solid var(--border);
       border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
@@ -55,6 +56,18 @@
     .tableWrap{max-height:520px;overflow:auto;border-radius:12px;border:1px solid var(--border)}
     .muted{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
 
+    details{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
+    summary{cursor:pointer;font-weight:900;color:#111827}
+    summary::-webkit-details-marker{display:none}
+    .detailsSub{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.7}
+
+    .radioRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .radio{display:flex;gap:8px;align-items:center;border:1px solid var(--border);border-radius:999px;padding:8px 10px;background:#fff}
+    .radio input{width:auto}
+
+    .prepayRow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;align-items:center}
+    .prepayRow .small{font-size:12px;color:var(--muted)}
+
     @media(max-width:980px){
       .grid{grid-template-columns:1fr}
       .right{justify-content:flex-start}
@@ -68,13 +81,14 @@
     <header>
       <div>
         <h1 class="title" data-i18n="h1">房貸試算器</h1>
-        <div class="sub" data-i18n="sub">輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤與寬限期。</div>
+        <div class="sub" data-i18n="sub">輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤與寬限期與提前還本（縮期/減額）。</div>
       </div>
       <div class="right">
-        <a class="pill" href="/" data-i18n="back">回首頁</a>
+        <!-- IMPORTANT: back to parent home -->
+        <a class="pill" href="https://anycals.com/index.html" data-i18n="back">回首頁</a>
         <a class="pill" id="contactLink" href="#" data-i18n="contact">聯繫我</a>
-        <button class="btn" onclick="setLang('zh')">中文</button>
-        <button class="btn" onclick="setLang('en')">EN</button>
+        <button class="btn" type="button" onclick="setLang('zh')">中文</button>
+        <button class="btn" type="button" onclick="setLang('en')">EN</button>
       </div>
     </header>
 
@@ -94,20 +108,20 @@
 
           <div>
             <label data-i18n="amountLbl">貸款金額</label>
-            <input id="amount" type="number" step="1" placeholder="例如 10000000">
+            <input id="amount" type="number" min="1" step="1" placeholder="例如 10000000">
           </div>
           <div>
             <label data-i18n="rateLbl">年利率（%）</label>
-            <input id="rate" type="number" step="0.01" placeholder="例如 2.10">
+            <input id="rate" type="number" min="0" step="0.01" placeholder="例如 2.10">
           </div>
 
           <div>
             <label data-i18n="yearsLbl">年限（年）</label>
-            <input id="years" type="number" step="1" placeholder="例如 30">
+            <input id="years" type="number" min="1" step="1" placeholder="例如 30">
           </div>
           <div>
             <label data-i18n="graceLbl">寬限期（月，可選）</label>
-            <input id="grace" type="number" step="1" placeholder="例如 24">
+            <input id="grace" type="number" min="0" step="1" placeholder="例如 24">
           </div>
 
           <div class="full">
@@ -116,14 +130,52 @@
             <div class="note" data-i18n="startHint">若不填，攤還表仍會用「第 1 期、第 2 期…」表示。</div>
           </div>
 
+          <!-- Advanced settings (collapsible) -->
+          <div class="full">
+            <details id="advBox">
+              <summary data-i18n="advTitle">進階設定</summary>
+              <div class="detailsSub" data-i18n="advHint">
+                提前還本金後可選「縮期」或「減額」。縮期：月付金不變、提早繳完；減額：期數不變、月付金變少（遇到提前還本時重新計算）。
+              </div>
+
+              <div style="margin-top:10px">
+                <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayModeLbl">提前還本模式</div>
+                <div class="radioRow" role="radiogroup" aria-label="prepay-mode">
+                  <label class="radio">
+                    <input type="radio" name="prepayMode" value="shorten" checked>
+                    <span data-i18n="prepayModeShort">縮期（預設）</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="prepayMode" value="recast">
+                    <span data-i18n="prepayModeRecast">減額（重新計算月付）</span>
+                  </label>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayTitle">額外還本金（可新增多筆）</div>
+                <div class="note" data-i18n="prepayHint">
+                  可指定第幾期額外還本金；將影響後續利息並依模式「縮期/減額」調整。
+                </div>
+
+                <div id="prepayList" style="display:grid;gap:8px;margin-top:8px"></div>
+
+                <div class="actions" style="margin-top:8px">
+                  <button class="btn" type="button" onclick="addPrepayRow()" data-i18n="prepayAdd">新增一筆</button>
+                  <button class="btn danger" type="button" onclick="clearPrepay()" data-i18n="prepayClear">清空額外還本</button>
+                </div>
+              </div>
+            </details>
+          </div>
+
           <div class="full actions">
-            <button class="btn primary" onclick="calc()" data-i18n="calcBtn">計算</button>
-            <button class="btn" onclick="resetAll()" data-i18n="resetBtn">清除</button>
-            <button class="btn" onclick="downloadCSV()" data-i18n="csvBtn">下載 CSV</button>
+            <button class="btn primary" type="button" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn" type="button" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+            <button class="btn" type="button" onclick="downloadCSV()" data-i18n="csvBtn">下載 CSV</button>
           </div>
 
           <div class="note" data-i18n="methodNote">
-            ※ 寬限期期間「只繳息」且本金不減；寬限期結束後，以剩餘期數重新計算（利率不變）。
+            ※ 寬限期期間「只繳息」且本金不減；寬限期結束後進入正常攤還。提前還本金會影響剩餘本金與後續利息。
           </div>
         </div>
       </div>
@@ -135,6 +187,11 @@
         <div class="metric">
           <div class="k" data-i18n="m1">每月應繳（首期）</div>
           <div class="v" id="mPay">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="m5">寬限期後月付（首期）</div>
+          <div class="v" id="mPayAfterGrace">—</div>
         </div>
 
         <div class="metric">
@@ -161,9 +218,9 @@
     <!-- Amortization -->
     <div class="card" style="margin-top:14px">
       <div class="tabs">
-        <button class="tab active" id="tabAll" onclick="setTableMode('all')" data-i18n="tabAll">全部期數</button>
-        <button class="tab" id="tab12" onclick="setTableMode('12')" data-i18n="tab12">前 12 期</button>
-        <button class="tab" id="tabGrace" onclick="setTableMode('grace')" data-i18n="tabGrace">寬限期</button>
+        <button class="tab active" id="tabAll" type="button" onclick="setTableMode('all')" data-i18n="tabAll">全部期數</button>
+        <button class="tab" id="tab12" type="button" onclick="setTableMode('12')" data-i18n="tab12">前 12 期</button>
+        <button class="tab" id="tabGrace" type="button" onclick="setTableMode('grace')" data-i18n="tabGrace">寬限期</button>
       </div>
 
       <div class="tableWrap">
@@ -174,12 +231,13 @@
               <th data-i18n="thDate">月份</th>
               <th data-i18n="thPay">應繳</th>
               <th data-i18n="thPrin">本金</th>
+              <th data-i18n="thExtra">額外還本</th>
               <th data-i18n="thInt">利息</th>
               <th data-i18n="thBal">剩餘本金</th>
             </tr>
           </thead>
           <tbody id="tbody">
-            <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:18px" data-i18n="empty">請先計算以產生攤還表。</td></tr>
+            <tr><td colspan="7" style="text-align:center;color:#6b7280;padding:18px" data-i18n="empty">請先計算以產生攤還表。</td></tr>
           </tbody>
         </table>
       </div>
@@ -194,9 +252,9 @@
   const dict = {
     zh:{
       seoTitle:"房貸試算器｜月付金、總利息、攤還表｜AnyCals",
-      seoDesc:"AnyCals 房貸試算器：支援本息均攤 / 本金均攤，可設定寬限期（只繳息），輸出月付金、總利息與攤還表。",
+      seoDesc:"AnyCals 房貸試算器：支援本息均攤 / 本金均攤，可設定寬限期（只繳息），支援提前還本金（縮期/減額），輸出月付金、總利息與攤還表。",
       h1:"房貸試算器",
-      sub:"輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤與寬限期。",
+      sub:"輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤與寬限期與提前還本（縮期/減額）。",
       back:"回首頁",
       inputTitle:"輸入",
       planLbl:"還款方式",
@@ -211,9 +269,10 @@
       calcBtn:"計算",
       resetBtn:"清除",
       csvBtn:"下載 CSV",
-      methodNote:"※ 寬限期期間「只繳息」且本金不減；寬限期結束後，以剩餘期數重新計算（利率不變）。",
+      methodNote:"※ 寬限期期間「只繳息」且本金不減；寬限期結束後進入正常攤還。提前還本金會影響剩餘本金與後續利息。",
       resultTitle:"結果",
       m1:"每月應繳（首期）",
+      m5:"寬限期後月付（首期）",
       m2:"總利息",
       m3:"本息合計",
       m4:"期數",
@@ -225,21 +284,38 @@
       thDate:"月份",
       thPay:"應繳",
       thPrin:"本金",
+      thExtra:"額外還本",
       thInt:"利息",
       thBal:"剩餘本金",
       empty:"請先計算以產生攤還表。",
       hintAll:"顯示全部期數。",
       hint12:"顯示前 12 期（若不足 12 期則顯示全部）。",
       hintGrace:"顯示寬限期期間（若未設定寬限期則顯示空）。",
-      errBase:"請輸入有效的貸款金額、年利率與年限。",
+      errBase:"請輸入有效的貸款金額、年利率與年限（年限請填整數年）。",
       errGrace:"寬限期不可大於總期數。",
-      contact:"聯繫我"
+      contact:"聯繫我",
+
+      advTitle:"進階設定",
+      advHint:"提前還本金後可選「縮期」或「減額」。縮期：月付金不變、提早繳完；減額：期數不變、月付金變少（遇到提前還本時重新計算）。",
+      prepayModeLbl:"提前還本模式",
+      prepayModeShort:"縮期（預設）",
+      prepayModeRecast:"減額（重新計算月付）",
+
+      prepayTitle:"額外還本金（可新增多筆）",
+      prepayHint:"可指定第幾期額外還本金；將影響後續利息並依模式「縮期/減額」調整。",
+      prepayAdd:"新增一筆",
+      prepayClear:"清空額外還本",
+      prepayP:"期數",
+      prepayAmt:"額外還本金",
+      prepayRemove:"移除",
+
+      warnRecast:"※ 減額模式：僅在「發生提前還本」時重新計算後續月付；若無提前還本，月付按一般規則不變。"
     },
     en:{
       seoTitle:"Mortgage Calculator | Payment, Interest, Amortization | AnyCals",
-      seoDesc:"AnyCals mortgage calculator: annuity or equal principal, optional grace period (interest-only). Outputs monthly payment, total interest, and amortization schedule.",
+      seoDesc:"AnyCals mortgage calculator: annuity or equal principal, optional grace period (interest-only), supports extra principal (shorten term / recast payment). Outputs monthly payment, total interest, and amortization schedule.",
       h1:"Mortgage Calculator",
-      sub:"Monthly payment, total interest, and amortization schedule. Supports annuity / equal principal and grace period.",
+      sub:"Monthly payment, total interest, and amortization schedule. Supports annuity / equal principal, grace period, and extra principal (shorten/recast).",
       back:"Home",
       inputTitle:"Inputs",
       planLbl:"Repayment plan",
@@ -254,9 +330,10 @@
       calcBtn:"Calculate",
       resetBtn:"Reset",
       csvBtn:"Download CSV",
-      methodNote:"* During grace period, you pay interest only (principal unchanged). After grace, payment is recalculated over remaining months.",
+      methodNote:"* During grace period, you pay interest only (principal unchanged). Extra principal affects balance and future interest.",
       resultTitle:"Results",
       m1:"Monthly payment (first)",
+      m5:"Post-grace payment (first)",
       m2:"Total interest",
       m3:"Total paid",
       m4:"Payments (months)",
@@ -268,15 +345,32 @@
       thDate:"Month",
       thPay:"Payment",
       thPrin:"Principal",
+      thExtra:"Extra",
       thInt:"Interest",
       thBal:"Balance",
       empty:"Run calculation to generate the schedule.",
       hintAll:"Showing all payments.",
       hint12:"Showing the first 12 payments (or all if fewer).",
       hintGrace:"Showing grace-period rows (empty if no grace period).",
-      errBase:"Please enter a valid loan amount, annual rate, and term.",
+      errBase:"Please enter a valid amount, rate, and term (term must be an integer year).",
       errGrace:"Grace period cannot exceed total months.",
-      contact:"Contact"
+      contact:"Contact",
+
+      advTitle:"Advanced settings",
+      advHint:"Choose how extra principal affects repayment. Shorten term: keep payment and finish earlier. Recast: keep term, reduce payment (recalculate when an extra payment occurs).",
+      prepayModeLbl:"Extra principal mode",
+      prepayModeShort:"Shorten term (default)",
+      prepayModeRecast:"Recast payment (reduce monthly)",
+
+      prepayTitle:"Extra principal payments (add multiple)",
+      prepayHint:"Specify extra principal at selected installment(s). This reduces interest; behavior depends on shorten/recast mode.",
+      prepayAdd:"Add",
+      prepayClear:"Clear",
+      prepayP:"Installment",
+      prepayAmt:"Extra principal",
+      prepayRemove:"Remove",
+
+      warnRecast:"* Recast mode: monthly payment is recalculated only when an extra principal payment occurs."
     }
   };
 
@@ -293,23 +387,29 @@
       const k = el.dataset.i18nOpt;
       if(dict[l][k] !== undefined) el.textContent = dict[l][k];
     });
-    // keep table hint synced
     updateTableHint();
-    // re-render existing table with current language formatting (numbers unchanged)
     renderTable();
+    syncPrepayLabels();
   }
 
-  // -------- calculation core --------
-  let schedule = []; // {idx, dateStr, pay, prin, intr, bal, isGrace}
-  let tableMode = "all"; // all | 12 | grace
+  // -------- helpers --------
+  function toInt(v, def=NaN){
+    const n = Number(v);
+    if(!isFinite(n)) return def;
+    return Math.trunc(n);
+  }
+  function toNum(v, def=NaN){
+    const n = Number(v);
+    return (isFinite(n) ? n : def);
+  }
+  function round0(n){ return Math.round(n); }
 
   function fmtMoney(n){
     if(!isFinite(n)) return "—";
-    return Math.round(n).toLocaleString(undefined);
+    return round0(n).toLocaleString(undefined);
   }
 
   function monthAdd(yyyyMm, add){
-    // yyyyMm like "2026-02"
     const [y, m] = yyyyMm.split("-").map(Number);
     const d = new Date(y, (m-1) + add, 1);
     const yy = d.getFullYear();
@@ -318,124 +418,250 @@
   }
 
   function annuityPayment(P, r, n){
-    // P principal, r monthly rate, n months
     if(n <= 0) return 0;
     if(r === 0) return P / n;
     const a = Math.pow(1+r, n);
     return P * (r * a) / (a - 1);
   }
 
+  function getPrepayMode(){
+    const v = document.querySelector('input[name="prepayMode"]:checked')?.value;
+    return (v === "recast") ? "recast" : "shorten";
+  }
+
+  // -------- extra principal UI --------
+  function addPrepayRow(p="", amt=""){
+    const list = document.getElementById("prepayList");
+    const row = document.createElement("div");
+    row.className = "prepayRow";
+    row.innerHTML = `
+      <div>
+        <label class="small" data-i18n="prepayP">${dict[lang].prepayP}</label>
+        <input class="pp-idx" type="number" min="1" step="1" placeholder="${lang==="zh" ? "例如 12" : "e.g. 12"}" value="${p}">
+      </div>
+      <div>
+        <label class="small" data-i18n="prepayAmt">${dict[lang].prepayAmt}</label>
+        <input class="pp-amt" type="number" min="0" step="1" placeholder="${lang==="zh" ? "例如 200000" : "e.g. 200000"}" value="${amt}">
+      </div>
+      <div>
+        <button class="btn" type="button" onclick="this.closest('.prepayRow').remove(); syncPrepayLabels();" data-i18n="prepayRemove">${dict[lang].prepayRemove}</button>
+      </div>
+    `;
+    list.appendChild(row);
+    syncPrepayLabels();
+  }
+
+  function clearPrepay(){
+    document.getElementById("prepayList").innerHTML = "";
+  }
+
+  function syncPrepayLabels(){
+    document.querySelectorAll("#prepayList [data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[lang][k] !== undefined) el.textContent = dict[lang][k];
+    });
+  }
+
+  function getPrepayMap(nMax){
+    const map = new Map(); // idx -> sumExtra
+    document.querySelectorAll("#prepayList .prepayRow").forEach(r=>{
+      const idx = toInt(r.querySelector(".pp-idx").value, NaN);
+      const amt = toNum(r.querySelector(".pp-amt").value, 0);
+      if(Number.isInteger(idx) && idx >= 1 && idx <= nMax && amt > 0){
+        map.set(idx, (map.get(idx) || 0) + amt);
+      }
+    });
+    return map;
+  }
+
+  // -------- calculation core --------
+  let schedule = []; // {idx, dateStr, pay, prin, extra, intr, bal, isGrace}
+  let tableMode = "all";
+
   function calc(){
-    const P0 = Number(document.getElementById("amount").value);
-    const annualRatePct = Number(document.getElementById("rate").value);
-    const years = Number(document.getElementById("years").value);
-    const grace = Number(document.getElementById("grace").value || 0);
+    const P0 = toNum(document.getElementById("amount").value, NaN);
+    const annualRatePct = toNum(document.getElementById("rate").value, NaN);
+    const years = toInt(document.getElementById("years").value, NaN);
+    const grace = Math.max(0, toInt(document.getElementById("grace").value || "0", 0));
     const plan = document.getElementById("plan").value;
-    const start = document.getElementById("start").value; // "YYYY-MM" or ""
+    const start = document.getElementById("start").value;
+    const hasStart = !!start;
 
-    const nTotal = Math.round(years * 12);
-    const g = Math.max(0, Math.round(grace));
+    const nTotal = years * 12;
 
-    if(!(P0 > 0) || !(annualRatePct >= 0) || !(nTotal > 0)){
+    if(!(P0 > 0) || !(annualRatePct >= 0) || !(nTotal > 0) || !Number.isInteger(years)){
       alert(dict[lang].errBase);
       return;
     }
-    if(g > nTotal){
+    if(grace > nTotal){
       alert(dict[lang].errGrace);
       return;
     }
 
+    const mode = getPrepayMode();
     const r = (annualRatePct/100) / 12;
+
+    // extra principal map
+    const prepayMap = getPrepayMap(nTotal);
+
     schedule = [];
-
     let bal = P0;
-    let totalInterest = 0;
-    let totalPaid = 0;
 
-    // 1) grace period (interest-only)
-    for(let i=1; i<=g; i++){
-      const intr = bal * r;
-      const prin = 0;
-      const pay = intr;
-      totalInterest += intr;
-      totalPaid += pay;
+    // display-consistent totals (sum of rounded per-row values)
+    let totalInterestDisp = 0;
+    let totalPaidDisp = 0;
 
+    let firstAfterGracePay = null;
+
+    function pushRow(idx, isGrace, pay, prin, extra, intr, balAfter){
+      totalInterestDisp += round0(intr);
+      totalPaidDisp += round0(pay);
       schedule.push({
-        idx:i,
-        dateStr: start ? monthAdd(start, i-1) : "",
-        pay, prin, intr,
-        bal,
-        isGrace:true
+        idx,
+        dateStr: hasStart ? monthAdd(start, idx-1) : "",
+        pay, prin, extra, intr,
+        bal: Math.max(0, balAfter),
+        isGrace
       });
     }
 
-    // 2) after grace
-    const nRemain = nTotal - g;
-    if(nRemain > 0){
-      if(plan === "annuity"){
-        const payFixed = annuityPayment(bal, r, nRemain);
-        for(let k=1; k<=nRemain; k++){
-          const idx = g + k;
-          const intr = bal * r;
-          let prin = payFixed - intr;
-
-          // guard rounding at last month
-          if(k === nRemain){
-            prin = bal; // close out
-          }else{
-            prin = Math.max(0, prin);
-          }
-
-          const pay = intr + prin;
-          bal = bal - prin;
-
-          totalInterest += intr;
-          totalPaid += pay;
-
-          schedule.push({
-            idx,
-            dateStr: start ? monthAdd(start, idx-1) : "",
-            pay, prin, intr,
-            bal: Math.max(0, bal),
-            isGrace:false
-          });
-        }
-      }else{ // equal principal
-        const prinFixed = bal / nRemain;
-        for(let k=1; k<=nRemain; k++){
-          const idx = g + k;
-          const intr = bal * r;
-          let prin = (k === nRemain) ? bal : prinFixed; // last month close out
-          const pay = intr + prin;
-          bal = bal - prin;
-
-          totalInterest += intr;
-          totalPaid += pay;
-
-          schedule.push({
-            idx,
-            dateStr: start ? monthAdd(start, idx-1) : "",
-            pay, prin, intr,
-            bal: Math.max(0, bal),
-            isGrace:false
-          });
-        }
-      }
+    // --- GRACE PERIOD (interest-only, extra allowed) ---
+    for(let idx=1; idx<=grace; idx++){
+      if(bal <= 0) break;
+      const intr = bal * r;
+      const extraReq = prepayMap.get(idx) || 0;
+      const extraUse = Math.min(extraReq, bal);
+      const prin = 0;
+      const pay = intr + extraUse;
+      bal = bal - extraUse;
+      pushRow(idx, true, pay, prin, extraUse, intr, bal);
     }
 
-    // summary
-    document.getElementById("nPay").textContent = `${nTotal}`;
-    document.getElementById("tInt").textContent = fmtMoney(totalInterest);
-    document.getElementById("tPay").textContent = fmtMoney(totalPaid);
+    // If fully paid in grace, finalize summary
+    if(bal <= 0){
+      finalizeSummary(totalInterestDisp, totalPaidDisp, firstAfterGracePay);
+      setTableMode("all");
+      renderTable();
+      updateTableHint();
+      return;
+    }
 
-    // first payment shown as first row pay (if any)
-    const first = schedule[0];
-    document.getElementById("mPay").textContent = first ? fmtMoney(first.pay) : "—";
+    // --- AFTER GRACE ---
+    const startIdx = grace + 1;
+    const monthsRemainAtStart = nTotal - grace;
 
-    // table
-    setTableMode("all"); // reset to all after calc
+    // State for payment/principal base (depends on plan + mode)
+    let payFixed = null;        // for annuity
+    let prinFixed = null;       // for equal principal
+
+    // Initialize at start of normal repayment
+    if(plan === "annuity"){
+      payFixed = annuityPayment(bal, r, monthsRemainAtStart);
+    }else{
+      prinFixed = (monthsRemainAtStart > 0) ? (bal / monthsRemainAtStart) : bal;
+    }
+
+    // In "recast" mode: we recalculate payFixed/prinFixed ONLY when an extra principal payment occurs.
+    // In "shorten" mode: keep payFixed/prinFixed fixed, and stop early when balance hits 0.
+
+    for(let idx=startIdx; idx<=nTotal; idx++){
+      if(bal <= 0) break;
+
+      const monthsLeftIncludingThis = (nTotal - idx + 1);
+
+      const intr = bal * r;
+      const extraReq = prepayMap.get(idx) || 0;
+
+      if(plan === "annuity"){
+        // regular principal from current fixed payment
+        let pay = payFixed;
+        let prin = pay - intr;
+        prin = Math.max(0, prin);
+
+        // cap principal so we don't exceed remaining principal
+        if(prin > bal) prin = bal;
+
+        // apply extra AFTER regular principal
+        const extraUse = Math.min(extraReq, Math.max(0, bal - prin));
+        let newBal = bal - prin - extraUse;
+
+        // If pay off this month: close out cleanly
+        if(newBal <= 0){
+          const prinClose = bal; // all remaining principal
+          const payClose = intr + prinClose;
+          pushRow(idx, false, payClose, prinClose, 0, intr, 0);
+          bal = 0;
+        }else{
+          pushRow(idx, false, pay, prin, extraUse, intr, newBal);
+          bal = newBal;
+        }
+
+        if(firstAfterGracePay === null){
+          firstAfterGracePay = schedule[schedule.length-1]?.pay ?? null;
+        }
+
+        // Recast update trigger: only when an extra principal payment happened (and still has balance)
+        if(mode === "recast" && extraReq > 0 && bal > 0){
+          const monthsLeftAfterThis = nTotal - idx;
+          // If no months left, will be closed by loop end anyway
+          if(monthsLeftAfterThis > 0){
+            payFixed = annuityPayment(bal, r, monthsLeftAfterThis);
+          }
+        }
+
+      }else{
+        // equal principal
+        // principal base is fixed; in recast it updates when extra happens; in shorten it stays fixed.
+        let prin = prinFixed;
+
+        // last-month-ish safety
+        if(prin > bal) prin = bal;
+
+        const extraUse = Math.min(extraReq, Math.max(0, bal - prin));
+        let newBal = bal - prin - extraUse;
+        const pay = intr + prin + extraUse;
+
+        if(newBal <= 0){
+          const prinClose = bal;
+          const payClose = intr + prinClose;
+          pushRow(idx, false, payClose, prinClose, 0, intr, 0);
+          bal = 0;
+        }else{
+          pushRow(idx, false, pay, prin, extraUse, intr, newBal);
+          bal = newBal;
+        }
+
+        if(firstAfterGracePay === null){
+          firstAfterGracePay = schedule[schedule.length-1]?.pay ?? null;
+        }
+
+        if(mode === "recast" && extraReq > 0 && bal > 0){
+          const monthsLeftAfterThis = nTotal - idx;
+          if(monthsLeftAfterThis > 0){
+            prinFixed = bal / monthsLeftAfterThis;
+          }
+        }
+      }
+
+      // If mode is "shorten", we naturally stop early due to bal <= 0 break
+      // If mode is "recast", we always run full term unless balance is paid off early by big prepay
+    }
+
+    finalizeSummary(totalInterestDisp, totalPaidDisp, firstAfterGracePay);
+
+    setTableMode("all");
     renderTable();
     updateTableHint();
+  }
+
+  function finalizeSummary(totalInterestDisp, totalPaidDisp, firstAfterGracePay){
+    document.getElementById("nPay").textContent = `${schedule.length}`;
+    document.getElementById("tInt").textContent = totalInterestDisp.toLocaleString(undefined);
+    document.getElementById("tPay").textContent = totalPaidDisp.toLocaleString(undefined);
+
+    const first = schedule[0];
+    document.getElementById("mPay").textContent = first ? fmtMoney(first.pay) : "—";
+    document.getElementById("mPayAfterGrace").textContent = (firstAfterGracePay != null) ? fmtMoney(firstAfterGracePay) : "—";
   }
 
   // -------- table rendering --------
@@ -459,7 +685,6 @@
     if(schedule.length === 0) return [];
     if(tableMode === "all") return schedule;
     if(tableMode === "12") return schedule.slice(0, Math.min(12, schedule.length));
-    // grace
     return schedule.filter(x=>x.isGrace);
   }
 
@@ -468,17 +693,16 @@
     const rows = filteredSchedule();
 
     if(schedule.length === 0){
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:18px">${dict[lang].empty}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:18px">${dict[lang].empty}</td></tr>`;
       return;
     }
-
     if(rows.length === 0){
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:18px">—</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:18px">—</td></tr>`;
       return;
     }
 
-    const hasDate = !!schedule.find(x=>x.dateStr);
-    // If no start month, show "—" in month column to avoid confusion
+    const hasDate = !!document.getElementById("start").value;
+
     tbody.innerHTML = rows.map(x=>{
       const dateText = hasDate ? (x.dateStr || "—") : "—";
       return `
@@ -487,6 +711,7 @@
           <td style="text-align:center">${dateText}</td>
           <td>${fmtMoney(x.pay)}</td>
           <td>${fmtMoney(x.prin)}</td>
+          <td>${fmtMoney(x.extra)}</td>
           <td>${fmtMoney(x.intr)}</td>
           <td>${fmtMoney(x.bal)}</td>
         </tr>
@@ -500,9 +725,10 @@
       alert(lang==="zh" ? "請先計算後再下載。" : "Please calculate first, then download.");
       return;
     }
-    const hasDate = !!schedule.find(x=>x.dateStr);
-    const headersZh = ["期數","月份","應繳","本金","利息","剩餘本金","是否寬限期"];
-    const headersEn = ["No.","Month","Payment","Principal","Interest","Balance","Grace"];
+    const hasDate = !!document.getElementById("start").value;
+
+    const headersZh = ["期數","月份","應繳","本金","額外還本","利息","剩餘本金","是否寬限期"];
+    const headersEn = ["No.","Month","Payment","Principal","Extra","Interest","Balance","Grace"];
     const headers = (lang==="zh") ? headersZh : headersEn;
 
     const lines = [];
@@ -513,10 +739,11 @@
       const row = [
         x.idx,
         `"${dateText}"`,
-        Math.round(x.pay),
-        Math.round(x.prin),
-        Math.round(x.intr),
-        Math.round(x.bal),
+        round0(x.pay),
+        round0(x.prin),
+        round0(x.extra),
+        round0(x.intr),
+        round0(x.bal),
         x.isGrace ? 1 : 0
       ];
       lines.push(row.join(","));
@@ -526,7 +753,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = (lang==="zh") ? "mortgage_schedule.csv" : "mortgage_schedule.csv";
+    a.download = "mortgage_schedule.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -540,8 +767,14 @@
     document.getElementById("years").value = "";
     document.getElementById("grace").value = "";
     document.getElementById("start").value = "";
+    // reset mode default shorten
+    document.querySelector('input[name="prepayMode"][value="shorten"]').checked = true;
+
+    clearPrepay();
+
     schedule = [];
     document.getElementById("mPay").textContent = "—";
+    document.getElementById("mPayAfterGrace").textContent = "—";
     document.getElementById("tInt").textContent = "—";
     document.getElementById("tPay").textContent = "—";
     document.getElementById("nPay").textContent = "—";
@@ -551,6 +784,15 @@
 
   // init
   updateTableHint();
+  addPrepayRow(); // default one row for usability
+
+  // contact (external email)
+  (function(){
+    const contact = document.getElementById("contactLink");
+    if(contact){
+      contact.href = "mailto:anycals.contact@gmail.com?subject=AnyCals%20%E6%88%BF%E8%B2%B8%E8%A9%A6%E7%AE%97%E5%99%A8%20%E5%95%8F%E9%A1%8C";
+    }
+  })();
 </script>
 </body>
 </html>
