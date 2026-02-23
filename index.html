@@ -3,75 +3,110 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AnyCals｜生活 × 理財 × 工作的萬用計算工具</title>
-  <meta name="description" content="AnyCals 提供房貸試算、BMI 熱量計算、分帳計算等實用工具，一站搞定常見計算需求。" />
+  <title>AnyCals｜只要能算，我都能算</title>
+  <meta name="description" content="AnyCals 是萬用計算工具站：生活、健康、理財、專業、數學。只要世界上能算的東西，這裡都想辦法算給你。" />
   <style>
-    body{
-      margin:0; padding:24px;
-      font-family: system-ui, -apple-system, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      background:#f6f7fb; color:#111827;
-    }
-    .wrap{max-width:980px; margin:0 auto;}
-    header{
-      display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;
-    }
-    .logo{font-weight:800; letter-spacing:.5px}
-    .tag{font-size:13px; color:#6b7280}
-    .grid{
-      display:grid; grid-template-columns: repeat(3, 1fr); gap:14px;
-    }
-    .card{
-      background:#fff; border:1px solid #e5e7eb; border-radius:16px;
-      padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.06);
-      display:flex; flex-direction:column; gap:8px;
-    }
-    .card h3{margin:0; font-size:16px}
-    .card p{margin:0; color:#6b7280; font-size:14px; line-height:1.6}
-    .card a{
-      margin-top:auto; text-decoration:none; font-weight:700;
-      color:#111827;
-    }
-    footer{margin-top:18px; color:#6b7280; font-size:12px}
-    @media (max-width: 860px){
-      .grid{grid-template-columns:1fr}
-    }
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f6f7fb;color:#111827}
+    .wrap{max-width:1100px;margin:0 auto}
+    header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+    .brand{font-weight:900;letter-spacing:.4px;font-size:22px}
+    .tag{color:#6b7280;line-height:1.6}
+    .search{flex:1;min-width:240px;display:flex;justify-content:flex-end}
+    .search input{width:min(520px,100%);padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px}
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .card h3{margin:0 0 6px;font-size:16px}
+    .card p{margin:0;color:#6b7280;font-size:13px;line-height:1.6}
+    .card a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:800;color:#111827}
+    .section{margin-top:14px}
+    .section h2{margin:0 0 8px;font-size:16px}
+    .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tool{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px}
+    .tool .t{font-weight:800}
+    .tool .d{color:#6b7280;font-size:13px;line-height:1.6;margin-top:6px}
+    .tool a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:800;color:#111827}
+    .muted{color:#6b7280;font-size:12px;line-height:1.6;margin-top:12px}
+    @media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}.tools{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <div class="logo">AnyCals</div>
-        <div class="tag">生活 × 理財 × 工作的萬用計算工具</div>
+        <div class="brand">AnyCals</div>
+        <div class="tag">只要世界上能算的東西，我都能算。先從日常開始，逐步走向專業與艱深數學。</div>
+      </div>
+      <div class="search">
+        <input id="q" placeholder="搜尋工具（例：房貸、BMI、分帳、矩陣…）" />
       </div>
     </header>
 
-    <section class="grid">
+    <!-- 大分類入口 -->
+    <div class="grid" id="cats">
       <div class="card">
-        <h3>房貸試算器</h3>
-        <p>試算每月還款金額、總利息，支援寬限期與不同還款方式。</p>
-        <a href="/mortgage/">開始試算 →</a>
+        <h3>生活 Life</h3>
+        <p>分帳、時間、單位換算…每天會用到的先上。</p>
+        <a href="/life/">進入 →</a>
+      </div>
+      <div class="card">
+        <h3>健康 Health</h3>
+        <p>BMI、熱量、心率、訓練指標…可量化就能算。</p>
+        <a href="/health/">進入 →</a>
+      </div>
+      <div class="card">
+        <h3>理財 Finance</h3>
+        <p>房貸、複利、投資、稅後…把錢算清楚更安心。</p>
+        <a href="/finance/">進入 →</a>
+      </div>
+      <div class="card">
+        <h3>專業 Pro</h3>
+        <p>工程、統計、科學應用。做得少，但要做得準。</p>
+        <a href="/pro/">進入 →</a>
+      </div>
+      <div class="card">
+        <h3>數學 Math</h3>
+        <p>線代、微積分、數值方法…偏門但很硬核。</p>
+        <a href="/math/">進入 →</a>
+      </div>
+    </div>
+
+    <!-- 熱門工具（先放你目前有的） -->
+    <div class="section">
+      <h2>熱門工具</h2>
+      <div class="tools" id="tools">
+        <div class="tool" data-key="房貸 mortgage 利率 寬限期 finance">
+          <div class="t">房貸試算器</div>
+          <div class="d">月付金、總利息、攤還表預覽，支援寬限期。</div>
+          <a href="/finance/mortgage/">開始試算 →</a>
+        </div>
+        <div class="tool" data-key="bmi 熱量 bmr tdee 健康 health">
+          <div class="t">BMI＆每日熱量</div>
+          <div class="d">BMI、BMR、TDEE 一次算清楚（估算模型）。</div>
+          <a href="/health/bmi/">開始試算 →</a>
+        </div>
+        <div class="tool" data-key="分帳 split bill 生活 life">
+          <div class="t">分帳計算器（即將推出）</div>
+          <div class="d">聚餐旅遊分帳一鍵搞定，支援服務費與折扣。</div>
+          <a href="/life/split-bill/" onclick="alert('功能即將推出');return false;">敬請期待</a>
+        </div>
       </div>
 
-      <div class="card">
-        <h3>BMI / 熱量（即將推出）</h3>
-        <p>快速估算 BMI、每日熱量需求，幫你抓健康目標。</p>
-        <a href="#" onclick="alert('功能即將推出'); return false;">敬請期待</a>
+      <div class="muted">
+        ※ 試算結果僅供參考。健康與金融相關工具不構成醫療/投資建議；實務條件以專業人員與機構為準。
       </div>
-
-      <div class="card">
-        <h3>分帳計算（即將推出）</h3>
-        <p>聚餐、旅遊分帳一鍵搞定，支援服務費與折扣。</p>
-        <a href="#" onclick="alert('功能即將推出'); return false;">敬請期待</a>
-      </div>
-    </section>
-
-    <footer>
-      © <span id="y"></span> AnyCals．試算結果僅供參考，實際條件以金融機構說明為準。
-    </footer>
+    </div>
   </div>
+
   <script>
-    document.getElementById("y").textContent = new Date().getFullYear();
+    const q = document.getElementById('q');
+    const tools = Array.from(document.querySelectorAll('#tools .tool'));
+    q.addEventListener('input', () => {
+      const s = q.value.trim().toLowerCase();
+      tools.forEach(el => {
+        const k = (el.getAttribute('data-key') || '').toLowerCase();
+        el.style.display = (!s || k.includes(s)) ? '' : 'none';
+      });
+    });
   </script>
 </body>
 </html>
