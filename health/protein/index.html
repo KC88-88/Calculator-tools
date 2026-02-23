@@ -34,6 +34,13 @@
     .note{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.6}
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .chip{border:1px solid var(--border);background:#f9fafb;border-radius:999px;padding:6px 10px;font-size:12px;color:#374151}
+    
+    /* overflow safety (prevents text/table from spilling out) */
+    *,*::before,*::after{box-sizing:border-box;}
+    .sub,.note,.muted,.metric,td,th,label{overflow-wrap:anywhere;word-break:break-word;}
+    input,select,button{min-width:0;}
+    table{table-layout:fixed;}
+
     @media(max-width:860px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
   </style>
 </head>
@@ -42,11 +49,12 @@
   <div class="wrap">
     <header>
       <div>
-        <div class="brand"><a href="/" style="text-decoration:none;color:inherit">AnyCals</a></div>
+        <div class="brand"><a href="./index.html" style="text-decoration:none;color:inherit">AnyCals</a></div>
         <div class="sub" data-i18n="tag">依目標與訓練頻率估算每日蛋白質需求</div>
       </div>
       <div class="topRight">
-        <a class="pill" href="mailto:anycals.contact@gmail.com?subject=AnyCals%20%E8%81%AF%E7%B9%AB%EF%BC%9A%E8%9B%8B%E7%99%BD%E8%B3%AA&body=%E6%83%B3%E5%95%8F%E8%9B%8B%E7%99%BD%E8%B3%AA%E5%B7%A5%E5%85%B7%EF%BC%9A%0A%0A%E8%B3%87%E6%96%99%EF%BC%9A%0A%E7%96%91%E5%95%8F%EF%BC%9A%0A" rel="nofollow" data-i18n="contact">聯繫我</a>
+        <a class="pill" href="./index.html" data-i18n="back">回首頁</a>
+        <a class="pill" id="contactLink" href="#" rel="nofollow" data-i18n="contact">聯繫我</a>
         <button class="btn" onclick="setLang('zh')">中文</button>
         <button class="btn" onclick="setLang('en')">EN</button>
       </div>
@@ -129,6 +137,7 @@
   </div>
 
   <script>
+    const contactEmail = "anycals.contact@gmail.com";
     let lang = "zh";
 
     const dict = {
@@ -136,6 +145,7 @@
         seoTitle: "蛋白質需求量計算器｜每日建議攝取｜AnyCals",
         seoDesc: "輸入體重與目標（維持/減脂/增肌）及訓練頻率，估算每日蛋白質建議攝取範圍（g/day），並提供每餐分配參考。",
         tag: "依目標與訓練頻率估算每日蛋白質需求",
+        back:"回首頁",
         contact: "聯繫我",
         h1: "蛋白質需求量計算器",
         intro: "輸入體重、目標與訓練頻率，輸出每日蛋白質建議範圍（克/天）與每餐分配參考。",
@@ -157,12 +167,15 @@
         rangeNote: (gkgLo,gkgHi)=>`依你的條件，建議區間約為 ${gkgLo.toFixed(1)}–${gkgHi.toFixed(1)} g/kg/day`,
         chip1: (x)=>`優先達到下限：${x} g/day`,
         chip2: "每餐至少 25–40g 蛋白質（常見建議）",
-        chip3: "重訓日與休息日都可維持穩定攝取"
+        chip3: "重訓日與休息日都可維持穩定攝取",
+        mailSubj: "AnyCals 聯繫：蛋白質",
+        mailBody: "想詢問：\n\n（1）工具：蛋白質需求量計算器\n（2）資料：\n（3）問題：\n\n"
       },
       en: {
         seoTitle: "Protein Intake Calculator | Daily Target | AnyCals",
         seoDesc: "Estimate your daily protein intake range (g/day) based on body weight, goal (maintain/fat loss/muscle gain), and training frequency, with per-meal guidance.",
         tag: "Estimate daily protein needs by goal & training frequency",
+        back:"Home",
         contact: "Contact",
         h1: "Protein Intake Calculator",
         intro: "Enter body weight, goal, and training frequency to estimate a daily protein range (g/day) and per-meal guidance.",
@@ -184,9 +197,18 @@
         rangeNote: (gkgLo,gkgHi)=>`Based on your inputs: ~${gkgLo.toFixed(1)}–${gkgHi.toFixed(1)} g/kg/day`,
         chip1: (x)=>`Hit at least the lower bound: ${x} g/day`,
         chip2: "Aim for ~25–40g protein per meal (common guidance)",
-        chip3: "Keep intake consistent on training & rest days"
+        chip3: "Keep intake consistent on training & rest days",
+        mailSubj: "AnyCals Contact: Protein",
+        mailBody: "I'd like to ask about:\n\n(1) Tool: Protein Intake Calculator\n(2) Inputs:\n(3) Question:\n\n"
       }
     };
+
+    function updateContactLink(){
+      const subj = dict[lang].mailSubj;
+      const body = dict[lang].mailBody;
+      document.getElementById("contactLink").href =
+        `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    }
 
     function setLang(l){
       lang = l;
@@ -197,23 +219,19 @@
         const key = el.dataset.i18n;
         if(dict[l][key] !== undefined) el.textContent = dict[l][key];
       });
+      updateContactLink();
       if(window.__lastComputed) calc();
     }
 
     function getRangeGkg(goal, train){
-      // Conservative, widely used ballparks:
-      // maintain: 1.2–1.6, fatloss: 1.6–2.2, muscle: 1.6–2.4
-      // adjust by training frequency slightly
       let lo, hi;
       if(goal === "maintain"){ lo = 1.2; hi = 1.6; }
       else if(goal === "fatloss"){ lo = 1.6; hi = 2.2; }
       else { lo = 1.6; hi = 2.4; }
 
-      // training adjustment (small nudges)
       if(train === "low"){ lo -= 0.1; hi -= 0.1; }
       if(train === "high"){ lo += 0.1; hi += 0.1; }
 
-      // clamp to sensible bounds
       lo = Math.max(1.0, lo);
       hi = Math.min(2.6, hi);
       return [lo, hi];
@@ -261,6 +279,8 @@
       document.getElementById("chips").innerHTML = "";
       window.__lastComputed = false;
     }
+
+    updateContactLink();
   </script>
 </body>
 </html>
