@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title id="pageTitle">心率區間計算器｜Zone 1–5｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="輸入年齡與（選填）靜息心率，快速估算運動心率區間（Zone 1–5）。支援一般最大心率法與 Karvonen（心率儲備）法。">
+
+  <style>
+    :root{--bg:#f6f7fb;--fg:#111827;--muted:#6b7280;--card:#fff;--border:#e5e7eb;--shadow:0 6px 18px rgba(0,0,0,.06);--r:16px}
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+    .brand{font-weight:900;font-size:20px}
+    .sub{color:var(--muted);line-height:1.6}
+    .topRight{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:8px 12px;font-size:13px;box-shadow:var(--shadow);text-decoration:none;color:var(--fg);font-weight:900}
+    .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:14px;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+    h1{margin:0 0 6px;font-size:22px}
+    h3{margin:0 0 10px;font-size:16px}
+    label{font-size:13px;color:#374151}
+    input,select{width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .primary{background:var(--fg);color:#fff;border-color:transparent}
+    .ghost{background:#f3f4f6}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{font-size:12px;color:var(--muted);font-weight:800}
+    .note{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.6}
+    .badge{display:inline-block;font-size:12px;padding:2px 8px;border:1px solid var(--border);border-radius:999px;color:#374151;background:#f9fafb}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="brand"><a href="/" style="text-decoration:none;color:inherit">AnyCals</a></div>
+        <div class="sub" data-i18n="tag">心率區間（Zone 1–5）估算：一般法 &amp; Karvonen 法</div>
+      </div>
+      <div class="topRight">
+        <a class="pill" href="mailto:anycals.contact@gmail.com?subject=AnyCals%20%E8%81%AF%E7%B9%AB%EF%BC%9A%E5%BF%83%E7%8E%87%E5%8D%80%E9%96%93&body=%E6%83%B3%E5%95%8F%E5%BF%83%E7%8E%87%E5%8D%80%E9%96%93%E5%B7%A5%E5%85%B7%EF%BC%9A%0A%0A%E8%B3%87%E6%96%99%EF%BC%9A%0A%E7%96%91%E5%95%8F%EF%BC%9A%0A" rel="nofollow" data-i18n="contact">聯繫我</a>
+        <button class="btn" onclick="setLang('zh')">中文</button>
+        <button class="btn" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <h1 data-i18n="h1">心率區間計算器</h1>
+    <div class="sub" data-i18n="intro">輸入年齡與（選填）靜息心率，估算運動心率區間。想更貼近個人狀態時建議使用 Karvonen（心率儲備）法。</div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 data-i18n="inTitle">輸入資料</h3>
+        <div class="form">
+          <div>
+            <label data-i18n="ageL">年齡</label>
+            <input id="age" type="number" min="10" max="100" placeholder="例如 30">
+          </div>
+          <div>
+            <label data-i18n="restL">靜息心率（可選）</label>
+            <input id="rhr" type="number" min="30" max="120" placeholder="例如 60">
+          </div>
+
+          <div class="full">
+            <label data-i18n="methodL">計算法</label>
+            <select id="method">
+              <option value="max">最大心率法（HRmax%）</option>
+              <option value="karvonen">Karvonen（HRR%）</option>
+            </select>
+            <div class="note" data-i18n="methodHint">
+              最大心率採用 <span class="badge">HRmax = 220 - 年齡</span>。Karvonen 需要靜息心率（RHR）。
+            </div>
+          </div>
+
+          <div class="full">
+            <label data-i18n="maxFormulaL">最大心率公式（可選）</label>
+            <select id="maxFormula">
+              <option value="220">220 - age（通用）</option>
+              <option value="tanaka">Tanaka：208 - 0.7×age</option>
+            </select>
+            <div class="note" data-i18n="maxFormulaHint">不同公式會造成些微差異；日常訓練以一致性為主。</div>
+          </div>
+
+          <div class="full actions">
+            <button class="btn primary" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn ghost" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="outTitle">結果</h3>
+        <div class="note" id="headline">—</div>
+
+        <div style="margin-top:10px;overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="zoneH">區間</th>
+                <th data-i18n="rangeH">心率範圍</th>
+                <th data-i18n="goalH">常見用途</th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="3" style="color:#6b7280;padding:14px 8px">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note" data-i18n="disclaimer">
+          ※ 本工具為估算模型，不構成醫療建議。若有心血管疾病、用藥或不適，請先諮詢專業醫療人員。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let lang = "zh";
+
+    const dict = {
+      zh: {
+        seoTitle: "心率區間計算器｜Zone 1–5｜AnyCals",
+        seoDesc: "輸入年齡與（選填）靜息心率，快速估算運動心率區間（Zone 1–5）。支援一般最大心率法與 Karvonen（心率儲備）法。",
+        tag: "心率區間（Zone 1–5）估算：一般法 & Karvonen 法",
+        contact: "聯繫我",
+        h1: "心率區間計算器",
+        intro: "輸入年齡與（選填）靜息心率，估算運動心率區間。想更貼近個人狀態時建議使用 Karvonen（心率儲備）法。",
+        inTitle: "輸入資料",
+        ageL: "年齡",
+        restL: "靜息心率（可選）",
+        methodL: "計算法",
+        methodHint: "最大心率採用 HRmax = 220 - 年齡。Karvonen 需要靜息心率（RHR）。",
+        maxFormulaL: "最大心率公式（可選）",
+        maxFormulaHint: "不同公式會造成些微差異；日常訓練以一致性為主。",
+        calcBtn: "計算",
+        resetBtn: "清除",
+        outTitle: "結果",
+        zoneH: "區間",
+        rangeH: "心率範圍",
+        goalH: "常見用途",
+        disclaimer: "※ 本工具為估算模型，不構成醫療建議。若有心血管疾病、用藥或不適，請先諮詢專業醫療人員。",
+        needAge: "請輸入年齡",
+        needRhr: "Karvonen 需要靜息心率（RHR）。請填入靜息心率，或改用最大心率法。",
+        headlineMax: (hrmax)=>`估算最大心率 HRmax ≈ ${hrmax} bpm（依你選的公式）`,
+        headlineKar: (hrmax,rhr)=>`HRmax ≈ ${hrmax} bpm，RHR = ${rhr} bpm，HRR = ${hrmax-rhr} bpm`,
+        zoneName: (n)=>`Zone ${n}`,
+        goals: [
+          "恢復／超輕鬆有氧",
+          "輕鬆有氧／脂肪代謝",
+          "有氧耐力／節奏",
+          "乳酸閾值／高強度",
+          "衝刺／最大輸出"
+        ]
+      },
+      en: {
+        seoTitle: "Heart Rate Zones Calculator | Zone 1–5 | AnyCals",
+        seoDesc: "Estimate training heart-rate zones (Zone 1–5) using age and optional resting heart rate. Supports %HRmax and Karvonen (HRR%) methods.",
+        tag: "Estimate Zone 1–5 using %HRmax or Karvonen (HRR%)",
+        contact: "Contact",
+        h1: "Heart Rate Zones Calculator",
+        intro: "Enter age and (optional) resting heart rate to estimate training zones. For a more individualized estimate, use the Karvonen (HRR%) method.",
+        inTitle: "Inputs",
+        ageL: "Age",
+        restL: "Resting HR (optional)",
+        methodL: "Method",
+        methodHint: "HRmax uses HRmax = 220 - age. Karvonen requires resting HR (RHR).",
+        maxFormulaL: "HRmax formula (optional)",
+        maxFormulaHint: "Different formulas can vary slightly—consistency matters most for training.",
+        calcBtn: "Calculate",
+        resetBtn: "Reset",
+        outTitle: "Results",
+        zoneH: "Zone",
+        rangeH: "Range",
+        goalH: "Common focus",
+        disclaimer: "* Estimation only. Not medical advice. Consult a professional if you have symptoms, conditions, or medications involved.",
+        needAge: "Please enter age",
+        needRhr: "Karvonen requires resting HR (RHR). Please provide it or switch to %HRmax.",
+        headlineMax: (hrmax)=>`Estimated HRmax ≈ ${hrmax} bpm (based on your chosen formula)`,
+        headlineKar: (hrmax,rhr)=>`HRmax ≈ ${hrmax} bpm, RHR = ${rhr} bpm, HRR = ${hrmax-rhr} bpm`,
+        zoneName: (n)=>`Zone ${n}`,
+        goals: [
+          "Recovery / very easy",
+          "Easy aerobic / fat-oxidation",
+          "Aerobic endurance / steady",
+          "Threshold / hard",
+          "Sprint / max effort"
+        ]
+      }
+    };
+
+    function setLang(l){
+      lang = l;
+      document.documentElement.lang = (l === "zh") ? "zh-Hant-TW" : "en";
+      document.getElementById("pageTitle").textContent = dict[l].seoTitle;
+      document.getElementById("pageDesc").setAttribute("content", dict[l].seoDesc);
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const key = el.dataset.i18n;
+        if(dict[l][key] !== undefined) el.textContent = dict[l][key];
+      });
+      // refresh computed headline/rows if already computed
+      if(window.__lastComputed) calc();
+    }
+
+    function hrmaxByFormula(age){
+      const f = document.getElementById("maxFormula").value;
+      if(f === "tanaka") return Math.round(208 - 0.7*age);
+      return Math.round(220 - age);
+    }
+
+    function calc(){
+      const age = Number(document.getElementById("age").value);
+      const rhrRaw = document.getElementById("rhr").value;
+      const rhr = rhrRaw === "" ? null : Number(rhrRaw);
+      const method = document.getElementById("method").value;
+
+      if(!age){ alert(dict[lang].needAge); return; }
+      const hrmax = hrmaxByFormula(age);
+
+      const rows = document.getElementById("rows");
+      const headline = document.getElementById("headline");
+
+      // Zone definitions (common, simplified)
+      // % ranges: Z1 50-60, Z2 60-70, Z3 70-80, Z4 80-90, Z5 90-100
+      const bands = [
+        [0.50,0.60],
+        [0.60,0.70],
+        [0.70,0.80],
+        [0.80,0.90],
+        [0.90,1.00]
+      ];
+
+      if(method === "karvonen"){
+        if(rhr === null){ alert(dict[lang].needRhr); return; }
+        headline.textContent = dict[lang].headlineKar(hrmax, rhr);
+
+        rows.innerHTML = "";
+        bands.forEach((b,i)=>{
+          const lo = Math.round(rhr + (hrmax - rhr)*b[0]);
+          const hi = Math.round(rhr + (hrmax - rhr)*b[1]);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${dict[lang].zoneName(i+1)}</td>
+            <td>${lo}–${hi} bpm</td>
+            <td>${dict[lang].goals[i]}</td>
+          `;
+          rows.appendChild(tr);
+        });
+      } else {
+        headline.textContent = dict[lang].headlineMax(hrmax);
+
+        rows.innerHTML = "";
+        bands.forEach((b,i)=>{
+          const lo = Math.round(hrmax*b[0]);
+          const hi = Math.round(hrmax*b[1]);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${dict[lang].zoneName(i+1)}</td>
+            <td>${lo}–${hi} bpm</td>
+            <td>${dict[lang].goals[i]}</td>
+          `;
+          rows.appendChild(tr);
+        });
+      }
+
+      window.__lastComputed = true;
+    }
+
+    function resetAll(){
+      document.getElementById("age").value = "";
+      document.getElementById("rhr").value = "";
+      document.getElementById("method").value = "max";
+      document.getElementById("maxFormula").value = "220";
+      document.getElementById("headline").textContent = "—";
+      document.getElementById("rows").innerHTML = `<tr><td colspan="3" style="color:#6b7280;padding:14px 8px">—</td></tr>`;
+      window.__lastComputed = false;
+    }
+  </script>
+</body>
+</html>
