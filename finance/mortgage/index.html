@@ -12,16 +12,35 @@
       --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
       --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
       --radius:16px;
+      --soft:#f3f4f6;
+      --danger:#ef4444;
     }
+
+    /* ---- overflow/box model fixes ---- */
+    *, *::before, *::after { box-sizing: border-box; }
+    .form > div, .prepayRow > div { min-width: 0; }
+    input, select { max-width: 100%; overflow:hidden; text-overflow:ellipsis; }
+
     body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
     .wrap{max-width:1100px;margin:0 auto}
     header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
     .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
     .sub{color:var(--muted);line-height:1.6;margin-top:6px}
     .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-    .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:14px}
+
+    .btn{
+      border:1px solid var(--border);background:var(--card);
+      border-radius:12px;padding:8px 10px;cursor:pointer;
+      box-shadow:var(--shadow);font-size:14px;
+      display:inline-flex;align-items:center;gap:8px;
+      height:40px;
+    }
     .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
-    .btn.danger{border-color:#ef4444;color:#ef4444}
+    .btn.ghost{background:#fff}
+    .btn.danger{border-color:rgba(239,68,68,.5);color:var(--danger)}
+    .btn.small{height:36px;padding:6px 10px;font-size:13px;border-radius:10px}
+    .btn:active{transform:translateY(1px)}
+
     .pill{
       display:inline-block;background:var(--card);border:1px solid var(--border);
       border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
@@ -31,16 +50,19 @@
     .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
     h2{margin:0 0 10px;font-size:16px}
+
     label{font-size:13px;color:#374151}
     input,select{
-      width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px;background:#fff;outline:none
+      width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;
+      font-size:15px;background:#fff;outline:none;height:40px;
     }
+    input:focus, select:focus{border-color:#cfd4dd; box-shadow:0 0 0 4px rgba(17,24,39,.06)}
     .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .full{grid-column:1/-1}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
 
-    .metric{background:#f3f4f6;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+    .metric{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
     .metric .k{font-size:12px;color:var(--muted)}
     .metric .v{font-size:20px;font-weight:900;margin-top:6px}
 
@@ -56,22 +78,82 @@
     .tableWrap{max-height:520px;overflow:auto;border-radius:12px;border:1px solid var(--border)}
     .muted{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
 
-    details{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff}
-    summary{cursor:pointer;font-weight:900;color:#111827}
-    summary::-webkit-details-marker{display:none}
-    .detailsSub{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.7}
+    /* ---- AnyCals-ish Advanced block ---- */
+    .adv{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:linear-gradient(180deg,#ffffff 0%, #fbfbfd 100%);
+      box-shadow:0 10px 24px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+    .advHead{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .advLeft{display:flex;gap:10px;align-items:center}
+    .advIcon{
+      width:36px;height:36px;border-radius:12px;
+      background:var(--soft);
+      border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+    .advTitle{font-weight:900}
+    .advDesc{color:var(--muted);font-size:12px;line-height:1.5;margin-top:2px}
+    .chev{transition:transform .18s ease}
+    .adv.open .chev{transform:rotate(180deg)}
+    .advBody{display:none;padding:12px;border-top:1px solid var(--border)}
+    .adv.open .advBody{display:block}
 
-    .radioRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
-    .radio{display:flex;gap:8px;align-items:center;border:1px solid var(--border);border-radius:999px;padding:8px 10px;background:#fff}
-    .radio input{width:auto}
+    .chipRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{
+      display:flex;align-items:center;gap:8px;
+      border:1px solid var(--border);background:#fff;border-radius:999px;
+      padding:8px 10px;font-size:13px;font-weight:900;cursor:pointer;
+    }
+    .chip input{width:auto;height:auto;margin:0}
+    .chip.active{background:var(--fg);color:#fff;border-color:transparent}
 
-    .prepayRow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;align-items:center}
+    /* ---- Prepay list as mini-cards ---- */
+    .prepaySummary{
+      display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;
+      background:var(--soft);border:1px solid var(--border);border-radius:12px;
+      padding:10px 12px;margin-top:10px;
+    }
+    .prepaySummary .big{font-weight:900}
+    .prepaySummary .small{color:var(--muted);font-size:12px}
+
+    .prepayList{display:grid;gap:10px;margin-top:10px}
+    .prepayCard{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(0,0,0,.04);
+      padding:10px;
+    }
+    .prepayRow{
+      display:grid;
+      grid-template-columns: 1fr 1.4fr auto;
+      gap:10px;
+      align-items:end; /* align inputs & button bottoms */
+    }
     .prepayRow .small{font-size:12px;color:var(--muted)}
+    .prepayRow > div:last-child{display:flex;align-items:flex-end}
+    .prepayRow .btn{height:40px}
+    .prepayRow .btn.danger{white-space:nowrap}
+
+    .divider{height:1px;background:var(--border);margin:10px 0}
 
     @media(max-width:980px){
       .grid{grid-template-columns:1fr}
       .right{justify-content:flex-start}
       .form{grid-template-columns:1fr}
+    }
+    @media(max-width:520px){
+      .prepayRow{grid-template-columns:1fr}
+      .prepayRow .btn{width:100%}
     }
   </style>
 </head>
@@ -81,10 +163,9 @@
     <header>
       <div>
         <h1 class="title" data-i18n="h1">房貸試算器</h1>
-        <div class="sub" data-i18n="sub">輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤與寬限期與提前還本（縮期/減額）。</div>
+        <div class="sub" data-i18n="sub">輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤、寬限期與提前還本（縮期/減額）。</div>
       </div>
       <div class="right">
-        <!-- IMPORTANT: back to parent home -->
         <a class="pill" href="https://anycals.com/index.html" data-i18n="back">回首頁</a>
         <a class="pill" id="contactLink" href="#" data-i18n="contact">聯繫我</a>
         <button class="btn" type="button" onclick="setLang('zh')">中文</button>
@@ -130,42 +211,61 @@
             <div class="note" data-i18n="startHint">若不填，攤還表仍會用「第 1 期、第 2 期…」表示。</div>
           </div>
 
-          <!-- Advanced settings (collapsible) -->
+          <!-- AnyCals-styled Advanced block -->
           <div class="full">
-            <details id="advBox">
-              <summary data-i18n="advTitle">進階設定</summary>
-              <div class="detailsSub" data-i18n="advHint">
-                提前還本金後可選「縮期」或「減額」。縮期：月付金不變、提早繳完；減額：期數不變、月付金變少（遇到提前還本時重新計算）。
+            <div class="adv" id="adv">
+              <div class="advHead" onclick="toggleAdv()">
+                <div class="advLeft">
+                  <div class="advIcon">⚙</div>
+                  <div>
+                    <div class="advTitle" data-i18n="advTitle">進階設定</div>
+                    <div class="advDesc" data-i18n="advHint">
+                      提前還本金後可選「縮期」或「減額」。縮期：月付金不變、提早繳完；減額：期數不變、月付金變少（遇到提前還本時重新計算）。
+                    </div>
+                  </div>
+                </div>
+                <div class="chev">▾</div>
               </div>
 
-              <div style="margin-top:10px">
+              <div class="advBody">
                 <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayModeLbl">提前還本模式</div>
-                <div class="radioRow" role="radiogroup" aria-label="prepay-mode">
-                  <label class="radio">
-                    <input type="radio" name="prepayMode" value="shorten" checked>
+                <div class="chipRow" id="modeChips">
+                  <label class="chip active" id="chipShort">
+                    <input type="radio" name="prepayMode" value="shorten" checked onchange="syncModeChips()">
                     <span data-i18n="prepayModeShort">縮期（預設）</span>
                   </label>
-                  <label class="radio">
-                    <input type="radio" name="prepayMode" value="recast">
+                  <label class="chip" id="chipRecast">
+                    <input type="radio" name="prepayMode" value="recast" onchange="syncModeChips()">
                     <span data-i18n="prepayModeRecast">減額（重新計算月付）</span>
                   </label>
                 </div>
-              </div>
 
-              <div style="margin-top:12px">
-                <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayTitle">額外還本金（可新增多筆）</div>
-                <div class="note" data-i18n="prepayHint">
-                  可指定第幾期額外還本金；將影響後續利息並依模式「縮期/減額」調整。
+                <div class="divider"></div>
+
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                  <div>
+                    <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayTitle">額外還本金</div>
+                    <div class="note" style="margin-top:6px" data-i18n="prepayHint">
+                      可指定第幾期額外還本金；將影響後續利息並依模式「縮期/減額」調整。
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn small" type="button" onclick="addPrepayRow()" data-i18n="prepayAdd">新增一筆</button>
+                    <button class="btn small danger" type="button" onclick="clearPrepay(); updatePrepaySummary();" data-i18n="prepayClear">清空</button>
+                  </div>
                 </div>
 
-                <div id="prepayList" style="display:grid;gap:8px;margin-top:8px"></div>
-
-                <div class="actions" style="margin-top:8px">
-                  <button class="btn" type="button" onclick="addPrepayRow()" data-i18n="prepayAdd">新增一筆</button>
-                  <button class="btn danger" type="button" onclick="clearPrepay()" data-i18n="prepayClear">清空額外還本</button>
+                <div class="prepaySummary" id="prepaySummary">
+                  <div>
+                    <div class="big" id="prepayTotal">0</div>
+                    <div class="small" data-i18n="prepayTotalLbl">總額外還本（加總）</div>
+                  </div>
+                  <div class="small" id="prepayCount">0</div>
                 </div>
+
+                <div class="prepayList" id="prepayList"></div>
               </div>
-            </details>
+            </div>
           </div>
 
           <div class="full actions">
@@ -254,7 +354,7 @@
       seoTitle:"房貸試算器｜月付金、總利息、攤還表｜AnyCals",
       seoDesc:"AnyCals 房貸試算器：支援本息均攤 / 本金均攤，可設定寬限期（只繳息），支援提前還本金（縮期/減額），輸出月付金、總利息與攤還表。",
       h1:"房貸試算器",
-      sub:"輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤與寬限期與提前還本（縮期/減額）。",
+      sub:"輸出月付金、總利息與攤還表；支援本息均攤 / 本金均攤、寬限期與提前還本（縮期/減額）。",
       back:"回首頁",
       inputTitle:"輸入",
       planLbl:"還款方式",
@@ -301,15 +401,17 @@
       prepayModeShort:"縮期（預設）",
       prepayModeRecast:"減額（重新計算月付）",
 
-      prepayTitle:"額外還本金（可新增多筆）",
+      prepayTitle:"額外還本金",
       prepayHint:"可指定第幾期額外還本金；將影響後續利息並依模式「縮期/減額」調整。",
       prepayAdd:"新增一筆",
-      prepayClear:"清空額外還本",
+      prepayClear:"清空",
       prepayP:"期數",
       prepayAmt:"額外還本金",
       prepayRemove:"移除",
-
-      warnRecast:"※ 減額模式：僅在「發生提前還本」時重新計算後續月付；若無提前還本，月付按一般規則不變。"
+      prepayTotalLbl:"總額外還本（加總）",
+      prepayCountTpl:"共 {n} 筆",
+      advOpen:"展開",
+      advClose:"收合"
     },
     en:{
       seoTitle:"Mortgage Calculator | Payment, Interest, Amortization | AnyCals",
@@ -362,15 +464,17 @@
       prepayModeShort:"Shorten term (default)",
       prepayModeRecast:"Recast payment (reduce monthly)",
 
-      prepayTitle:"Extra principal payments (add multiple)",
+      prepayTitle:"Extra principal",
       prepayHint:"Specify extra principal at selected installment(s). This reduces interest; behavior depends on shorten/recast mode.",
       prepayAdd:"Add",
       prepayClear:"Clear",
       prepayP:"Installment",
       prepayAmt:"Extra principal",
       prepayRemove:"Remove",
-
-      warnRecast:"* Recast mode: monthly payment is recalculated only when an extra principal payment occurs."
+      prepayTotalLbl:"Total extra principal (sum)",
+      prepayCountTpl:"{n} item(s)",
+      advOpen:"Open",
+      advClose:"Close"
     }
   };
 
@@ -390,6 +494,8 @@
     updateTableHint();
     renderTable();
     syncPrepayLabels();
+    syncModeChips();
+    updatePrepaySummary();
   }
 
   // -------- helpers --------
@@ -429,26 +535,54 @@
     return (v === "recast") ? "recast" : "shorten";
   }
 
+  // -------- AnyCals advanced block --------
+  function toggleAdv(){
+    const adv = document.getElementById("adv");
+    adv.classList.toggle("open");
+  }
+
+  function syncModeChips(){
+    const mode = getPrepayMode();
+    document.getElementById("chipShort").classList.toggle("active", mode==="shorten");
+    document.getElementById("chipRecast").classList.toggle("active", mode==="recast");
+  }
+
   // -------- extra principal UI --------
   function addPrepayRow(p="", amt=""){
     const list = document.getElementById("prepayList");
-    const row = document.createElement("div");
-    row.className = "prepayRow";
-    row.innerHTML = `
-      <div>
-        <label class="small" data-i18n="prepayP">${dict[lang].prepayP}</label>
-        <input class="pp-idx" type="number" min="1" step="1" placeholder="${lang==="zh" ? "例如 12" : "e.g. 12"}" value="${p}">
-      </div>
-      <div>
-        <label class="small" data-i18n="prepayAmt">${dict[lang].prepayAmt}</label>
-        <input class="pp-amt" type="number" min="0" step="1" placeholder="${lang==="zh" ? "例如 200000" : "e.g. 200000"}" value="${amt}">
-      </div>
-      <div>
-        <button class="btn" type="button" onclick="this.closest('.prepayRow').remove(); syncPrepayLabels();" data-i18n="prepayRemove">${dict[lang].prepayRemove}</button>
+    const card = document.createElement("div");
+    card.className = "prepayCard";
+
+    const phP = (lang==="zh" ? "例如 12" : "e.g. 12");
+    const phA = (lang==="zh" ? "例如 200000" : "e.g. 200000");
+
+    card.innerHTML = `
+      <div class="prepayRow">
+        <div>
+          <label class="small" data-i18n="prepayP">${dict[lang].prepayP}</label>
+          <input class="pp-idx" type="number" min="1" step="1" placeholder="${phP}" value="${p}">
+        </div>
+        <div>
+          <label class="small" data-i18n="prepayAmt">${dict[lang].prepayAmt}</label>
+          <input class="pp-amt" type="number" min="0" step="1" placeholder="${phA}" value="${amt}">
+        </div>
+        <div>
+          <label class="small" style="visibility:hidden">x</label>
+          <button class="btn danger" type="button"
+            onclick="this.closest('.prepayCard').remove(); syncPrepayLabels(); updatePrepaySummary();"
+            data-i18n="prepayRemove">${dict[lang].prepayRemove}</button>
+        </div>
       </div>
     `;
-    list.appendChild(row);
+    list.appendChild(card);
+
+    // bind update summary on input
+    card.querySelectorAll("input").forEach(inp=>{
+      inp.addEventListener("input", updatePrepaySummary);
+    });
+
     syncPrepayLabels();
+    updatePrepaySummary();
   }
 
   function clearPrepay(){
@@ -464,14 +598,31 @@
 
   function getPrepayMap(nMax){
     const map = new Map(); // idx -> sumExtra
-    document.querySelectorAll("#prepayList .prepayRow").forEach(r=>{
-      const idx = toInt(r.querySelector(".pp-idx").value, NaN);
-      const amt = toNum(r.querySelector(".pp-amt").value, 0);
+    document.querySelectorAll("#prepayList .prepayCard").forEach(card=>{
+      const idx = toInt(card.querySelector(".pp-idx")?.value, NaN);
+      const amt = toNum(card.querySelector(".pp-amt")?.value, 0);
       if(Number.isInteger(idx) && idx >= 1 && idx <= nMax && amt > 0){
         map.set(idx, (map.get(idx) || 0) + amt);
       }
     });
     return map;
+  }
+
+  function updatePrepaySummary(){
+    const cards = Array.from(document.querySelectorAll("#prepayList .prepayCard"));
+    let sum = 0;
+    let count = 0;
+    cards.forEach(c=>{
+      const a = toNum(c.querySelector(".pp-amt")?.value, 0);
+      const i = toInt(c.querySelector(".pp-idx")?.value, NaN);
+      if(a > 0 && Number.isInteger(i) && i >= 1){
+        sum += a;
+        count += 1;
+      }
+    });
+    document.getElementById("prepayTotal").textContent = Math.round(sum).toLocaleString(undefined);
+    const tpl = dict[lang].prepayCountTpl || "{n}";
+    document.getElementById("prepayCount").textContent = tpl.replace("{n}", String(count));
   }
 
   // -------- calculation core --------
@@ -500,14 +651,12 @@
 
     const mode = getPrepayMode();
     const r = (annualRatePct/100) / 12;
-
-    // extra principal map
     const prepayMap = getPrepayMap(nTotal);
 
     schedule = [];
     let bal = P0;
 
-    // display-consistent totals (sum of rounded per-row values)
+    // totals: sum of rounded per-row values for display consistency
     let totalInterestDisp = 0;
     let totalPaidDisp = 0;
 
@@ -525,7 +674,7 @@
       });
     }
 
-    // --- GRACE PERIOD (interest-only, extra allowed) ---
+    // --- GRACE ---
     for(let idx=1; idx<=grace; idx++){
       if(bal <= 0) break;
       const intr = bal * r;
@@ -533,16 +682,13 @@
       const extraUse = Math.min(extraReq, bal);
       const prin = 0;
       const pay = intr + extraUse;
-      bal = bal - extraUse;
+      bal -= extraUse;
       pushRow(idx, true, pay, prin, extraUse, intr, bal);
     }
 
-    // If fully paid in grace, finalize summary
     if(bal <= 0){
       finalizeSummary(totalInterestDisp, totalPaidDisp, firstAfterGracePay);
-      setTableMode("all");
-      renderTable();
-      updateTableHint();
+      setTableMode("all"); renderTable(); updateTableHint();
       return;
     }
 
@@ -550,44 +696,32 @@
     const startIdx = grace + 1;
     const monthsRemainAtStart = nTotal - grace;
 
-    // State for payment/principal base (depends on plan + mode)
-    let payFixed = null;        // for annuity
-    let prinFixed = null;       // for equal principal
+    let payFixed = null;   // for annuity
+    let prinFixed = null;  // for equal principal
 
-    // Initialize at start of normal repayment
     if(plan === "annuity"){
       payFixed = annuityPayment(bal, r, monthsRemainAtStart);
     }else{
       prinFixed = (monthsRemainAtStart > 0) ? (bal / monthsRemainAtStart) : bal;
     }
 
-    // In "recast" mode: we recalculate payFixed/prinFixed ONLY when an extra principal payment occurs.
-    // In "shorten" mode: keep payFixed/prinFixed fixed, and stop early when balance hits 0.
-
     for(let idx=startIdx; idx<=nTotal; idx++){
       if(bal <= 0) break;
-
-      const monthsLeftIncludingThis = (nTotal - idx + 1);
 
       const intr = bal * r;
       const extraReq = prepayMap.get(idx) || 0;
 
       if(plan === "annuity"){
-        // regular principal from current fixed payment
         let pay = payFixed;
         let prin = pay - intr;
         prin = Math.max(0, prin);
-
-        // cap principal so we don't exceed remaining principal
         if(prin > bal) prin = bal;
 
-        // apply extra AFTER regular principal
         const extraUse = Math.min(extraReq, Math.max(0, bal - prin));
         let newBal = bal - prin - extraUse;
 
-        // If pay off this month: close out cleanly
         if(newBal <= 0){
-          const prinClose = bal; // all remaining principal
+          const prinClose = bal;
           const payClose = intr + prinClose;
           pushRow(idx, false, payClose, prinClose, 0, intr, 0);
           bal = 0;
@@ -600,21 +734,15 @@
           firstAfterGracePay = schedule[schedule.length-1]?.pay ?? null;
         }
 
-        // Recast update trigger: only when an extra principal payment happened (and still has balance)
         if(mode === "recast" && extraReq > 0 && bal > 0){
           const monthsLeftAfterThis = nTotal - idx;
-          // If no months left, will be closed by loop end anyway
           if(monthsLeftAfterThis > 0){
             payFixed = annuityPayment(bal, r, monthsLeftAfterThis);
           }
         }
 
       }else{
-        // equal principal
-        // principal base is fixed; in recast it updates when extra happens; in shorten it stays fixed.
         let prin = prinFixed;
-
-        // last-month-ish safety
         if(prin > bal) prin = bal;
 
         const extraUse = Math.min(extraReq, Math.max(0, bal - prin));
@@ -642,13 +770,9 @@
           }
         }
       }
-
-      // If mode is "shorten", we naturally stop early due to bal <= 0 break
-      // If mode is "recast", we always run full term unless balance is paid off early by big prepay
     }
 
     finalizeSummary(totalInterestDisp, totalPaidDisp, firstAfterGracePay);
-
     setTableMode("all");
     renderTable();
     updateTableHint();
@@ -702,7 +826,6 @@
     }
 
     const hasDate = !!document.getElementById("start").value;
-
     tbody.innerHTML = rows.map(x=>{
       const dateText = hasDate ? (x.dateStr || "—") : "—";
       return `
@@ -767,10 +890,11 @@
     document.getElementById("years").value = "";
     document.getElementById("grace").value = "";
     document.getElementById("start").value = "";
-    // reset mode default shorten
     document.querySelector('input[name="prepayMode"][value="shorten"]').checked = true;
+    syncModeChips();
 
     clearPrepay();
+    updatePrepaySummary();
 
     schedule = [];
     document.getElementById("mPay").textContent = "—";
@@ -784,7 +908,9 @@
 
   // init
   updateTableHint();
-  addPrepayRow(); // default one row for usability
+  syncModeChips();
+  addPrepayRow(); // default row
+  updatePrepaySummary();
 
   // contact (external email)
   (function(){
