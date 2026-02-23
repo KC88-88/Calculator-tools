@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title id="pageTitle">蛋白質需求量計算器｜每日建議攝取｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="輸入體重與目標（維持/減脂/增肌）及訓練頻率，估算每日蛋白質建議攝取範圍（g/day），並提供每餐分配參考。">
+
+  <style>
+    :root{--bg:#f6f7fb;--fg:#111827;--muted:#6b7280;--card:#fff;--border:#e5e7eb;--shadow:0 6px 18px rgba(0,0,0,.06);--r:16px}
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+    .brand{font-weight:900;font-size:20px}
+    .sub{color:var(--muted);line-height:1.6}
+    .topRight{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:8px 12px;font-size:13px;box-shadow:var(--shadow);text-decoration:none;color:var(--fg);font-weight:900}
+    .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:14px;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+    h1{margin:0 0 6px;font-size:22px}
+    h3{margin:0 0 10px;font-size:16px}
+    label{font-size:13px;color:#374151}
+    input,select{width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .primary{background:var(--fg);color:#fff;border-color:transparent}
+    .ghost{background:#f3f4f6}
+    .metric{background:#f3f4f6;border-radius:12px;padding:12px;border:1px solid var(--border);margin-bottom:10px}
+    .metric .k{font-size:12px;color:var(--muted);font-weight:800}
+    .metric .v{font-size:20px;font-weight:900;margin-top:6px}
+    .note{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.6}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .chip{border:1px solid var(--border);background:#f9fafb;border-radius:999px;padding:6px 10px;font-size:12px;color:#374151}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="brand"><a href="/" style="text-decoration:none;color:inherit">AnyCals</a></div>
+        <div class="sub" data-i18n="tag">依目標與訓練頻率估算每日蛋白質需求</div>
+      </div>
+      <div class="topRight">
+        <a class="pill" href="mailto:anycals.contact@gmail.com?subject=AnyCals%20%E8%81%AF%E7%B9%AB%EF%BC%9A%E8%9B%8B%E7%99%BD%E8%B3%AA&body=%E6%83%B3%E5%95%8F%E8%9B%8B%E7%99%BD%E8%B3%AA%E5%B7%A5%E5%85%B7%EF%BC%9A%0A%0A%E8%B3%87%E6%96%99%EF%BC%9A%0A%E7%96%91%E5%95%8F%EF%BC%9A%0A" rel="nofollow" data-i18n="contact">聯繫我</a>
+        <button class="btn" onclick="setLang('zh')">中文</button>
+        <button class="btn" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <h1 data-i18n="h1">蛋白質需求量計算器</h1>
+    <div class="sub" data-i18n="intro">輸入體重、目標與訓練頻率，輸出每日蛋白質建議範圍（克/天）與每餐分配參考。</div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 data-i18n="inTitle">輸入資料</h3>
+        <div class="form">
+          <div>
+            <label data-i18n="wL">體重（kg）</label>
+            <input id="w" type="number" min="20" max="200" placeholder="例如 70">
+          </div>
+          <div>
+            <label data-i18n="mealsL">每日餐次（估算分配用）</label>
+            <select id="meals">
+              <option value="3">3 餐</option>
+              <option value="4">4 餐</option>
+              <option value="5">5 餐</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label data-i18n="goalL">目標</label>
+            <select id="goal">
+              <option value="maintain">維持／一般健康</option>
+              <option value="fatloss">減脂（維持肌肉）</option>
+              <option value="muscle">增肌／重量訓練導向</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label data-i18n="trainL">訓練頻率</label>
+            <select id="train">
+              <option value="low">低（每週 0–2 次）</option>
+              <option value="mid">中（每週 3–5 次）</option>
+              <option value="high">高（每週 6+ 次 或 高強度）</option>
+            </select>
+          </div>
+
+          <div class="full actions">
+            <button class="btn primary" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn ghost" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+          </div>
+        </div>
+
+        <div class="note" data-i18n="modelNote">
+          模型採用常見建議區間（g/kg/day）做估算。若你有腎臟疾病、特殊飲食或醫囑，請以專業建議為準。
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="outTitle">結果</h3>
+
+        <div class="metric">
+          <div class="k" data-i18n="rangeK">每日建議範圍</div>
+          <div class="v" id="rangeV">—</div>
+          <div class="note" id="rangeNote"></div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="perMealK">每餐建議（平均分配）</div>
+          <div class="v" id="perMealV">—</div>
+          <div class="note" data-i18n="perMealNote">僅供參考；實務上可把蛋白質平均分散到 3–5 餐。</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="quickK">快速提示</div>
+          <div class="row" id="chips"></div>
+        </div>
+
+        <div class="note" data-i18n="disclaimer">
+          ※ 試算為一般建議範圍，非醫療或營養處方。若有疾病、用藥或特殊訓練目標，請諮詢專業人員。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let lang = "zh";
+
+    const dict = {
+      zh: {
+        seoTitle: "蛋白質需求量計算器｜每日建議攝取｜AnyCals",
+        seoDesc: "輸入體重與目標（維持/減脂/增肌）及訓練頻率，估算每日蛋白質建議攝取範圍（g/day），並提供每餐分配參考。",
+        tag: "依目標與訓練頻率估算每日蛋白質需求",
+        contact: "聯繫我",
+        h1: "蛋白質需求量計算器",
+        intro: "輸入體重、目標與訓練頻率，輸出每日蛋白質建議範圍（克/天）與每餐分配參考。",
+        inTitle: "輸入資料",
+        wL: "體重（kg）",
+        mealsL: "每日餐次（估算分配用）",
+        goalL: "目標",
+        trainL: "訓練頻率",
+        calcBtn: "計算",
+        resetBtn: "清除",
+        modelNote: "模型採用常見建議區間（g/kg/day）做估算。若你有腎臟疾病、特殊飲食或醫囑，請以專業建議為準。",
+        outTitle: "結果",
+        rangeK: "每日建議範圍",
+        perMealK: "每餐建議（平均分配）",
+        perMealNote: "僅供參考；實務上可把蛋白質平均分散到 3–5 餐。",
+        quickK: "快速提示",
+        disclaimer: "※ 試算為一般建議範圍，非醫療或營養處方。若有疾病、用藥或特殊訓練目標，請諮詢專業人員。",
+        needW: "請輸入體重",
+        rangeNote: (gkgLo,gkgHi)=>`依你的條件，建議區間約為 ${gkgLo.toFixed(1)}–${gkgHi.toFixed(1)} g/kg/day`,
+        chip1: (x)=>`優先達到下限：${x} g/day`,
+        chip2: "每餐至少 25–40g 蛋白質（常見建議）",
+        chip3: "重訓日與休息日都可維持穩定攝取"
+      },
+      en: {
+        seoTitle: "Protein Intake Calculator | Daily Target | AnyCals",
+        seoDesc: "Estimate your daily protein intake range (g/day) based on body weight, goal (maintain/fat loss/muscle gain), and training frequency, with per-meal guidance.",
+        tag: "Estimate daily protein needs by goal & training frequency",
+        contact: "Contact",
+        h1: "Protein Intake Calculator",
+        intro: "Enter body weight, goal, and training frequency to estimate a daily protein range (g/day) and per-meal guidance.",
+        inTitle: "Inputs",
+        wL: "Body weight (kg)",
+        mealsL: "Meals per day (for splitting)",
+        goalL: "Goal",
+        trainL: "Training frequency",
+        calcBtn: "Calculate",
+        resetBtn: "Reset",
+        modelNote: "This tool uses common guideline ranges (g/kg/day). If you have kidney disease, special diets, or medical advice, follow professional guidance.",
+        outTitle: "Results",
+        rangeK: "Recommended daily range",
+        perMealK: "Per-meal (even split)",
+        perMealNote: "For reference; in practice, distributing protein across 3–5 meals works well.",
+        quickK: "Quick tips",
+        disclaimer: "* General guidance only—not a medical or nutrition prescription. Consult a professional for conditions, medications, or special goals.",
+        needW: "Please enter body weight",
+        rangeNote: (gkgLo,gkgHi)=>`Based on your inputs: ~${gkgLo.toFixed(1)}–${gkgHi.toFixed(1)} g/kg/day`,
+        chip1: (x)=>`Hit at least the lower bound: ${x} g/day`,
+        chip2: "Aim for ~25–40g protein per meal (common guidance)",
+        chip3: "Keep intake consistent on training & rest days"
+      }
+    };
+
+    function setLang(l){
+      lang = l;
+      document.documentElement.lang = (l === "zh") ? "zh-Hant-TW" : "en";
+      document.getElementById("pageTitle").textContent = dict[l].seoTitle;
+      document.getElementById("pageDesc").setAttribute("content", dict[l].seoDesc);
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const key = el.dataset.i18n;
+        if(dict[l][key] !== undefined) el.textContent = dict[l][key];
+      });
+      if(window.__lastComputed) calc();
+    }
+
+    function getRangeGkg(goal, train){
+      // Conservative, widely used ballparks:
+      // maintain: 1.2–1.6, fatloss: 1.6–2.2, muscle: 1.6–2.4
+      // adjust by training frequency slightly
+      let lo, hi;
+      if(goal === "maintain"){ lo = 1.2; hi = 1.6; }
+      else if(goal === "fatloss"){ lo = 1.6; hi = 2.2; }
+      else { lo = 1.6; hi = 2.4; }
+
+      // training adjustment (small nudges)
+      if(train === "low"){ lo -= 0.1; hi -= 0.1; }
+      if(train === "high"){ lo += 0.1; hi += 0.1; }
+
+      // clamp to sensible bounds
+      lo = Math.max(1.0, lo);
+      hi = Math.min(2.6, hi);
+      return [lo, hi];
+    }
+
+    function calc(){
+      const w = Number(document.getElementById("w").value);
+      const meals = Number(document.getElementById("meals").value);
+      const goal = document.getElementById("goal").value;
+      const train = document.getElementById("train").value;
+
+      if(!w){ alert(dict[lang].needW); return; }
+
+      const [gkgLo, gkgHi] = getRangeGkg(goal, train);
+      const lo = Math.round(w * gkgLo);
+      const hi = Math.round(w * gkgHi);
+
+      document.getElementById("rangeV").textContent = `${lo}–${hi} g/day`;
+      document.getElementById("rangeNote").textContent = dict[lang].rangeNote(gkgLo, gkgHi);
+
+      const perLo = Math.round(lo / meals);
+      const perHi = Math.round(hi / meals);
+      document.getElementById("perMealV").textContent = `${perLo}–${perHi} g/meal`;
+
+      const chips = document.getElementById("chips");
+      chips.innerHTML = "";
+      [dict[lang].chip1(lo), dict[lang].chip2, dict[lang].chip3].forEach(t=>{
+        const s = document.createElement("span");
+        s.className = "chip";
+        s.textContent = t;
+        chips.appendChild(s);
+      });
+
+      window.__lastComputed = true;
+    }
+
+    function resetAll(){
+      document.getElementById("w").value = "";
+      document.getElementById("meals").value = "3";
+      document.getElementById("goal").value = "maintain";
+      document.getElementById("train").value = "low";
+      document.getElementById("rangeV").textContent = "—";
+      document.getElementById("perMealV").textContent = "—";
+      document.getElementById("rangeNote").textContent = "";
+      document.getElementById("chips").innerHTML = "";
+      window.__lastComputed = false;
+    }
+  </script>
+</body>
+</html>
