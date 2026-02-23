@@ -3,136 +3,265 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BMI 與每日熱量計算器｜BMI、BMR、TDEE 一次算清楚｜AnyCals</title>
-  <meta name="description" content="輸入身高、體重、年齡與活動量，快速計算 BMI、基礎代謝率（BMR）與每日熱量需求（TDEE）。適合減脂、維持體態或增肌規劃。" />
+
+  <title id="pageTitle">BMI＆每日熱量計算器｜BMI、BMR、TDEE｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals BMI＆每日熱量計算器：輸入身高、體重、年齡與活動量，估算 BMI、BMR 與 TDEE，提供每日熱量建議。支援中英切換。" />
+
   <style>
-    body{margin:0;padding:24px;font-family:system-ui,-apple-system,'Noto Sans TC','Microsoft JhengHei',sans-serif;background:#f6f7fb;color:#111827}
+    :root{
+      --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
+      --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
+      --radius:16px;
+    }
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
     .wrap{max-width:980px;margin:0 auto}
-    h1{margin:0 0 8px}
-    .sub{color:#6b7280;margin-bottom:16px}
+    header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+    .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
+    .sub{color:var(--muted);line-height:1.6;margin-top:6px}
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      display:inline-block;background:var(--card);border:1px solid var(--border);
+      border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
+      box-shadow:var(--shadow);text-decoration:none;color:var(--fg)
+    }
+    .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow);font-size:14px}
+
     .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    h2{margin:0 0 10px;font-size:16px}
     label{font-size:13px;color:#374151}
-    input,select{width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px}
+    input,select{
+      width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px;background:#fff;outline:none
+    }
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .full{grid-column:1/-1}
-    .actions{display:flex;gap:10px;margin-top:12px}
-    button{padding:10px 14px;border:0;border-radius:12px;font-size:15px;cursor:pointer}
-    .primary{background:#111827;color:#fff}
-    .ghost{background:#f3f4f6}
-    .metric{background:#f3f4f6;border-radius:12px;padding:12px;border:1px solid #e5e7eb;margin-bottom:10px}
-    .metric .k{font-size:12px;color:#6b7280}
-    .metric .v{font-size:20px;font-weight:800;margin-top:6px}
-    .note{font-size:13px;color:#6b7280;line-height:1.6}
-    @media(max-width:860px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+
+    .metric{background:#f3f4f6;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+    .metric .k{font-size:12px;color:var(--muted)}
+    .metric .v{font-size:20px;font-weight:900;margin-top:6px}
+
+    @media(max-width:860px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <h1>BMI 與每日熱量計算器</h1>
-    <div class="sub">快速試算 BMI、基礎代謝率（BMR）與每日熱量需求（TDEE）。</div>
+    <header>
+      <div>
+        <h1 class="title" data-i18n="h1">BMI＆每日熱量計算器</h1>
+        <div class="sub" data-i18n="sub">計算 BMI、BMR 與 TDEE，估算每日熱量需求。</div>
+      </div>
+      <div class="right">
+        <a class="pill" href="/" data-i18n="home">回首頁</a>
+        <a class="pill" id="contactLink" href="#" data-i18n="contact">聯繫我</a>
+        <button class="btn" onclick="setLang('zh')">中文</button>
+        <button class="btn" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
 
     <div class="grid">
+      <!-- Inputs -->
       <div class="card">
-        <h3>輸入資料</h3>
+        <h2 data-i18n="inputTitle">輸入</h2>
+
         <div class="form">
           <div>
-            <label>身高（cm）</label>
-            <input id="h" type="number" placeholder="例如 170">
+            <label data-i18n="heightLbl">身高（cm）</label>
+            <input id="height" type="number" step="0.1" placeholder="例如 170">
           </div>
           <div>
-            <label>體重（kg）</label>
-            <input id="w" type="number" placeholder="例如 65">
+            <label data-i18n="weightLbl">體重（kg）</label>
+            <input id="weight" type="number" step="0.1" placeholder="例如 65">
+          </div>
+
+          <div>
+            <label data-i18n="ageLbl">年齡</label>
+            <input id="age" type="number" step="1" placeholder="例如 30">
           </div>
           <div>
-            <label>年齡</label>
-            <input id="age" type="number" placeholder="例如 30">
-          </div>
-          <div>
-            <label>性別</label>
+            <label data-i18n="sexLbl">生理性別</label>
             <select id="sex">
-              <option value="male">男性</option>
-              <option value="female">女性</option>
+              <option value="male" data-i18n-opt="male">男性</option>
+              <option value="female" data-i18n-opt="female">女性</option>
             </select>
           </div>
+
           <div class="full">
-            <label>活動量</label>
-            <select id="act">
-              <option value="1.2">久坐（幾乎不運動）</option>
-              <option value="1.375">輕度活動（每週 1–3 天）</option>
-              <option value="1.55">中度活動（每週 3–5 天）</option>
-              <option value="1.725">高度活動（每週 6–7 天）</option>
-              <option value="1.9">非常高（體力勞動或專業運動）</option>
+            <label data-i18n="activityLbl">活動量</label>
+            <select id="activity">
+              <option value="1.2" data-i18n-opt="act1">久坐（幾乎不運動）</option>
+              <option value="1.375" data-i18n-opt="act2">輕度活動（每週 1–3 次）</option>
+              <option value="1.55" data-i18n-opt="act3">中度活動（每週 3–5 次）</option>
+              <option value="1.725" data-i18n-opt="act4">高度活動（每週 6–7 次）</option>
+              <option value="1.9" data-i18n-opt="act5">非常高（勞力型工作 / 運動員）</option>
             </select>
           </div>
+
           <div class="full actions">
-            <button class="primary" onclick="calc()">計算</button>
-            <button class="ghost" onclick="resetAll()">清除</button>
+            <button class="btn" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+          </div>
+
+          <div class="note" data-i18n="methodNote">
+            ※ BMR 採用 Mifflin–St Jeor 公式；TDEE = BMR × 活動係數。
           </div>
         </div>
       </div>
 
+      <!-- Results -->
       <div class="card">
-        <h3>計算結果</h3>
+        <h2 data-i18n="resultTitle">結果</h2>
+
         <div class="metric">
           <div class="k">BMI</div>
-          <div class="v" id="bmi">—</div>
-          <div class="note" id="bmiNote"></div>
+          <div class="v" id="bmiV">—</div>
         </div>
+
         <div class="metric">
-          <div class="k">BMR（基礎代謝）</div>
-          <div class="v" id="bmr">—</div>
-          <div class="note">使用 Mifflin-St Jeor 公式估算</div>
+          <div class="k">BMR</div>
+          <div class="v" id="bmrV">—</div>
         </div>
+
         <div class="metric">
-          <div class="k">TDEE（每日熱量需求）</div>
-          <div class="v" id="tdee">—</div>
-          <div class="note">= BMR × 活動係數</div>
+          <div class="k">TDEE</div>
+          <div class="v" id="tdeeV">—</div>
         </div>
-        <div class="note">
-          ※ 試算結果僅供參考，實際熱量需求會受體組成、運動強度、作息影響。<br/>
-          ※ 若有醫療或體重管理需求，請諮詢專業人員。
-        </div>
+
+        <div class="note" id="bmiCat">—</div>
       </div>
     </div>
   </div>
 
-  <script>
-    function calc(){
-      const h = Number(document.getElementById('h').value) / 100;
-      const w = Number(document.getElementById('w').value);
-      const age = Number(document.getElementById('age').value);
-      const sex = document.getElementById('sex').value;
-      const act = Number(document.getElementById('act').value);
+<script>
+  const contactEmail = "anycals.contact@gmail.com";
+  let lang = "zh";
 
-      if(!h || !w || !age){ alert('請完整輸入身高、體重與年齡'); return; }
+  function updateContactLink(){
+    const subj = (lang === 'zh') ? "AnyCals 聯繫" : "AnyCals Contact";
+    const body = (lang === 'zh')
+      ? "想詢問：\n\n（1）工具名稱：BMI＆每日熱量\n（2）想算的內容：\n（3）期望輸出：\n\n"
+      : "I'd like to ask about:\n\n(1) Tool: BMI & Daily Calories\n(2) What to calculate:\n(3) Expected output:\n\n";
+    document.getElementById('contactLink').href =
+      `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  }
 
-      const bmi = w / (h*h);
-      let bmiText = '';
-      if(bmi < 18.5) bmiText = '體重過輕';
-      else if(bmi < 24) bmiText = '正常範圍';
-      else if(bmi < 27) bmiText = '過重';
-      else bmiText = '肥胖';
+  const dict = {
+    zh:{
+      seoTitle:"BMI＆每日熱量計算器｜BMI、BMR、TDEE｜AnyCals",
+      seoDesc:"AnyCals BMI＆每日熱量計算器：輸入身高、體重、年齡與活動量，估算 BMI、BMR 與 TDEE。",
+      h1:"BMI＆每日熱量計算器",
+      sub:"計算 BMI、BMR 與 TDEE，估算每日熱量需求。",
+      home:"回首頁",
+      contact:"聯繫我",
+      inputTitle:"輸入",
+      heightLbl:"身高（cm）",
+      weightLbl:"體重（kg）",
+      ageLbl:"年齡",
+      sexLbl:"生理性別",
+      male:"男性",
+      female:"女性",
+      activityLbl:"活動量",
+      act1:"久坐（幾乎不運動）",
+      act2:"輕度活動（每週 1–3 次）",
+      act3:"中度活動（每週 3–5 次）",
+      act4:"高度活動（每週 6–7 次）",
+      act5:"非常高（勞力型工作 / 運動員）",
+      calcBtn:"計算",
+      resetBtn:"清除",
+      methodNote:"※ BMR 採用 Mifflin–St Jeor 公式；TDEE = BMR × 活動係數。",
+      resultTitle:"結果"
+    },
+    en:{
+      seoTitle:"BMI & Daily Calories Calculator | BMI, BMR, TDEE | AnyCals",
+      seoDesc:"AnyCals BMI & Daily Calories calculator: compute BMI, BMR, and TDEE from height, weight, age, and activity level.",
+      h1:"BMI & Daily Calories Calculator",
+      sub:"Calculate BMI, BMR, and TDEE to estimate daily calorie needs.",
+      home:"Home",
+      contact:"Contact",
+      inputTitle:"Inputs",
+      heightLbl:"Height (cm)",
+      weightLbl:"Weight (kg)",
+      ageLbl:"Age",
+      sexLbl:"Sex",
+      male:"Male",
+      female:"Female",
+      activityLbl:"Activity level",
+      act1:"Sedentary",
+      act2:"Light (1–3 days/week)",
+      act3:"Moderate (3–5 days/week)",
+      act4:"High (6–7 days/week)",
+      act5:"Very high (athlete/manual labor)",
+      calcBtn:"Calculate",
+      resetBtn:"Reset",
+      methodNote:"* BMR uses the Mifflin–St Jeor equation; TDEE = BMR × activity factor.",
+      resultTitle:"Results"
+    }
+  };
 
-      const bmr = sex === 'male'
-        ? 10*w + 6.25*(h*100) - 5*age + 5
-        : 10*w + 6.25*(h*100) - 5*age - 161;
+  function setLang(l){
+    lang = l;
+    document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
+    document.getElementById("pageTitle").textContent = dict[l].seoTitle;
+    document.getElementById("pageDesc").setAttribute("content", dict[l].seoDesc);
 
-      const tdee = bmr * act;
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    document.querySelectorAll("[data-i18n-opt]").forEach(el=>{
+      const k = el.dataset.i18nOpt;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
 
-      document.getElementById('bmi').textContent = bmi.toFixed(1);
-      document.getElementById('bmiNote').textContent = bmiText;
-      document.getElementById('bmr').textContent = Math.round(bmr) + ' kcal/day';
-      document.getElementById('tdee').textContent = Math.round(tdee) + ' kcal/day';
+    updateContactLink();
+  }
+
+  function calc(){
+    const h = Number(height.value);
+    const w = Number(weight.value);
+    const a = Number(age.value);
+    const sex = sex.value;
+    const act = Number(activity.value);
+
+    if(!(h>0) || !(w>0) || !(a>0)){
+      alert(lang==="zh" ? "請輸入有效的身高、體重與年齡" : "Please enter valid height, weight, and age.");
+      return;
     }
 
-    function resetAll(){
-      ['h','w','age'].forEach(id=>document.getElementById(id).value='');
-      document.getElementById('bmi').textContent='—';
-      document.getElementById('bmiNote').textContent='';
-      document.getElementById('bmr').textContent='—';
-      document.getElementById('tdee').textContent='—';
-    }
-  </script>
+    const bmi = w / Math.pow(h/100, 2);
+    const bmr = (sex==="male")
+      ? (10*w + 6.25*h - 5*a + 5)
+      : (10*w + 6.25*h - 5*a - 161);
+    const tdee = bmr * act;
+
+    bmiV.textContent = bmi.toFixed(1);
+    bmrV.textContent = Math.round(bmr).toLocaleString();
+    tdeeV.textContent = Math.round(tdee).toLocaleString();
+
+    // BMI category (simple WHO bands)
+    let catZh="", catEn="";
+    if(bmi < 18.5){ catZh="體重過輕"; catEn="Underweight"; }
+    else if(bmi < 24){ catZh="正常範圍"; catEn="Normal range"; }
+    else if(bmi < 27){ catZh="過重"; catEn="Overweight"; }
+    else { catZh="肥胖"; catEn="Obese"; }
+
+    bmiCat.textContent = (lang==="zh") ? `BMI 分類：${catZh}` : `BMI Category: ${catEn}`;
+  }
+
+  function resetAll(){
+    height.value = "";
+    weight.value = "";
+    age.value = "";
+    bmiV.textContent = "—";
+    bmrV.textContent = "—";
+    tdeeV.textContent = "—";
+    bmiCat.textContent = "—";
+  }
+
+  // init
+  updateContactLink();
+</script>
 </body>
 </html>
