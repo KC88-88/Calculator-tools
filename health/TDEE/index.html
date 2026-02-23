@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title id="pageTitle">TDEE 熱量計算器｜BMR & 每日消耗｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="輸入身高、體重、年齡、性別與活動量，估算 BMR/TDEE，並提供維持/減脂/增肌的熱量區間。" />
+  <style>
+    :root{--bg:#f6f7fb;--fg:#111827;--muted:#6b7280;--card:#fff;--border:#e5e7eb;--shadow:0 6px 18px rgba(0,0,0,.06);--r:16px}
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+    .brand{font-weight:900;font-size:20px}
+    .sub{color:var(--muted);line-height:1.6}
+    .topRight{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:8px 12px;font-size:13px;box-shadow:var(--shadow);text-decoration:none;color:var(--fg);font-weight:900}
+    .btn{border:1px solid var(--border);background:var(--card);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:14px;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+    h1{margin:0 0 6px;font-size:22px}
+    h3{margin:0 0 10px;font-size:16px}
+    label{font-size:13px;color:#374151}
+    input,select{width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .primary{background:var(--fg);color:#fff;border-color:transparent}
+    .ghost{background:#f3f4f6}
+    .metric{background:#f3f4f6;border-radius:12px;padding:12px;border:1px solid var(--border);margin-bottom:10px}
+    .metric .k{font-size:12px;color:var(--muted);font-weight:800}
+    .metric .v{font-size:20px;font-weight:900;margin-top:6px}
+    .note{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.6}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .chip{border:1px solid var(--border);background:#f9fafb;border-radius:999px;padding:6px 10px;font-size:12px;color:#374151}
+    
+    /* overflow safety (prevents text/table from spilling out) */
+    *,*::before,*::after{box-sizing:border-box;}
+    .sub,.note,.muted,.metric,td,th,label{overflow-wrap:anywhere;word-break:break-word;}
+    input,select,button{min-width:0;}
+    table{table-layout:fixed;}
+
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="brand"><a href="./index.html" style="text-decoration:none;color:inherit">AnyCals</a></div>
+        <div class="sub" data-i18n="tag">估算 BMR / TDEE，並給出維持/減脂/增肌熱量區間</div>
+      </div>
+      <div class="topRight">
+        <a class="pill" href="./index.html" data-i18n="back">回首頁</a>
+        <a class="pill" id="contactLink" href="#" rel="nofollow" data-i18n="contact">聯繫我</a>
+        <button class="btn" onclick="setLang('zh')">中文</button>
+        <button class="btn" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <h1 data-i18n="h1">TDEE 熱量計算器</h1>
+    <div class="sub" data-i18n="intro">使用 Mifflin–St Jeor 估算 BMR，乘上活動係數得到 TDEE。</div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 data-i18n="inTitle">輸入資料</h3>
+        <div class="form">
+          <div>
+            <label data-i18n="sexL">性別</label>
+            <select id="sex">
+              <option value="m">男性</option>
+              <option value="f">女性</option>
+            </select>
+          </div>
+          <div>
+            <label data-i18n="ageL">年齡</label>
+            <input id="age" type="number" min="10" max="100" placeholder="例如 30">
+          </div>
+
+          <div>
+            <label data-i18n="hL">身高（cm）</label>
+            <input id="h" type="number" min="100" max="230" placeholder="例如 174">
+          </div>
+          <div>
+            <label data-i18n="wL">體重（kg）</label>
+            <input id="w" type="number" min="25" max="250" placeholder="例如 77">
+          </div>
+
+          <div class="full">
+            <label data-i18n="actL">活動量（係數）</label>
+            <select id="act">
+              <option value="1.2">久坐（1.2）</option>
+              <option value="1.375">輕度（1.375）</option>
+              <option value="1.55">中度（1.55）</option>
+              <option value="1.725">高度（1.725）</option>
+              <option value="1.9">非常高（1.9）</option>
+            </select>
+          </div>
+
+          <div class="full actions">
+            <button class="btn primary" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn ghost" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+          </div>
+
+          <div class="note" data-i18n="note">※ 建議用 2–4 週趨勢做校正。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="outTitle">結果</h3>
+
+        <div class="metric">
+          <div class="k" data-i18n="bmrK">BMR（基礎代謝）</div>
+          <div class="v" id="bmrV">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="tdeeK">TDEE（每日總消耗）</div>
+          <div class="v" id="tdeeV">—</div>
+          <div class="note" id="tdeeNote"></div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="targetsK">常見目標區間</div>
+          <div class="row" id="chips"></div>
+        </div>
+
+        <div class="note" data-i18n="disclaimer">※ 本工具為估算模型，不構成醫療或營養處方。</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const contactEmail = "anycals.contact@gmail.com";
+  let lang = "zh";
+
+  const dict = {
+    zh:{
+      seoTitle:"TDEE 熱量計算器｜BMR & 每日消耗｜AnyCals",
+      seoDesc:"輸入身高、體重、年齡、性別與活動量，估算 BMR/TDEE，並提供維持/減脂/增肌的熱量區間。",
+      tag:"估算 BMR / TDEE，並給出維持/減脂/增肌熱量區間",
+      back:"回首頁",
+      contact:"聯繫我",
+      h1:"TDEE 熱量計算器",
+      intro:"使用 Mifflin–St Jeor 估算 BMR，乘上活動係數得到 TDEE。",
+      inTitle:"輸入資料",
+      sexL:"性別", ageL:"年齡", hL:"身高（cm）", wL:"體重（kg）",
+      actL:"活動量（係數）",
+      calcBtn:"計算", resetBtn:"清除",
+      note:"※ 建議用 2–4 週趨勢做校正。",
+      outTitle:"結果",
+      bmrK:"BMR（基礎代謝）",
+      tdeeK:"TDEE（每日總消耗）",
+      targetsK:"常見目標區間",
+      disclaimer:"※ 本工具為估算模型，不構成醫療或營養處方。",
+      need:"請輸入有效的年齡、身高、體重",
+      tdeeNote:(a)=>`活動係數：${a}`,
+      chipMaintain:(x)=>`維持：約 ${Math.round(x)} kcal`,
+      chipCut:(x)=>`減脂：${Math.round(x*0.85)}–${Math.round(x*0.95)} kcal`,
+      chipGain:(x)=>`增肌：${Math.round(x*1.05)}–${Math.round(x*1.15)} kcal`,
+      mailSubj:"AnyCals 聯繫：TDEE 熱量",
+      mailBody:"想詢問：\n\n（1）工具：TDEE 熱量計算器\n（2）資料：\n（3）問題：\n\n"
+    },
+    en:{
+      seoTitle:"TDEE Calculator | BMR & Daily Energy | AnyCals",
+      seoDesc:"Estimate BMR/TDEE from age, sex, height, weight, and activity factor, plus common calorie targets.",
+      tag:"Estimate BMR/TDEE and common calorie targets",
+      back:"Home",
+      contact:"Contact",
+      h1:"TDEE Calculator",
+      intro:"Uses Mifflin–St Jeor for BMR, multiplies by activity factor for TDEE.",
+      inTitle:"Inputs",
+      sexL:"Sex", ageL:"Age", hL:"Height (cm)", wL:"Weight (kg)",
+      actL:"Activity factor",
+      calcBtn:"Calculate", resetBtn:"Reset",
+      note:"* Calibrate with 2–4 weeks of trend.",
+      outTitle:"Results",
+      bmrK:"BMR",
+      tdeeK:"TDEE",
+      targetsK:"Common targets",
+      disclaimer:"* Estimation only. Not medical/nutrition prescription.",
+      need:"Please enter valid age, height, and weight",
+      tdeeNote:(a)=>`Activity factor: ${a}`,
+      chipMaintain:(x)=>`Maintain: ~${Math.round(x)} kcal`,
+      chipCut:(x)=>`Cut: ${Math.round(x*0.85)}–${Math.round(x*0.95)} kcal`,
+      chipGain:(x)=>`Gain: ${Math.round(x*1.05)}–${Math.round(x*1.15)} kcal`,
+      mailSubj:"AnyCals Contact: TDEE",
+      mailBody:"I'd like to ask about:\n\n(1) Tool: TDEE Calculator\n(2) Inputs:\n(3) Question:\n\n"
+    }
+  };
+
+  function updateContactLink(){
+    document.getElementById("contactLink").href =
+      `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(dict[lang].mailSubj)}&body=${encodeURIComponent(dict[lang].mailBody)}`;
+  }
+
+  function setLang(l){
+    lang = l;
+    document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
+    document.getElementById("pageTitle").textContent = dict[l].seoTitle;
+    document.getElementById("pageDesc").setAttribute("content", dict[l].seoDesc);
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    updateContactLink();
+    if(window.__lastComputed) calc();
+  }
+
+  function bmrMifflin(sex, w, h, age){
+    const base = 10*w + 6.25*h - 5*age;
+    return (sex==="m") ? (base + 5) : (base - 161);
+  }
+
+  function calc(){
+    const sex = document.getElementById("sex").value;
+    const age = Number(document.getElementById("age").value);
+    const h = Number(document.getElementById("h").value);
+    const w = Number(document.getElementById("w").value);
+    const act = Number(document.getElementById("act").value);
+
+    if(!(age>0) || !(h>0) || !(w>0)){ alert(dict[lang].need); return; }
+
+    const bmr = bmrMifflin(sex, w, h, age);
+    const tdee = bmr * act;
+
+    document.getElementById("bmrV").textContent = `${Math.round(bmr)} kcal`;
+    document.getElementById("tdeeV").textContent = `${Math.round(tdee)} kcal`;
+    document.getElementById("tdeeNote").textContent = dict[lang].tdeeNote(act);
+
+    const chips = document.getElementById("chips");
+    chips.innerHTML = "";
+    [dict[lang].chipMaintain(tdee), dict[lang].chipCut(tdee), dict[lang].chipGain(tdee)].forEach(t=>{
+      const s = document.createElement("span");
+      s.className = "chip";
+      s.textContent = t;
+      chips.appendChild(s);
+    });
+
+    window.__lastComputed = true;
+  }
+
+  function resetAll(){
+    document.getElementById("sex").value = "m";
+    document.getElementById("age").value = "";
+    document.getElementById("h").value = "";
+    document.getElementById("w").value = "";
+    document.getElementById("act").value = "1.2";
+    document.getElementById("bmrV").textContent = "—";
+    document.getElementById("tdeeV").textContent = "—";
+    document.getElementById("tdeeNote").textContent = "";
+    document.getElementById("chips").innerHTML = "";
+    window.__lastComputed = false;
+  }
+
+  updateContactLink();
+</script>
+</body>
+</html>
