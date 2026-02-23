@@ -2,56 +2,428 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AnyCals｜小工具</title>
-  <meta name="description" content="AnyCals 小工具集合：房貸、BMI、熱量、心率區間、蛋白質。" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title id="pageTitle">AnyCals | 計算一切</title>
+  <meta id="pageDesc" name="description" content="AnyCals：計算機工具集合。快速搜尋、熱門、分類一頁搞定。" />
+
   <style>
-    :root{--bg:#f6f7fb;--fg:#111827;--muted:#6b7280;--card:#fff;--border:#e5e7eb;--shadow:0 6px 18px rgba(0,0,0,.06);--r:16px}
-    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
-    .wrap{max-width:980px;margin:0 auto}
-    header{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
-    .brand{font-weight:900;font-size:20px}
-    .sub{color:var(--muted);line-height:1.6}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+    :root{
+      --bg:#f6f7fb;--fg:#111827;--muted:#6b7280;--card:#fff;
+      --border:#e5e7eb;--shadow:0 6px 18px rgba(0,0,0,.06);
+      --r:16px;--r2:12px
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{
+      margin:0;padding:24px;
+      font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg);color:var(--fg)
+    }
     a{color:inherit;text-decoration:none}
-    .title{font-size:16px;font-weight:900;margin:0 0 6px}
-    .desc{color:var(--muted);font-size:13px;line-height:1.6;margin:0}
-    @media(max-width:860px){.grid{grid-template-columns:1fr}}
+    .wrap{max-width:1100px;margin:0 auto}
+    header{
+      display:flex;gap:12px;align-items:flex-end;justify-content:space-between;
+      flex-wrap:wrap;margin-bottom:14px
+    }
+    .brand{font-weight:900;font-size:20px}
+    .tag{color:var(--muted);line-height:1.6;margin-top:4px}
+    .topRight{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{
+      border:1px solid var(--border);background:var(--card);border-radius:999px;
+      padding:8px 12px;font-size:13px;box-shadow:var(--shadow);
+      text-decoration:none;color:var(--fg);font-weight:900
+    }
+    .btn{
+      border:1px solid var(--border);background:var(--card);border-radius:12px;
+      padding:8px 10px;cursor:pointer;font-size:14px;box-shadow:var(--shadow)
+    }
+
+    .grid{display:grid;grid-template-columns:1fr;gap:14px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+      padding:16px;box-shadow:var(--shadow)
+    }
+    h1{margin:0 0 6px;font-size:22px}
+    h2{margin:0 0 10px;font-size:16px}
+    .sub{color:var(--muted);line-height:1.6}
+    .note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:10px;overflow-wrap:anywhere}
+
+    /* Search */
+    .searchRow{display:flex;gap:10px;flex-wrap:wrap}
+    .searchRow input{
+      flex:1;min-width:220px;
+      padding:12px 14px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px
+    }
+    .primary{background:var(--fg);color:#fff;border-color:transparent}
+    .ghost{background:#f3f4f6}
+
+    /* Tool list */
+    .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .tool{
+      border:1px solid var(--border);border-radius:var(--r2);
+      padding:12px;background:#fff
+    }
+    .tool .t{font-weight:900}
+    .tool .d{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.5}
+    .metaRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{
+      border:1px solid var(--border);background:#f9fafb;border-radius:999px;
+      padding:6px 10px;font-size:12px;color:#374151
+    }
+
+    .sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .smallLink{font-size:12px;color:var(--muted);text-decoration:underline}
+
+    @media(max-width:980px){.tools{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.tools{grid-template-columns:1fr}}
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <header>
       <div>
-        <div class="brand">AnyCals</div>
-        <div class="sub">5 個小工具（離線 HTML）</div>
+        <div class="brand" id="brandText">AnyCals | 計算一切</div>
+        <div class="tag" id="tagText">搜尋 / 熱門 / 分類，一頁搞定</div>
       </div>
-      <div class="sub">版本：2026-02-23</div>
+      <div class="topRight">
+        <a class="pill" id="contactLink" href="#" rel="nofollow">聯繫我</a>
+        <a class="pill" id="feedbackLink" href="#" target="_blank" rel="nofollow">回饋表單</a>
+        <button class="btn" onclick="setLang('zh')">中文</button>
+        <button class="btn" onclick="setLang('en')">EN</button>
+      </div>
     </header>
 
     <div class="grid">
-      <a class="card" href="./mortgage.html">
-        <div class="title">房貸試算器</div>
-        <p class="desc">本息均攤 / 本金均攤、可選寬限期、攤還表、CSV。</p>
-      </a>
-      <a class="card" href="./bmi.html">
-        <div class="title">BMI &amp; 體重區間</div>
-        <p class="desc">BMI、理想體重區間、基礎建議。</p>
-      </a>
-      <a class="card" href="./calories.html">
-        <div class="title">TDEE 熱量估算</div>
-        <p class="desc">BMR/TDEE、維持/減脂/增肌熱量區間。</p>
-      </a>
-      <a class="card" href="./heart-rate.html">
-        <div class="title">心率區間（Zone 1–5）</div>
-        <p class="desc">%HRmax 與 Karvonen（HRR%）兩種算法。</p>
-      </a>
-      <a class="card" href="./protein.html">
-        <div class="title">蛋白質需求量</div>
-        <p class="desc">依目標與訓練頻率估算每日蛋白質。</p>
-      </a>
+
+      <!-- 1) 搜尋 -->
+      <section class="card">
+        <div class="sectionTitle">
+          <h1 id="s1Title">搜尋工具</h1>
+        </div>
+        <div class="sub" id="s1Sub">輸入：房貸 / BMI / TDEE / 心率 / 配速 / 蛋白質</div>
+
+        <div class="searchRow" style="margin-top:12px">
+          <input id="q" type="search" placeholder="例如：房貸 / 心率 / 配速" />
+          <button class="btn primary" onclick="runSearch()" id="searchBtn">搜尋</button>
+          <button class="btn ghost" onclick="clearSearch()" id="clearBtn">清除</button>
+        </div>
+      </section>
+
+      <!-- 2) 搜尋結果 -->
+      <section class="card" id="resultsCard" style="display:none">
+        <div class="sectionTitle">
+          <h2 id="s2Title">搜尋結果</h2>
+          <a class="smallLink" href="#" onclick="clearSearch();return false;" id="clearSmall">清除搜尋</a>
+        </div>
+        <div class="tools" id="results"></div>
+        <div class="note" id="noResult" style="display:none">找不到符合的工具。換個關鍵字或切英文試試。</div>
+      </section>
+
+      <!-- 3) 熱門 -->
+      <section class="card">
+        <div class="sectionTitle">
+          <h2 id="s3Title">熱門</h2>
+          <span class="chip" id="hotHint">先手動，之後可接流量排序</span>
+        </div>
+        <div class="tools" id="hot"></div>
+      </section>
+
+      <!-- 4) 分類 -->
+      <section class="card">
+        <div class="sectionTitle">
+          <h2 id="s4Title">分類</h2>
+        </div>
+        <div class="tools" id="cats"></div>
+
+        <div class="note" id="footerNote">
+          ※ 工具為估算與一般資訊，不構成醫療/法律/投資建議。
+        </div>
+      </section>
+
     </div>
   </div>
+
+  <script>
+    // ==== 聯絡信箱（固定）====
+    const contactEmail = "anycals.contact@gmail.com";
+
+    // ==== 回饋表單 ====
+    const feedbackFormUrl = ""; // e.g. "https://docs.google.com/forms/d/e/XXXX/viewform"
+
+    // ==== 工具資料：改成你的實際路徑 ====
+    const tools = [
+      {
+        id:"mortgage",
+        zh:{name:"房貸試算器", desc:"本息/本金、攤還表。", tags:["房貸","利率","finance"]},
+        en:{name:"Mortgage", desc:"Annuity / equal principal.", tags:["mortgage","loan","finance"]},
+        href:"./finance/mortgage/index.html",
+        category:"finance"
+      },
+      {
+        id:"bmi",
+        zh:{name:"BMI 計算器", desc:"BMI＋正常區間。", tags:["BMI","體重","health"]},
+        en:{name:"BMI", desc:"BMI + reference range.", tags:["bmi","weight","health"]},
+        href:"./health/bmi/index.html",
+        category:"health"
+      },
+      {
+        id:"tdee",
+        zh:{name:"TDEE 熱量", desc:"BMR/TDEE、目標熱量。", tags:["TDEE","熱量","health"]},
+        en:{name:"TDEE", desc:"BMR/TDEE + targets.", tags:["tdee","calories","health"]},
+        href:"./health/TDEE/index.html",
+        category:"health"
+      },
+      {
+        id:"hrz",
+        zh:{name:"心率區間 Zone 1–5", desc:"%HRmax / Karvonen。", tags:["心率","zone","health"]},
+        en:{name:"HR Zones", desc:"%HRmax / Karvonen.", tags:["heart","zones","health"]},
+        href:"./health/heart-rate/index.html",
+        category:"health"
+      },
+      {
+        id:"pace",
+        zh:{name:"跑步配速換算", desc:"配速↔速度↔完賽時間。", tags:["配速","跑步","health"]},
+        en:{name:"Pace Converter", desc:"Pace ↔ speed ↔ finish time.", tags:["pace","running","health"]},
+        href:"./health/pace/index.html",
+        category:"health"
+      },
+      {
+        id:"protein",
+        zh:{name:"蛋白質需求", desc:"依目標估算 g/day。", tags:["蛋白質","營養","health"]},
+        en:{name:"Protein", desc:"Estimate g/day by goal.", tags:["protein","nutrition","health"]},
+        href:"./health/protein/index.html",
+        category:"health"
+      }
+    ];
+
+    // ==== 熱門：你可改順序或增減 ====
+    const hotOrder = ["mortgage","bmi","tdee","hrz"];
+
+    // ==== 分類 ====
+    const categories = [
+      {
+        id:"finance",
+        zh:{name:"財務 Finance", desc:"房貸、投資、稅務等。"},
+        en:{name:"Finance", desc:"Mortgage, investing, tax, etc."},
+        href:"#cat=finance"
+      },
+      {
+        id:"health",
+        zh:{name:"健康 Health", desc:"熱量、心率、營養、跑步等。"},
+        en:{name:"Health", desc:"Calories, heart, nutrition, running."},
+        href:"#cat=health"
+      }
+    ];
+
+    // ==== i18n ====
+    let lang = "zh";
+    const i18n = {
+      zh:{
+        brand:"AnyCals | 計算一切",
+        tag:"搜尋 / 熱門 / 分類，一頁搞定",
+        title:"AnyCals | 計算一切",
+        desc:"AnyCals：計算機工具集合。快速搜尋、熱門、分類一頁搞定。",
+        contact:"聯繫我",
+        feedback:"回饋表單",
+        s1Title:"搜尋工具",
+        s1Sub:"輸入：房貸 / BMI / TDEE / 心率 / 配速 / 蛋白質",
+        placeholder:"例如：房貸 / 心率 / 配速",
+        search:"搜尋",
+        clear:"清除",
+        s2Title:"搜尋結果",
+        clearSmall:"清除搜尋",
+        s3Title:"熱門",
+        hotHint:"先手動，之後可接流量排序",
+        s4Title:"分類",
+        noResult:"找不到符合的工具。換個關鍵字或切英文試試。",
+        footer:"※ 工具為估算與一般資訊，不構成醫療/法律/投資建議。"
+      },
+      en:{
+        brand:"AnyCals | Calculate Anything",
+        tag:"Search / Popular / Categories",
+        title:"AnyCals | Calculate Anything",
+        desc:"AnyCals: a calculator hub with search, popular tools, and categories.",
+        contact:"Contact",
+        feedback:"Feedback",
+        s1Title:"Search tools",
+        s1Sub:"Try: mortgage / BMI / TDEE / zones / pace / protein",
+        placeholder:"e.g., mortgage / zones / pace",
+        search:"Search",
+        clear:"Clear",
+        s2Title:"Results",
+        clearSmall:"Clear search",
+        s3Title:"Popular",
+        hotHint:"Manual for now; later rank by traffic",
+        s4Title:"Categories",
+        noResult:"No matching tools. Try another keyword or switch language.",
+        footer:"* Tools are estimates and general info, not medical/legal/investment advice."
+      }
+    };
+
+    function mailto(subject, body){
+      return `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
+
+    function setLang(l){
+      lang = l;
+      document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
+
+      // SEO
+      document.getElementById("pageTitle").textContent = i18n[l].title;
+      document.getElementById("pageDesc").setAttribute("content", i18n[l].desc);
+
+      // Header
+      document.getElementById("brandText").textContent = i18n[l].brand;
+      document.getElementById("tagText").textContent = i18n[l].tag;
+
+      // Buttons
+      document.getElementById("contactLink").textContent = i18n[l].contact;
+      document.getElementById("feedbackLink").textContent = i18n[l].feedback;
+
+      // Sections
+      document.getElementById("s1Title").textContent = i18n[l].s1Title;
+      document.getElementById("s1Sub").textContent = i18n[l].s1Sub;
+      document.getElementById("q").placeholder = i18n[l].placeholder;
+      document.getElementById("searchBtn").textContent = i18n[l].search;
+      document.getElementById("clearBtn").textContent = i18n[l].clear;
+      document.getElementById("s2Title").textContent = i18n[l].s2Title;
+      document.getElementById("clearSmall").textContent = i18n[l].clearSmall;
+      document.getElementById("s3Title").textContent = i18n[l].s3Title;
+      document.getElementById("hotHint").textContent = i18n[l].hotHint;
+      document.getElementById("s4Title").textContent = i18n[l].s4Title;
+      document.getElementById("noResult").textContent = i18n[l].noResult;
+      document.getElementById("footerNote").textContent = i18n[l].footer;
+
+      updateHeaderLinks();
+      renderHot();
+      renderCategories();
+      if (document.getElementById("resultsCard").style.display !== "none") runSearch();
+    }
+
+    function updateHeaderLinks(){
+      const subj = (lang==="zh") ? "AnyCals 聯繫：首頁" : "AnyCals Contact: Homepage";
+      const body = (lang==="zh")
+        ? "想詢問：\n\n（1）頁面：首頁\n（2）我看到的內容：\n（3）問題/建議：\n\n"
+        : "I'd like to ask:\n\n(1) Page: Homepage\n(2) What I saw:\n(3) Question / suggestion:\n\n";
+      document.getElementById("contactLink").href = mailto(subj, body);
+
+      const fb = document.getElementById("feedbackLink");
+      if(!feedbackFormUrl){
+        fb.style.display = "none";
+      }else{
+        fb.style.display = "";
+        fb.href = feedbackFormUrl;
+      }
+    }
+
+    function toolCard(t){
+      const data = (lang==="zh") ? t.zh : t.en;
+      const tags = (data.tags || []).slice(0,3).map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join("");
+      return `
+        <a class="tool" href="${t.href}">
+          <div class="t">${escapeHtml(data.name)}</div>
+          <div class="d">${escapeHtml(data.desc)}</div>
+          <div class="metaRow">${tags}</div>
+        </a>
+      `;
+    }
+
+    function renderHot(){
+      const hot = document.getElementById("hot");
+      hot.innerHTML = "";
+      hotOrder
+        .map(id=>tools.find(x=>x.id===id))
+        .filter(Boolean)
+        .forEach(t=> hot.insertAdjacentHTML("beforeend", toolCard(t)));
+    }
+
+    function renderCategories(){
+      const box = document.getElementById("cats");
+      box.innerHTML = "";
+      categories.forEach(c=>{
+        const data = (lang==="zh") ? c.zh : c.en;
+        box.insertAdjacentHTML("beforeend", `
+          <a class="tool" href="${c.href}" onclick="openCategory('${c.id}'); return false;">
+            <div class="t">${escapeHtml(data.name)}</div>
+            <div class="d">${escapeHtml(data.desc)}</div>
+            <div class="metaRow"><span class="chip">${c.id}</span></div>
+          </a>
+        `);
+      });
+    }
+
+    function openCategory(catId){
+      document.getElementById("q").value = (lang==="zh")
+        ? (catId==="health" ? "健康" : "財務")
+        : catId;
+      runSearch(catId);
+      window.location.hash = `cat=${catId}`;
+    }
+
+    function runSearch(forceCategory=null){
+      const q = (document.getElementById("q").value || "").trim().toLowerCase();
+      const resultsCard = document.getElementById("resultsCard");
+      const results = document.getElementById("results");
+      const noResult = document.getElementById("noResult");
+
+      const cat = forceCategory || (parseHashCategory() || null);
+
+      const hit = tools.filter(t=>{
+        if(cat && t.category !== cat) return false;
+        if(!q && cat) return true;
+        if(!q) return false;
+        const data = (lang==="zh") ? t.zh : t.en;
+        const hay = [data.name, data.desc, ...(data.tags||[])].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+
+      results.innerHTML = "";
+      if(q || cat){
+        resultsCard.style.display = "";
+        if(hit.length){
+          noResult.style.display = "none";
+          hit.forEach(t=> results.insertAdjacentHTML("beforeend", toolCard(t)));
+        }else{
+          noResult.style.display = "";
+        }
+      }else{
+        resultsCard.style.display = "none";
+      }
+    }
+
+    function clearSearch(){
+      document.getElementById("q").value = "";
+      document.getElementById("resultsCard").style.display = "none";
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("noResult").style.display = "none";
+      if(window.location.hash) window.location.hash = "";
+    }
+
+    function parseHashCategory(){
+      const h = (window.location.hash || "").replace("#","").trim();
+      if(!h) return null;
+      const m = h.match(/^cat=(.+)$/);
+      if(!m) return null;
+      return m[1];
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      document.getElementById("q").addEventListener("keydown", (e)=>{
+        if(e.key==="Enter") runSearch();
+      });
+
+      updateHeaderLinks();
+      renderHot();
+      renderCategories();
+
+      const cat = parseHashCategory();
+      if(cat){ runSearch(cat); }
+    });
+  </script>
 </body>
 </html>
