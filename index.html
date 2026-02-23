@@ -3,110 +3,361 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AnyCals｜只要能算，我都能算</title>
-  <meta name="description" content="AnyCals 是萬用計算工具站：生活、健康、理財、專業、數學。只要世界上能算的東西，這裡都想辦法算給你。" />
+
+  <!-- SEO (default: zh) -->
+  <title id="pageTitle">AnyCals｜計算一切｜種類最全的計算機</title>
+  <meta name="description" id="pageDesc" content="AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。只要能算，這裡都算給你。">
+
+  <!-- Social preview (kept simple; JS cannot reliably change what crawlers see) -->
+  <meta property="og:title" content="AnyCals｜計算一切｜種類最全的計算機">
+  <meta property="og:description" content="AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。">
+  <meta property="og:type" content="website">
+
   <style>
-    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f6f7fb;color:#111827}
-    .wrap{max-width:1100px;margin:0 auto}
-    header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+    :root{
+      --bg:#f6f7fb;
+      --fg:#111827;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --shadow:0 6px 18px rgba(0,0,0,.06);
+      --radius:16px;
+    }
+    body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:1120px;margin:0 auto}
+    header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:10px}
+    .left{display:flex;flex-direction:column;gap:6px}
     .brand{font-weight:900;letter-spacing:.4px;font-size:22px}
-    .tag{color:#6b7280;line-height:1.6}
-    .search{flex:1;min-width:240px;display:flex;justify-content:flex-end}
-    .search input{width:min(520px,100%);padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;font-size:15px}
-    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .card h3{margin:0 0 6px;font-size:16px}
-    .card p{margin:0;color:#6b7280;font-size:13px;line-height:1.6}
-    .card a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:800;color:#111827}
+    .tag{color:var(--muted);line-height:1.6}
+
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .lang{display:flex;gap:8px}
+    .btn{
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-size:14px;
+      box-shadow:var(--shadow);
+    }
+    .btn.primary{
+      background:var(--fg);
+      color:#fff;
+      border-color:transparent;
+    }
+    .btn:active{transform:translateY(1px)}
+    .pill{
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      box-shadow:var(--shadow);
+      text-decoration:none;
+      color:var(--fg);
+      font-weight:800;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+
     .section{margin-top:14px}
-    .section h2{margin:0 0 8px;font-size:16px}
+    .section h2{margin:0 0 10px;font-size:16px}
+    .search input{
+      width:100%;
+      max-width:720px;
+      padding:12px 14px;
+      border:1px solid #d6d9e0;
+      border-radius:14px;
+      font-size:15px;
+      background:var(--card);
+      box-shadow:var(--shadow);
+      outline:none;
+    }
+    .hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}
+
     .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .tool{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px}
-    .tool .t{font-weight:800}
-    .tool .d{color:#6b7280;font-size:13px;line-height:1.6;margin-top:6px}
-    .tool a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:800;color:#111827}
-    .muted{color:#6b7280;font-size:12px;line-height:1.6;margin-top:12px}
-    @media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}.tools{grid-template-columns:1fr}}
+    .tool{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+    .tool .t{font-weight:900}
+    .tool .d{color:var(--muted);font-size:13px;line-height:1.6;margin-top:6px}
+    .tool a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:900;color:var(--fg)}
+    .tool .meta{margin-top:10px;color:var(--muted);font-size:12px}
+
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+    .card h3{margin:0 0 6px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+    .card a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:900;color:var(--fg)}
+
+    .muted{color:var(--muted);font-size:12px;line-height:1.6;margin-top:12px}
+    .hidden{display:none}
+
+    @media(max-width:980px){
+      .tools{grid-template-columns:1fr}
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .right{justify-content:flex-start}
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <header>
-      <div>
-        <div class="brand">AnyCals| Calculates Anything</div>
-        <div class="tag">種類最全的計算機</div>
+      <div class="left">
+        <div class="brand" data-i18n="brand">AnyCals | 計算一切</div>
+        <div class="tag" data-i18n="tagline">種類最全的計算機</div>
       </div>
-      <div class="search">
-        <input id="q" placeholder="搜尋工具（例：房貸、BMI、分帳、矩陣…）" />
+
+      <div class="right">
+        <!-- Contact shortcut -->
+        <!-- TODO: Replace contactEmail below (in JS) to your work email -->
+        <a class="pill" id="contactLink" href="#" rel="nofollow" data-i18n="contact">聯繫我</a>
+        <a class="pill" id="feedbackLink" href="https://docs.google.com/forms/d/e/1FAIpQLScGW6os45zCHs1uE4UuId-ilYQwGDPNd5z0G8iE4DZ7Vp4OVw/viewform?usp=header" target="_blank" rel="nofollow" data-i18n="feedback">回饋</a>
+
+        <div class="lang">
+          <button class="btn" onclick="setLang('zh')">中文</button>
+          <button class="btn" onclick="setLang('en')">EN</button>
+        </div>
       </div>
     </header>
 
-    <!-- 大分類入口 -->
-    <div class="grid" id="cats">
-      <div class="card">
-        <h3>生活 Life</h3>
-        <p>分帳、時間、單位換算…每天會用到的先上。</p>
-        <a href="/life/">進入 →</a>
+    <!-- Search -->
+    <div class="section">
+      <div class="search">
+        <input id="q" data-i18n-ph="searchPh" placeholder="搜尋工具（例：房貸、BMI、矩陣…）" />
       </div>
-      <div class="card">
-        <h3>健康 Health</h3>
-        <p>BMI、熱量、心率、訓練指標…可量化就能算。</p>
-        <a href="/health/">進入 →</a>
-      </div>
-      <div class="card">
-        <h3>理財 Finance</h3>
-        <p>房貸、複利、投資、稅後…把錢算清楚更安心。</p>
-        <a href="/finance/">進入 →</a>
-      </div>
-      <div class="card">
-        <h3>專業 Pro</h3>
-        <p>工程、統計、科學應用。做得少，但要做得準。</p>
-        <a href="/pro/">進入 →</a>
-      </div>
-      <div class="card">
-        <h3>數學 Math</h3>
-        <p>線代、微積分、數值方法…偏門但很硬核。</p>
-        <a href="/math/">進入 →</a>
-      </div>
+      <div class="hint" data-i18n="searchHint">提示：輸入關鍵字後會顯示「搜尋結果」。未輸入時則顯示「熱門工具」。</div>
     </div>
 
-    <!-- 熱門工具（先放你目前有的） -->
+    <!-- Search results (only when searching) -->
+    <div class="section hidden" id="searchSec">
+      <h2 data-i18n="searchResult">搜尋結果</h2>
+      <div class="tools" id="searchResults"></div>
+      <div class="muted" id="noResult" data-i18n="noResult" style="display:none">找不到符合的工具。你可以改用更短的關鍵字，或直接瀏覽分類。</div>
+    </div>
+
+    <!-- Hot (only when NOT searching) -->
+    <div class="section" id="hotSec">
+      <h2 data-i18n="hot">熱門工具</h2>
+      <div class="tools" id="hotTools"></div>
+      <div class="muted" data-i18n="hotNote">熱門依「預設排序」顯示；之後可改成依流量自動排序。</div>
+    </div>
+
+    <!-- Categories (always visible) -->
     <div class="section">
-      <h2>熱門工具</h2>
-      <div class="tools" id="tools">
-        <div class="tool" data-key="房貸 mortgage 利率 寬限期 finance">
-          <div class="t">房貸試算器</div>
-          <div class="d">月付金、總利息、攤還表預覽，支援寬限期。</div>
-          <a href="/finance/mortgage/">開始試算 →</a>
+      <h2 data-i18n="cats">分類</h2>
+      <div class="grid">
+        <div class="card">
+          <h3 data-i18n="life">生活 Life</h3>
+          <p data-i18n="lifeDesc">分帳、時間、單位換算…每天會用到的先上。</p>
+          <a href="/life/" data-i18n="enter">進入 →</a>
         </div>
-        <div class="tool" data-key="bmi 熱量 bmr tdee 健康 health">
-          <div class="t">BMI＆每日熱量</div>
-          <div class="d">BMI、BMR、TDEE 一次算清楚（估算模型）。</div>
-          <a href="/health/bmi/">開始試算 →</a>
+        <div class="card">
+          <h3 data-i18n="health">健康 Health</h3>
+          <p data-i18n="healthDesc">BMI、熱量、心率、訓練指標…可量化就能算。</p>
+          <a href="/health/" data-i18n="enter">進入 →</a>
         </div>
-        <div class="tool" data-key="分帳 split bill 生活 life">
-          <div class="t">分帳計算器（即將推出）</div>
-          <div class="d">聚餐旅遊分帳一鍵搞定，支援服務費與折扣。</div>
-          <a href="/life/split-bill/" onclick="alert('功能即將推出');return false;">敬請期待</a>
+        <div class="card">
+          <h3 data-i18n="finance">理財 Finance</h3>
+          <p data-i18n="financeDesc">房貸、複利、投資、稅後…把錢算清楚更安心。</p>
+          <a href="/finance/" data-i18n="enter">進入 →</a>
+        </div>
+        <div class="card">
+          <h3 data-i18n="pro">專業 Pro</h3>
+          <p data-i18n="proDesc">工程、統計、科學應用。做得少，但要做得準。</p>
+          <a href="/pro/" data-i18n="enter">進入 →</a>
+        </div>
+        <div class="card">
+          <h3 data-i18n="math">數學 Math</h3>
+          <p data-i18n="mathDesc">線代、微積分、數值方法…偏門但很硬核。</p>
+          <a href="/math/" data-i18n="enter">進入 →</a>
         </div>
       </div>
 
-      <div class="muted">
+      <div class="muted" data-i18n="disclaimer">
         ※ 試算結果僅供參考。健康與金融相關工具不構成醫療/投資建議；實務條件以專業人員與機構為準。
       </div>
     </div>
   </div>
 
   <script>
-    const q = document.getElementById('q');
-    const tools = Array.from(document.querySelectorAll('#tools .tool'));
-    q.addEventListener('input', () => {
-      const s = q.value.trim().toLowerCase();
-      tools.forEach(el => {
-        const k = (el.getAttribute('data-key') || '').toLowerCase();
-        el.style.display = (!s || k.includes(s)) ? '' : 'none';
+    /**
+     * TODO (IMPORTANT):
+     * Change this to your work email (e.g., hello@anycals.com or anycals.work@gmail.com)
+     */
+    const contactEmail = "anycals.contact@gmail.com";
+
+    // Build mailto with subject (language-dependent later)
+    function updateContactLink() {
+      const subj = (lang === 'zh') ? "AnyCals 聯繫" : "AnyCals Contact";
+      const body = (lang === 'zh')
+        ? "想詢問：\n\n（1）工具名稱：\n（2）想算的內容：\n（3）期望輸出：\n\n"
+        : "I'd like to ask about:\n\n(1) Tool:\n(2) What to calculate:\n(3) Expected output:\n\n";
+      const mailto = `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+      const a = document.getElementById('contactLink');
+      a.href = mailto;
+    }
+
+    // Tool catalog (extend over time)
+    const tools = [
+      {
+        id:"mortgage",
+        t:{zh:"房貸試算器", en:"Mortgage Calculator"},
+        d:{zh:"月付金、總利息、攤還表，支援寬限期。", en:"Monthly payment, interest, amortization; supports grace period."},
+        url:"/finance/mortgage/",
+        keys:"房貸 mortgage 利率 寬限期 finance loan"
+      },
+      {
+        id:"bmi",
+        t:{zh:"BMI＆每日熱量", en:"BMI & Daily Calories"},
+        d:{zh:"BMI、BMR、TDEE 一次算清楚（估算模型）。", en:"BMI, BMR, and TDEE in one place (estimation model)."},
+        url:"/health/bmi/",
+        keys:"bmi 熱量 calories bmr tdee 健康 health"
+      }
+      // Add more tools here...
+    ];
+
+    // "Hot" is a fixed list (manual order now; can be replaced by analytics later)
+    const hotToolIds = ["mortgage", "bmi"];
+
+    const hotEl = document.getElementById('hotTools');
+    const resEl = document.getElementById('searchResults');
+    const qEl = document.getElementById('q');
+    const hotSec = document.getElementById('hotSec');
+    const searchSec = document.getElementById('searchSec');
+    const noResult = document.getElementById('noResult');
+
+    let lang = "zh";
+
+    function renderToolList(list, el){
+      el.innerHTML = "";
+      list.forEach(x=>{
+        const div = document.createElement('div');
+        div.className = "tool";
+        div.innerHTML = `
+          <div class="t">${x.t[lang]}</div>
+          <div class="d">${x.d[lang]}</div>
+          <a href="${x.url}">${lang === "zh" ? "開啟 →" : "Open →"}</a>
+        `;
+        el.appendChild(div);
       });
-    });
+    }
+
+    function renderHot(){
+      const map = new Map(tools.map(t=>[t.id,t]));
+      const list = hotToolIds.map(id=>map.get(id)).filter(Boolean);
+      renderToolList(list, hotEl);
+    }
+
+    function onSearch(){
+      const s = qEl.value.trim().toLowerCase();
+      if(!s){
+        searchSec.classList.add('hidden');
+        hotSec.classList.remove('hidden');
+        noResult.style.display = "none";
+        return;
+      }
+      const list = tools.filter(x => (x.keys || "").toLowerCase().includes(s));
+      renderToolList(list, resEl);
+      searchSec.classList.remove('hidden');
+      hotSec.classList.add('hidden');
+      noResult.style.display = list.length ? "none" : "block";
+    }
+
+    qEl.addEventListener('input', onSearch);
+
+    // i18n dictionary
+    const dict = {
+      zh:{
+        brand:"AnyCals | 計算一切",
+        tagline:"種類最全的計算機",
+        contact:"聯繫我",
+        searchPh:"搜尋工具（例：房貸、BMI、矩陣…）",
+        searchHint:"提示：輸入關鍵字後會顯示「搜尋結果」。未輸入時則顯示「熱門工具」。",
+        searchResult:"搜尋結果",
+        noResult:"找不到符合的工具。你可以改用更短的關鍵字，或直接瀏覽分類。",
+        hot:"熱門工具",
+        hotNote:"熱門依「預設排序」顯示；之後可改成依流量自動排序。",
+        cats:"分類",
+        life:"生活 Life",
+        lifeDesc:"分帳、時間、單位換算…每天會用到的先上。",
+        health:"健康 Health",
+        healthDesc:"BMI、熱量、心率、訓練指標…可量化就能算。",
+        finance:"理財 Finance",
+        financeDesc:"房貸、複利、投資、稅後…把錢算清楚更安心。",
+        pro:"專業 Pro",
+        proDesc:"工程、統計、科學應用。做得少，但要做得準。",
+        math:"數學 Math",
+        mathDesc:"線代、微積分、數值方法…偏門但很硬核。",
+        enter:"進入 →",
+        disclaimer:"※ 試算結果僅供參考。健康與金融相關工具不構成醫療/投資建議；實務條件以專業人員與機構為準。",
+        seoTitle:"AnyCals｜計算一切｜種類最全的計算機",
+        seoDesc:"AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。只要能算，這裡都算給你。",
+        contact: "聯繫我",
+        feedback: "回饋",
+      },
+      en:{
+        brand:"AnyCals | Calculate Anything",
+        tagline:"The most comprehensive calculator collection",
+        contact:"Contact",
+        searchPh:"Search tools (e.g., mortgage, BMI, matrix…)",
+        searchHint:"Tip: typing shows Search Results; clearing shows Popular Tools.",
+        searchResult:"Search Results",
+        noResult:"No matching tools. Try shorter keywords or browse categories.",
+        hot:"Popular Tools",
+        hotNote:"Popular tools are manually ordered for now; can be auto-ranked by traffic later.",
+        cats:"Categories",
+        life:"Life",
+        lifeDesc:"Bill split, time, unit conversion…",
+        health:"Health",
+        healthDesc:"BMI, calories, heart rate, training metrics…",
+        finance:"Finance",
+        financeDesc:"Mortgage, compound interest, investing, net salary…",
+        pro:"Pro",
+        proDesc:"Engineering, statistics, applied science — fewer but precise.",
+        math:"Math",
+        mathDesc:"Linear algebra, calculus, numerical methods…",
+        enter:"Open →",
+        disclaimer:"* Results are for reference only. No medical or investment advice.",
+        seoTitle:"AnyCals | Calculate Anything | The Most Comprehensive Calculators",
+        seoDesc:"AnyCals offers the most comprehensive collection of online calculators across life, health, finance, professional tools, and math.",
+        contact: "Contact",
+        feedback: "Feedback"
+      }
+    };
+
+    function setLang(l){
+      lang = l;
+
+      // Update lang attribute (helps a bit for accessibility)
+      document.documentElement.lang = (l === 'zh') ? 'zh-Hant-TW' : 'en';
+
+      // Update visible texts
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const key = el.dataset.i18n;
+        if(dict[l][key] !== undefined) el.textContent = dict[l][key];
+      });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+        const key = el.dataset.i18nPh;
+        if(dict[l][key] !== undefined) el.placeholder = dict[l][key];
+      });
+
+      // Update SEO (for user experience; crawlers usually read initial HTML)
+      document.getElementById('pageTitle').textContent = dict[l].seoTitle;
+      document.getElementById('pageDesc').setAttribute('content', dict[l].seoDesc);
+
+      // Update contact link (subject/body language)
+      updateContactLink();
+
+      // Re-render lists in current language
+      renderHot();
+      if(!searchSec.classList.contains('hidden')) onSearch();
+    }
+
+    // Initial render
+    renderHot();
+    updateContactLink();
   </script>
 </body>
 </html>
