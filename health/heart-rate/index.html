@@ -33,6 +33,13 @@
     th{font-size:12px;color:var(--muted);font-weight:800}
     .note{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.6}
     .badge{display:inline-block;font-size:12px;padding:2px 8px;border:1px solid var(--border);border-radius:999px;color:#374151;background:#f9fafb}
+    
+    /* overflow safety (prevents text/table from spilling out) */
+    *,*::before,*::after{box-sizing:border-box;}
+    .sub,.note,.muted,.metric,td,th,label{overflow-wrap:anywhere;word-break:break-word;}
+    input,select,button{min-width:0;}
+    table{table-layout:fixed;}
+
     @media(max-width:860px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
   </style>
 </head>
@@ -41,12 +48,12 @@
   <div class="wrap">
     <header>
       <div>
-        <div class="brand"><a href="/" style="text-decoration:none;color:inherit">AnyCals</a></div>
+        <div class="brand"><a href="./index.html" style="text-decoration:none;color:inherit">AnyCals</a></div>
         <div class="sub" data-i18n="tag">心率區間（Zone 1–5）估算：一般法 &amp; Karvonen 法</div>
       </div>
       <div class="topRight">
-        <a class="pill" href="/" data-i18n="back">回首頁</a>
-        <a class="pill" href="mailto:anycals.contact@gmail.com?subject=AnyCals%20%E8%81%AF%E7%B9%AB%EF%BC%9A%E5%BF%83%E7%8E%87%E5%8D%80%E9%96%93&body=%E6%83%B3%E5%95%8F%E5%BF%83%E7%8E%87%E5%8D%80%E9%96%93%E5%B7%A5%E5%85%B7%EF%BC%9A%0A%0A%E8%B3%87%E6%96%99%EF%BC%9A%0A%E7%96%91%E5%95%8F%EF%BC%9A%0A" rel="nofollow" data-i18n="contact">聯繫我</a>
+        <a class="pill" href="./index.html" data-i18n="back">回首頁</a>
+        <a class="pill" id="contactLink" href="#" rel="nofollow" data-i18n="contact">聯繫我</a>
         <button class="btn" onclick="setLang('zh')">中文</button>
         <button class="btn" onclick="setLang('en')">EN</button>
       </div>
@@ -122,6 +129,7 @@
   </div>
 
   <script>
+    const contactEmail = "anycals.contact@gmail.com";
     let lang = "zh";
 
     const dict = {
@@ -158,7 +166,9 @@
           "有氧耐力／節奏",
           "乳酸閾值／高強度",
           "衝刺／最大輸出"
-        ]
+        ],
+        mailSubj: "AnyCals 聯繫：心率區間",
+        mailBody: "想詢問：\n\n（1）工具：心率區間計算器\n（2）資料：\n（3）問題：\n\n"
       },
       en: {
         seoTitle: "Heart Rate Zones Calculator | Zone 1–5 | AnyCals",
@@ -193,9 +203,18 @@
           "Aerobic endurance / steady",
           "Threshold / hard",
           "Sprint / max effort"
-        ]
+        ],
+        mailSubj: "AnyCals Contact: Heart Rate Zones",
+        mailBody: "I'd like to ask about:\n\n(1) Tool: Heart Rate Zones Calculator\n(2) Inputs:\n(3) Question:\n\n"
       }
     };
+
+    function updateContactLink(){
+      const subj = dict[lang].mailSubj;
+      const body = dict[lang].mailBody;
+      document.getElementById("contactLink").href =
+        `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    }
 
     function setLang(l){
       lang = l;
@@ -206,7 +225,7 @@
         const key = el.dataset.i18n;
         if(dict[l][key] !== undefined) el.textContent = dict[l][key];
       });
-      // refresh computed headline/rows if already computed
+      updateContactLink();
       if(window.__lastComputed) calc();
     }
 
@@ -228,8 +247,6 @@
       const rows = document.getElementById("rows");
       const headline = document.getElementById("headline");
 
-      // Zone definitions (common, simplified)
-      // % ranges: Z1 50-60, Z2 60-70, Z3 70-80, Z4 80-90, Z5 90-100
       const bands = [
         [0.50,0.60],
         [0.60,0.70],
@@ -283,6 +300,8 @@
       document.getElementById("rows").innerHTML = `<tr><td colspan="3" style="color:#6b7280;padding:14px 8px">—</td></tr>`;
       window.__lastComputed = false;
     }
+
+    updateContactLink();
   </script>
 </body>
 </html>
