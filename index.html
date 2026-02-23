@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AnyCals｜生活 × 理財 × 工作的萬用計算工具</title>
+  <meta name="description" content="AnyCals 提供房貸試算、BMI 熱量計算、分帳計算等實用工具，一站搞定常見計算需求。" />
+  <style>
+    body{
+      margin:0; padding:24px;
+      font-family: system-ui, -apple-system, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background:#f6f7fb; color:#111827;
+    }
+    .wrap{max-width:980px; margin:0 auto;}
+    header{
+      display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;
+    }
+    .logo{font-weight:800; letter-spacing:.5px}
+    .tag{font-size:13px; color:#6b7280}
+    .grid{
+      display:grid; grid-template-columns: repeat(3, 1fr); gap:14px;
+    }
+    .card{
+      background:#fff; border:1px solid #e5e7eb; border-radius:16px;
+      padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.06);
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .card h3{margin:0; font-size:16px}
+    .card p{margin:0; color:#6b7280; font-size:14px; line-height:1.6}
+    .card a{
+      margin-top:auto; text-decoration:none; font-weight:700;
+      color:#111827;
+    }
+    footer{margin-top:18px; color:#6b7280; font-size:12px}
+    @media (max-width: 860px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="logo">AnyCals</div>
+        <div class="tag">生活 × 理財 × 工作的萬用計算工具</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h3>房貸試算器</h3>
+        <p>試算每月還款金額、總利息，支援寬限期與不同還款方式。</p>
+        <a href="/mortgage/">開始試算 →</a>
+      </div>
+
+      <div class="card">
+        <h3>BMI / 熱量（即將推出）</h3>
+        <p>快速估算 BMI、每日熱量需求，幫你抓健康目標。</p>
+        <a href="#" onclick="alert('功能即將推出'); return false;">敬請期待</a>
+      </div>
+
+      <div class="card">
+        <h3>分帳計算（即將推出）</h3>
+        <p>聚餐、旅遊分帳一鍵搞定，支援服務費與折扣。</p>
+        <a href="#" onclick="alert('功能即將推出'); return false;">敬請期待</a>
+      </div>
+    </section>
+
+    <footer>
+      © <span id="y"></span> AnyCals．試算結果僅供參考，實際條件以金融機構說明為準。
+    </footer>
+  </div>
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
