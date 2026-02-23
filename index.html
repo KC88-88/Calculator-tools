@@ -8,7 +8,6 @@
   <title id="pageTitle">AnyCals｜計算一切｜種類最全的計算機</title>
   <meta name="description" id="pageDesc" content="AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。只要能算，這裡都算給你。">
 
-  <!-- Social preview (kept simple; JS cannot reliably change what crawlers see) -->
   <meta property="og:title" content="AnyCals｜計算一切｜種類最全的計算機">
   <meta property="og:description" content="AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。">
   <meta property="og:type" content="website">
@@ -56,12 +55,30 @@
       box-shadow:var(--shadow);
       text-decoration:none;
       color:var(--fg);
-      font-weight:800;
+      font-weight:900;
       display:inline-flex;
       gap:8px;
       align-items:center;
     }
 
+    .searchWrap{position:relative;max-width:720px}
+    .clearBtn{
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      width:34px;height:34px;
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      font-size:18px;
+      line-height:0;
+      display:none; /* 有內容才顯示 */
+    }
+    .clearBtn:active{transform:translateY(calc(-50% + 1px))}
+    
     .section{margin-top:14px}
     .section h2{margin:0 0 10px;font-size:16px}
     .search input{
@@ -75,23 +92,20 @@
       box-shadow:var(--shadow);
       outline:none;
     }
-    .hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.6}
 
     .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     .tool{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
     .tool .t{font-weight:900}
     .tool .d{color:var(--muted);font-size:13px;line-height:1.6;margin-top:6px}
     .tool a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:900;color:var(--fg)}
-    .tool .meta{margin-top:10px;color:var(--muted);font-size:12px}
+    .muted{color:var(--muted);font-size:12px;line-height:1.6;margin-top:12px}
+    .hidden{display:none}
 
     .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
     .card h3{margin:0 0 6px;font-size:16px}
     .card p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
     .card a{display:inline-block;margin-top:10px;text-decoration:none;font-weight:900;color:var(--fg)}
-
-    .muted{color:var(--muted);font-size:12px;line-height:1.6;margin-top:12px}
-    .hidden{display:none}
 
     @media(max-width:980px){
       .tools{grid-template-columns:1fr}
@@ -110,10 +124,10 @@
       </div>
 
       <div class="right">
-        <!-- Contact shortcut -->
-        <!-- TODO: Replace contactEmail below (in JS) to your work email -->
+        <!-- Contact -->
         <a class="pill" id="contactLink" href="#" rel="nofollow" data-i18n="contact">聯繫我</a>
-        <a class="pill" id="feedbackLink" href="https://docs.google.com/forms/d/e/1FAIpQLScGW6os45zCHs1uE4UuId-ilYQwGDPNd5z0G8iE4DZ7Vp4OVw/viewform?usp=header" target="_blank" rel="nofollow" data-i18n="feedback">回饋</a>
+        <!-- Feedback (Google Form) -->
+        <a class="pill" id="feedbackLink" href="FORM_URL" target="_blank" rel="nofollow" data-i18n="feedback">回饋</a>
 
         <div class="lang">
           <button class="btn" onclick="setLang('zh')">中文</button>
@@ -124,27 +138,28 @@
 
     <!-- Search -->
     <div class="section">
-      <div class="search">
-        <input id="q" data-i18n-ph="searchPh" placeholder="搜尋工具（例：房貸、BMI、矩陣…）" />
+      <div class="searchWrap">
+        <div class="search">
+          <input id="q" data-i18n-ph="searchPh" placeholder="搜尋工具（例：房貸、BMI、心率、蛋白、配速…）" />
+          <button id="clearBtn" class="clearBtn" type="button" aria-label="Clear search">×</button>
+        </div>
       </div>
-      <div class="hint" data-i18n="searchHint">提示：輸入關鍵字後會顯示「搜尋結果」。未輸入時則顯示「熱門工具」。</div>
     </div>
 
-    <!-- Search results (only when searching) -->
+    <!-- Search results -->
     <div class="section hidden" id="searchSec">
       <h2 data-i18n="searchResult">搜尋結果</h2>
       <div class="tools" id="searchResults"></div>
       <div class="muted" id="noResult" data-i18n="noResult" style="display:none">找不到符合的工具。你可以改用更短的關鍵字，或直接瀏覽分類。</div>
     </div>
 
-    <!-- Hot (only when NOT searching) -->
+    <!-- Hot -->
     <div class="section" id="hotSec">
       <h2 data-i18n="hot">熱門工具</h2>
       <div class="tools" id="hotTools"></div>
-      <div class="muted" data-i18n="hotNote">熱門依「預設排序」顯示；之後可改成依流量自動排序。</div>
     </div>
 
-    <!-- Categories (always visible) -->
+    <!-- Categories -->
     <div class="section">
       <h2 data-i18n="cats">分類</h2>
       <div class="grid">
@@ -182,31 +197,32 @@
   </div>
 
   <script>
-    /**
-     * TODO (IMPORTANT):
-     * Change this to your work email (e.g., hello@anycals.com or anycals.work@gmail.com)
-     */
+    // ====== CONFIG ======
     const contactEmail = "anycals.contact@gmail.com";
 
-    // Build mailto with subject (language-dependent later)
+    // Replace FORM_URL in HTML with your actual Google Form link.
+    // Example: https://forms.gle/AbCdEf123
+    // ====================
+
+    let lang = "zh";
+
     function updateContactLink() {
       const subj = (lang === 'zh') ? "AnyCals 聯繫" : "AnyCals Contact";
       const body = (lang === 'zh')
         ? "想詢問：\n\n（1）工具名稱：\n（2）想算的內容：\n（3）期望輸出：\n\n"
         : "I'd like to ask about:\n\n(1) Tool:\n(2) What to calculate:\n(3) Expected output:\n\n";
       const mailto = `mailto:${encodeURIComponent(contactEmail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
-      const a = document.getElementById('contactLink');
-      a.href = mailto;
+      document.getElementById('contactLink').href = mailto;
     }
 
-    // Tool catalog (extend over time)
+    // Tool catalog
     const tools = [
       {
         id:"mortgage",
         t:{zh:"房貸試算器", en:"Mortgage Calculator"},
-        d:{zh:"月付金、總利息、攤還表，支援寬限期。", en:"Monthly payment, interest, amortization; supports grace period."},
+        d:{zh:"月付金、總利息、攤還表，支援寬限期。", en:"Monthly payment, total interest, amortization; supports grace period."},
         url:"/finance/mortgage/",
-        keys:"房貸 mortgage 利率 寬限期 finance loan"
+        keys:"房貸 mortgage 利率 寬限期 finance loan amortization"
       },
       {
         id:"bmi",
@@ -214,21 +230,41 @@
         d:{zh:"BMI、BMR、TDEE 一次算清楚（估算模型）。", en:"BMI, BMR, and TDEE in one place (estimation model)."},
         url:"/health/bmi/",
         keys:"bmi 熱量 calories bmr tdee 健康 health"
+      },
+      {
+        id:"hrzones",
+        t:{zh:"心率區間計算器", en:"Heart Rate Zones"},
+        d:{zh:"最大心率與 Zone 1–5（可選靜息心率）。", en:"Estimate max HR and Zone 1–5 (optional resting HR)."},
+        url:"/health/heart-rate/",
+        keys:"心率 zone hr zones 最大心率 karvonen zone2 健康 health"
+      },
+      {
+        id:"protein",
+        t:{zh:"蛋白質需求量", en:"Protein Intake Calculator"},
+        d:{zh:"依體重與目標估算每日蛋白質克數。", en:"Estimate daily protein grams based on weight and goal."},
+        url:"/health/protein/",
+        keys:"蛋白質 protein 增肌 減脂 維持 grams 健康 health"
+      },
+      {
+        id:"pace",
+        t:{zh:"跑步配速換算器", en:"Running Pace Calculator"},
+        d:{zh:"距離、時間、配速互算，並提供平均速度。", en:"Convert distance, time, and pace; includes average speed."},
+        url:"/health/pace/",
+        keys:"跑步 配速 pace 5k 10k 半馬 全馬 kmh min/km 健康 health"
       }
-      // Add more tools here...
     ];
 
-    // "Hot" is a fixed list (manual order now; can be replaced by analytics later)
-    const hotToolIds = ["mortgage", "bmi"];
+    // Manual hot ranking (update later by traffic)
+    const hotToolIds = ["mortgage", "bmi", "hrzones", "protein", "pace"];
 
+    // DOM refs
     const hotEl = document.getElementById('hotTools');
     const resEl = document.getElementById('searchResults');
     const qEl = document.getElementById('q');
+    const clearBtn = document.getElementById('clearBtn');
     const hotSec = document.getElementById('hotSec');
     const searchSec = document.getElementById('searchSec');
     const noResult = document.getElementById('noResult');
-
-    let lang = "zh";
 
     function renderToolList(list, el){
       el.innerHTML = "";
@@ -273,12 +309,11 @@
         brand:"AnyCals | 計算一切",
         tagline:"種類最全的計算機",
         contact:"聯繫我",
-        searchPh:"搜尋工具（例：房貸、BMI、矩陣…）",
-        searchHint:"提示：輸入關鍵字後會顯示「搜尋結果」。未輸入時則顯示「熱門工具」。",
+        feedback:"回饋",
+        searchPh:"搜尋工具（例：房貸、BMI、心率、蛋白、配速…）",
         searchResult:"搜尋結果",
         noResult:"找不到符合的工具。你可以改用更短的關鍵字，或直接瀏覽分類。",
         hot:"熱門工具",
-        hotNote:"熱門依「預設排序」顯示；之後可改成依流量自動排序。",
         cats:"分類",
         life:"生活 Life",
         lifeDesc:"分帳、時間、單位換算…每天會用到的先上。",
@@ -293,20 +328,17 @@
         enter:"進入 →",
         disclaimer:"※ 試算結果僅供參考。健康與金融相關工具不構成醫療/投資建議；實務條件以專業人員與機構為準。",
         seoTitle:"AnyCals｜計算一切｜種類最全的計算機",
-        seoDesc:"AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。只要能算，這裡都算給你。",
-        contact: "聯繫我",
-        feedback: "回饋",
+        seoDesc:"AnyCals 提供最完整的線上計算工具，涵蓋生活、健康、理財、專業與數學。只要能算，這裡都算給你。"
       },
       en:{
         brand:"AnyCals | Calculate Anything",
         tagline:"The most comprehensive calculator collection",
         contact:"Contact",
-        searchPh:"Search tools (e.g., mortgage, BMI, matrix…)",
-        searchHint:"Tip: typing shows Search Results; clearing shows Popular Tools.",
+        feedback:"Feedback",
+        searchPh:"Search tools (e.g., mortgage, BMI, HR zones, protein, pace…)",
         searchResult:"Search Results",
         noResult:"No matching tools. Try shorter keywords or browse categories.",
         hot:"Popular Tools",
-        hotNote:"Popular tools are manually ordered for now; can be auto-ranked by traffic later.",
         cats:"Categories",
         life:"Life",
         lifeDesc:"Bill split, time, unit conversion…",
@@ -321,19 +353,14 @@
         enter:"Open →",
         disclaimer:"* Results are for reference only. No medical or investment advice.",
         seoTitle:"AnyCals | Calculate Anything | The Most Comprehensive Calculators",
-        seoDesc:"AnyCals offers the most comprehensive collection of online calculators across life, health, finance, professional tools, and math.",
-        contact: "Contact",
-        feedback: "Feedback"
+        seoDesc:"AnyCals offers the most comprehensive collection of online calculators across life, health, finance, professional tools, and math."
       }
     };
 
     function setLang(l){
       lang = l;
+      document.documentElement.lang = (l === "zh") ? "zh-Hant-TW" : "en";
 
-      // Update lang attribute (helps a bit for accessibility)
-      document.documentElement.lang = (l === 'zh') ? 'zh-Hant-TW' : 'en';
-
-      // Update visible texts
       document.querySelectorAll('[data-i18n]').forEach(el=>{
         const key = el.dataset.i18n;
         if(dict[l][key] !== undefined) el.textContent = dict[l][key];
@@ -343,21 +370,19 @@
         if(dict[l][key] !== undefined) el.placeholder = dict[l][key];
       });
 
-      // Update SEO (for user experience; crawlers usually read initial HTML)
       document.getElementById('pageTitle').textContent = dict[l].seoTitle;
       document.getElementById('pageDesc').setAttribute('content', dict[l].seoDesc);
 
-      // Update contact link (subject/body language)
       updateContactLink();
-
-      // Re-render lists in current language
       renderHot();
+
+      // keep search results language if currently searching
       if(!searchSec.classList.contains('hidden')) onSearch();
     }
 
-    // Initial render
-    renderHot();
+    // init
     updateContactLink();
+    renderHot();
   </script>
 </body>
 </html>
