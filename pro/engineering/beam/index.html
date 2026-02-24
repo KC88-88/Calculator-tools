@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title id="pageTitle">樑撓度/應力試算器｜簡支樑集中載重/均佈載重｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals 工程計算：簡支樑（Simply Supported Beam）集中載重/均佈載重，輸出最大彎矩、最大彎曲應力、最大撓度；支援矩形/圓形/中空圓/自訂截面 I，含單位換算與 CSV。" />
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
+      --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
+      --radius:16px; --soft:#f3f4f6; --danger:#ef4444;
+      --ok:#16a34a; --warn:#f59e0b;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{
+      margin:0;padding:24px;
+      font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg);color:var(--fg)
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto}
+    header{
+      display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;
+      margin-bottom:12px
+    }
+    .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
+    .sub{color:var(--muted);line-height:1.6;margin-top:6px}
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+
+    .pill{
+      display:inline-block;background:var(--card);border:1px solid var(--border);
+      border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
+      box-shadow:var(--shadow)
+    }
+    .btn{
+      border:1px solid var(--border);background:var(--card);
+      border-radius:12px;padding:8px 10px;cursor:pointer;
+      box-shadow:var(--shadow);font-size:14px;
+      display:inline-flex;align-items:center;gap:8px;
+      height:40px;
+    }
+    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
+    .btn.ghost{background:#fff}
+    .btn.small{height:36px;padding:6px 10px;font-size:13px;border-radius:10px}
+    .btn.danger{border-color:rgba(239,68,68,.5);color:var(--danger)}
+    .btn:active{transform:translateY(1px)}
+
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:16px;box-shadow:var(--shadow)
+    }
+    h2{margin:0 0 10px;font-size:16px}
+    label{font-size:13px;color:#374151}
+    input,select{
+      width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;
+      font-size:15px;background:#fff;outline:none;height:40px;
+      max-width:100%;overflow:hidden;text-overflow:ellipsis;
+    }
+    input:focus, select:focus{border-color:#cfd4dd; box-shadow:0 0 0 4px rgba(17,24,39,.06)}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+
+    .metric{
+      background:var(--soft);border:1px solid var(--border);border-radius:12px;
+      padding:12px;margin-bottom:10px
+    }
+    .metric .k{font-size:12px;color:var(--muted)}
+    .metric .v{font-size:20px;font-weight:900;margin-top:6px}
+    .metric .s{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+    .badgeRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .badge{
+      border:1px solid var(--border);background:#fff;border-radius:999px;
+      padding:6px 10px;font-size:12px;color:#374151
+    }
+    .badge.ok{border-color:rgba(22,163,74,.35); color:#166534; background:rgba(22,163,74,.06)}
+    .badge.warn{border-color:rgba(245,158,11,.35); color:#92400e; background:rgba(245,158,11,.06)}
+    .badge.bad{border-color:rgba(239,68,68,.35); color:#7f1d1d; background:rgba(239,68,68,.06)}
+
+    /* AnyCals-ish Advanced block */
+    .adv{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:linear-gradient(180deg,#ffffff 0%, #fbfbfd 100%);
+      box-shadow:0 10px 24px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+    .advHead{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 12px;
+      cursor:pointer; user-select:none;
+    }
+    .advLeft{display:flex;gap:10px;align-items:center}
+    .advIcon{
+      width:36px;height:36px;border-radius:12px;
+      background:var(--soft); border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+    .advTitle{font-weight:900}
+    .advDesc{color:var(--muted);font-size:12px;line-height:1.5;margin-top:2px}
+    .chev{transition:transform .18s ease}
+    .adv.open .chev{transform:rotate(180deg)}
+    .advBody{display:none;padding:12px;border-top:1px solid var(--border)}
+    .adv.open .advBody{display:block}
+
+    .divider{height:1px;background:var(--border);margin:10px 0}
+    .muted{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+
+    .miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .hintBox{
+      border:1px solid var(--border);border-radius:12px;background:#fff;
+      padding:12px
+    }
+    .hintBox .t{font-weight:900;font-size:13px}
+    .hintBox .d{color:var(--muted);font-size:12px;line-height:1.6;margin-top:6px}
+
+    @media(max-width:980px){
+      .grid{grid-template-columns:1fr}
+      .right{justify-content:flex-start}
+      .form{grid-template-columns:1fr}
+      .miniGrid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="title" data-i18n="h1">樑撓度 / 應力試算器</h1>
+        <div class="sub" data-i18n="sub">簡支樑（Simply Supported Beam）集中載重（跨中）/ 均佈載重（全跨），輸出最大彎矩、彎曲應力、最大撓度。支援常見截面與單位換算。</div>
+      </div>
+      <div class="right">
+        <a class="pill" href="https://anycals.com/index.html" data-i18n="back">回首頁</a>
+        <a class="pill" id="contactLink" href="#" data-i18n="contact">聯繫我</a>
+        <button class="btn" type="button" onclick="setLang('zh')">中文</button>
+        <button class="btn" type="button" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Inputs -->
+      <div class="card">
+        <h2 data-i18n="inputTitle">輸入</h2>
+
+        <div class="form">
+          <div class="full">
+            <label data-i18n="caseLbl">載重案例</label>
+            <select id="loadCase" onchange="syncLoadCaseUI()">
+              <option value="mid_point" data-i18n-opt="caseA">集中載重（跨中點載重 P）</option>
+              <option value="udl_full" data-i18n-opt="caseB">均佈載重（全跨均佈 w）</option>
+            </select>
+          </div>
+
+          <div>
+            <label data-i18n="spanLbl">跨距 L</label>
+            <input id="L" type="number" min="0" step="any" placeholder="例如 1.2">
+          </div>
+          <div>
+            <label data-i18n="spanUnitLbl">L 單位</label>
+            <select id="Lunit">
+              <option value="m">m</option>
+              <option value="mm">mm</option>
+            </select>
+          </div>
+
+          <div id="Pwrap">
+            <label data-i18n="Plbl">載重 P</label>
+            <input id="P" type="number" min="0" step="any" placeholder="例如 800">
+          </div>
+          <div id="PunitWrap">
+            <label data-i18n="PunitLbl">P 單位</label>
+            <select id="Punit">
+              <option value="N">N</option>
+              <option value="kN">kN</option>
+            </select>
+          </div>
+
+          <div id="wwrap" style="display:none">
+            <label data-i18n="wlbl">均佈載重 w</label>
+            <input id="w" type="number" min="0" step="any" placeholder="例如 2.5">
+          </div>
+          <div id="wunitWrap" style="display:none">
+            <label data-i18n="wunitLbl">w 單位</label>
+            <select id="wunit">
+              <option value="N_per_m">N/m</option>
+              <option value="kN_per_m">kN/m</option>
+              <option value="N_per_mm">N/mm</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label data-i18n="secLbl">截面型式（用來算 I 與 c）</label>
+            <select id="secType" onchange="syncSectionUI()">
+              <option value="rect" data-i18n-opt="secRect">矩形（b×h）</option>
+              <option value="solid_round" data-i18n-opt="secSolid">實心圓（d）</option>
+              <option value="hollow_round" data-i18n-opt="secHollow">中空圓（D / d）</option>
+              <option value="custom_I" data-i18n-opt="secCustom">自訂（I、c）</option>
+            </select>
+          </div>
+
+          <!-- section dims -->
+          <div id="bWrap">
+            <label data-i18n="bLbl">寬 b</label>
+            <input id="b" type="number" min="0" step="any" placeholder="例如 50">
+          </div>
+          <div id="hWrap">
+            <label data-i18n="hLbl">高 h</label>
+            <input id="h" type="number" min="0" step="any" placeholder="例如 100">
+          </div>
+
+          <div id="dWrap" style="display:none">
+            <label data-i18n="dLbl">直徑 d</label>
+            <input id="d" type="number" min="0" step="any" placeholder="例如 60">
+          </div>
+          <div id="unitDimWrap">
+            <label data-i18n="dimUnitLbl">尺寸單位</label>
+            <select id="dimUnit">
+              <option value="mm">mm</option>
+              <option value="m">m</option>
+            </select>
+          </div>
+
+          <div id="DWrap" style="display:none">
+            <label data-i18n="DLbl">外徑 D</label>
+            <input id="D" type="number" min="0" step="any" placeholder="例如 80">
+          </div>
+          <div id="diWrap" style="display:none">
+            <label data-i18n="diLbl">內徑 d</label>
+            <input id="di" type="number" min="0" step="any" placeholder="例如 60">
+          </div>
+
+          <div id="IWrap" style="display:none">
+            <label data-i18n="ILbl">截面二次矩 I</label>
+            <input id="I" type="number" min="0" step="any" placeholder="例如 8.33e-6">
+          </div>
+          <div id="cWrap" style="display:none">
+            <label data-i18n="cLbl">中性軸到外纖維距離 c</label>
+            <input id="c" type="number" min="0" step="any" placeholder="例如 0.05">
+          </div>
+          <div id="IUnitWrap" class="full" style="display:none">
+            <label data-i18n="IUnitLbl">I / c 單位</label>
+            <select id="Iunit">
+              <option value="m">SI（I: m^4，c: m）</option>
+              <option value="mm">工程（I: mm^4，c: mm）</option>
+            </select>
+            <div class="note" data-i18n="IHint">提示：若用 mm^4 / mm，計算會自動轉成 SI。</div>
+          </div>
+
+          <!-- Advanced -->
+          <div class="full">
+            <div class="adv" id="adv">
+              <div class="advHead" onclick="toggleAdv()">
+                <div class="advLeft">
+                  <div class="advIcon">⚙</div>
+                  <div>
+                    <div class="advTitle" data-i18n="advTitle">進階設定</div>
+                    <div class="advDesc" data-i18n="advHint">材料彈性模數 E、允許應力（或降伏強度）與安全係數，用來做簡易裕度判斷。</div>
+                  </div>
+                </div>
+                <div class="chev">▾</div>
+              </div>
+
+              <div class="advBody">
+                <div class="miniGrid">
+                  <div>
+                    <label data-i18n="ELbl">彈性模數 E</label>
+                    <input id="E" type="number" min="0" step="any" placeholder="例如 200">
+                    <div class="note" data-i18n="EHint">常用：鋼 200 GPa、鋁 69 GPa。</div>
+                  </div>
+                  <div>
+                    <label data-i18n="EunitLbl">E 單位</label>
+                    <select id="Eunit">
+                      <option value="GPa">GPa</option>
+                      <option value="MPa">MPa</option>
+                      <option value="Pa">Pa</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label data-i18n="allowLbl">允許應力 / 降伏（選填）</label>
+                    <input id="allow" type="number" min="0" step="any" placeholder="例如 250">
+                    <div class="note" data-i18n="allowHint">不填也能算；填了就會顯示安全係數與判斷。</div>
+                  </div>
+                  <div>
+                    <label data-i18n="allowUnitLbl">單位</label>
+                    <select id="allowUnit">
+                      <option value="MPa">MPa</option>
+                      <option value="Pa">Pa</option>
+                    </select>
+                  </div>
+
+                  <div class="full">
+                    <label data-i18n="sfLbl">安全係數 SF（選填）</label>
+                    <input id="SF" type="number" min="0" step="any" placeholder="例如 1.5">
+                    <div class="note" data-i18n="sfHint">若有填允許應力，則比較：σ_max 是否 ≤ allow / SF。</div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="hintBox">
+                  <div class="t" data-i18n="assumeT">假設與限制</div>
+                  <div class="d" data-i18n="assumeD">
+                    本工具使用線彈性樑理論（Euler–Bernoulli），忽略剪切變形、支承柔度、殘餘應力、局部屈曲與塑性。
+                    若是短粗樑（L/h 小）、材料非線性或接觸/焊接/孔洞等效應明顯，建議改用更完整方法或 FEA。
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="full actions">
+            <button class="btn primary" type="button" onclick="calc()" data-i18n="calcBtn">計算</button>
+            <button class="btn" type="button" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+            <button class="btn" type="button" onclick="downloadCSV()" data-i18n="csvBtn">下載 CSV</button>
+          </div>
+
+          <div class="note" data-i18n="methodNote">
+            ※ 集中載重（跨中）：Mmax=PL/4、δmax=PL^3/(48EI)；均佈載重：Mmax=wL^2/8、δmax=5wL^4/(384EI)。彎曲應力 σ=M·c/I。
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="card">
+        <h2 data-i18n="resultTitle">結果</h2>
+
+        <div class="metric">
+          <div class="k" data-i18n="m1">最大彎矩 Mmax</div>
+          <div class="v" id="Mmax">—</div>
+          <div class="s" id="MmaxSub">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="m2">最大彎曲應力 σmax</div>
+          <div class="v" id="Smax">—</div>
+          <div class="s" id="SmaxSub">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="m3">最大撓度 δmax（跨中）</div>
+          <div class="v" id="Dmax">—</div>
+          <div class="s" id="DmaxSub">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="k" data-i18n="m4">截面參數（由輸入推得）</div>
+          <div class="s" id="secOut">—</div>
+        </div>
+
+        <div class="badgeRow" id="judgementRow" style="display:none">
+          <span class="badge" id="badgeSF">SF —</span>
+          <span class="badge" id="badgeCheck">—</span>
+        </div>
+
+        <div class="muted" data-i18n="disc">
+          ※ 試算僅供參考。實務還需考慮載重組合、支承條件、剪切變形、局部應力集中與製造缺陷等。
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------- i18n ----------
+  let lang = "zh";
+  const dict = {
+    zh:{
+      seoTitle:"樑撓度/應力試算器｜簡支樑集中載重/均佈載重｜AnyCals",
+      seoDesc:"AnyCals 工程計算：簡支樑（Simply Supported Beam）集中載重/均佈載重，輸出最大彎矩、最大彎曲應力、最大撓度；支援矩形/圓形/中空圓/自訂截面 I，含單位換算與 CSV。",
+      h1:"樑撓度 / 應力試算器",
+      sub:"簡支樑（Simply Supported Beam）集中載重（跨中）/ 均佈載重（全跨），輸出最大彎矩、彎曲應力、最大撓度。支援常見截面與單位換算。",
+      back:"回首頁",
+      contact:"聯繫我",
+      inputTitle:"輸入",
+      caseLbl:"載重案例",
+      caseA:"集中載重（跨中點載重 P）",
+      caseB:"均佈載重（全跨均佈 w）",
+      spanLbl:"跨距 L",
+      spanUnitLbl:"L 單位",
+      Plbl:"載重 P",
+      PunitLbl:"P 單位",
+      wlbl:"均佈載重 w",
+      wunitLbl:"w 單位",
+      secLbl:"截面型式（用來算 I 與 c）",
+      secRect:"矩形（b×h）",
+      secSolid:"實心圓（d）",
+      secHollow:"中空圓（D / d）",
+      secCustom:"自訂（I、c）",
+      bLbl:"寬 b",
+      hLbl:"高 h",
+      dLbl:"直徑 d",
+      DLbl:"外徑 D",
+      diLbl:"內徑 d",
+      dimUnitLbl:"尺寸單位",
+      ILbl:"截面二次矩 I",
+      cLbl:"中性軸到外纖維距離 c",
+      IUnitLbl:"I / c 單位",
+      IHint:"提示：若用 mm^4 / mm，計算會自動轉成 SI。",
+      advTitle:"進階設定",
+      advHint:"材料彈性模數 E、允許應力（或降伏強度）與安全係數，用來做簡易裕度判斷。",
+      ELbl:"彈性模數 E",
+      EunitLbl:"E 單位",
+      EHint:"常用：鋼 200 GPa、鋁 69 GPa。",
+      allowLbl:"允許應力 / 降伏（選填）",
+      allowUnitLbl:"單位",
+      allowHint:"不填也能算；填了就會顯示安全係數與判斷。",
+      sfLbl:"安全係數 SF（選填）",
+      sfHint:"若有填允許應力，則比較：σ_max 是否 ≤ allow / SF。",
+      assumeT:"假設與限制",
+      assumeD:"本工具使用線彈性樑理論（Euler–Bernoulli），忽略剪切變形、支承柔度、殘餘應力、局部屈曲與塑性。若是短粗樑（L/h 小）、材料非線性或接觸/焊接/孔洞等效應明顯，建議改用更完整方法或 FEA。",
+      calcBtn:"計算",
+      resetBtn:"清除",
+      csvBtn:"下載 CSV",
+      methodNote:"※ 集中載重（跨中）：Mmax=PL/4、δmax=PL^3/(48EI)；均佈載重：Mmax=wL^2/8、δmax=5wL^4/(384EI)。彎曲應力 σ=M·c/I。",
+      resultTitle:"結果",
+      m1:"最大彎矩 Mmax",
+      m2:"最大彎曲應力 σmax",
+      m3:"最大撓度 δmax（跨中）",
+      m4:"截面參數（由輸入推得）",
+      disc:"※ 試算僅供參考。實務還需考慮載重組合、支承條件、剪切變形、局部應力集中與製造缺陷等。",
+      errBase:"請輸入有效的跨距 L、載重（P 或 w）、截面尺寸（或 I/c）。",
+      errE:"要算撓度需要 E > 0。",
+      ok:"OK",
+      warn:"注意",
+      bad:"超過",
+      checkTpl:"檢核：σ_max {cmp} allow/SF",
+      cmpOK:"≤",
+      cmpBad:">",
+      sfOutTpl:"等效安全係數 ≈ {sf}",
+      outM:"Mmax：{Nm} N·m（{kNm} kN·m）",
+      outS:"σmax：{MPa} MPa",
+      outD:"δmax：{mm} mm（{m} m）",
+      secOutTpl:"I = {I} m^4；c = {c} m；Z = I/c = {Z} m^3"
+    },
+    en:{
+      seoTitle:"Beam Deflection & Stress | Simply Supported (Point/UDL) | AnyCals",
+      seoDesc:"AnyCals engineering calculator: simply supported beam with mid-point load or full-span UDL. Outputs max moment, bending stress, and deflection. Supports common sections and CSV export.",
+      h1:"Beam Deflection / Stress Calculator",
+      sub:"Simply Supported Beam with mid-point point load or full-span UDL. Outputs max bending moment, bending stress, and max mid-span deflection. Supports common sections and unit conversion.",
+      back:"Home",
+      contact:"Contact",
+      inputTitle:"Inputs",
+      caseLbl:"Load case",
+      caseA:"Point load at mid-span (P)",
+      caseB:"Uniformly distributed load over full span (w)",
+      spanLbl:"Span L",
+      spanUnitLbl:"L unit",
+      Plbl:"Load P",
+      PunitLbl:"P unit",
+      wlbl:"UDL w",
+      wunitLbl:"w unit",
+      secLbl:"Section type (to compute I and c)",
+      secRect:"Rectangle (b×h)",
+      secSolid:"Solid round (d)",
+      secHollow:"Hollow round (D / d)",
+      secCustom:"Custom (I, c)",
+      bLbl:"Width b",
+      hLbl:"Height h",
+      dLbl:"Diameter d",
+      DLbl:"Outer D",
+      diLbl:"Inner d",
+      dimUnitLbl:"Dim unit",
+      ILbl:"Second moment I",
+      cLbl:"Extreme fiber distance c",
+      IUnitLbl:"I / c unit",
+      IHint:"Tip: mm^4/mm inputs will be converted to SI automatically.",
+      advTitle:"Advanced settings",
+      advHint:"Young’s modulus E, allowable (or yield) stress, and safety factor for a quick margin check.",
+      ELbl:"Young’s modulus E",
+      EunitLbl:"E unit",
+      EHint:"Typical: steel 200 GPa, aluminum 69 GPa.",
+      allowLbl:"Allowable / yield (optional)",
+      allowUnitLbl:"Unit",
+      allowHint:"Optional. If provided, we show a simple pass/fail and implied SF.",
+      sfLbl:"Safety factor SF (optional)",
+      sfHint:"If allowable is provided, check: σ_max ≤ allow / SF.",
+      assumeT:"Assumptions & limits",
+      assumeD:"Euler–Bernoulli linear beam theory. Neglects shear deformation, support compliance, residual stress, local buckling, and plasticity. For short/deep beams or nonlinear/contact/weld/holes effects, consider a more complete method or FEA.",
+      calcBtn:"Calculate",
+      resetBtn:"Reset",
+      csvBtn:"Download CSV",
+      methodNote:"* Point load (mid): Mmax=PL/4, δmax=PL^3/(48EI). Full-span UDL: Mmax=wL^2/8, δmax=5wL^4/(384EI). Bending stress σ=M·c/I.",
+      resultTitle:"Results",
+      m1:"Max moment Mmax",
+      m2:"Max bending stress σmax",
+      m3:"Max deflection δmax (mid-span)",
+      m4:"Section properties (derived)",
+      disc:"* For reference only. Real designs should consider load combinations, boundary conditions, shear deformation, stress concentrations, and manufacturing defects.",
+      errBase:"Please enter valid L, load (P or w), and section dimensions (or I/c).",
+      errE:"E must be > 0 to compute deflection.",
+      ok:"OK",
+      warn:"Caution",
+      bad:"Exceed",
+      checkTpl:"Check: σ_max {cmp} allow/SF",
+      cmpOK:"≤",
+      cmpBad:">",
+      sfOutTpl:"Implied safety factor ≈ {sf}",
+      outM:"Mmax: {Nm} N·m ({kNm} kN·m)",
+      outS:"σmax: {MPa} MPa",
+      outD:"δmax: {mm} mm ({m} m)",
+      secOutTpl:"I = {I} m^4; c = {c} m; Z = I/c = {Z} m^3"
+    }
+  };
+
+  function setLang(l){
+    lang = l;
+    document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
+    document.getElementById("pageTitle").textContent = dict[l].seoTitle;
+    document.getElementById("pageDesc").setAttribute("content", dict[l].seoDesc);
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    document.querySelectorAll("[data-i18n-opt]").forEach(el=>{
+      const k = el.dataset.i18nOpt;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    syncLoadCaseUI();
+    syncSectionUI();
+    // keep results, just refresh labels
+    if(lastComputed) paint(lastComputed);
+  }
+
+  // ---------- UI helpers ----------
+  function toggleAdv(){
+    document.getElementById("adv").classList.toggle("open");
+  }
+
+  function syncLoadCaseUI(){
+    const c = document.getElementById("loadCase").value;
+    const isP = (c === "mid_point");
+    document.getElementById("Pwrap").style.display = isP ? "" : "none";
+    document.getElementById("PunitWrap").style.display = isP ? "" : "none";
+    document.getElementById("wwrap").style.display = isP ? "none" : "";
+    document.getElementById("wunitWrap").style.display = isP ? "none" : "";
+  }
+
+  function syncSectionUI(){
+    const t = document.getElementById("secType").value;
+
+    const showRect = (t === "rect");
+    const showSolid = (t === "solid_round");
+    const showHollow = (t === "hollow_round");
+    const showCustom = (t === "custom_I");
+
+    document.getElementById("bWrap").style.display = showRect ? "" : "none";
+    document.getElementById("hWrap").style.display = showRect ? "" : "none";
+
+    document.getElementById("dWrap").style.display = showSolid ? "" : "none";
+
+    document.getElementById("DWrap").style.display = showHollow ? "" : "none";
+    document.getElementById("diWrap").style.display = showHollow ? "" : "none";
+
+    document.getElementById("unitDimWrap").style.display = (showRect || showSolid || showHollow) ? "" : "none";
+
+    document.getElementById("IWrap").style.display = showCustom ? "" : "none";
+    document.getElementById("cWrap").style.display = showCustom ? "" : "none";
+    document.getElementById("IUnitWrap").style.display = showCustom ? "" : "none";
+  }
+
+  // ---------- numeric helpers ----------
+  function toNum(v, def=NaN){
+    const n = Number(v);
+    return (isFinite(n) ? n : def);
+  }
+  function roundTo(n, dp){
+    if(!isFinite(n)) return NaN;
+    const p = Math.pow(10, dp);
+    return Math.round(n*p)/p;
+  }
+  function fmt(n, dp=3){
+    if(!isFinite(n)) return "—";
+    return roundTo(n, dp).toLocaleString(undefined, {maximumFractionDigits:dp});
+  }
+  function fmtSci(n, sig=4){
+    if(!isFinite(n)) return "—";
+    // show scientific only if very small/large
+    const a = Math.abs(n);
+    if(a !== 0 && (a < 1e-6 || a > 1e6)) return n.toExponential(sig-1);
+    return n.toLocaleString(undefined, {maximumSignificantDigits:sig});
+  }
+
+  // ---------- unit conversion ----------
+  function L_to_m(L, unit){
+    if(!(L>0)) return NaN;
+    return (unit === "mm") ? (L/1000) : L;
+  }
+  function P_to_N(P, unit){
+    if(!(P>=0)) return NaN;
+    return (unit === "kN") ? (P*1000) : P;
+  }
+  function w_to_N_per_m(w, unit){
+    if(!(w>=0)) return NaN;
+    if(unit === "kN_per_m") return w*1000;
+    if(unit === "N_per_mm") return w*1000; // N/mm -> N/m
+    return w; // N/m
+  }
+  function E_to_Pa(E, unit){
+    if(!(E>0)) return NaN;
+    if(unit === "GPa") return E*1e9;
+    if(unit === "MPa") return E*1e6;
+    return E; // Pa
+  }
+  function stress_to_Pa(s, unit){
+    if(!(s>0)) return NaN;
+    if(unit === "MPa") return s*1e6;
+    return s; // Pa
+  }
+
+  function dim_to_m(x, unit){
+    if(!(x>0)) return NaN;
+    return (unit === "mm") ? x/1000 : x;
+  }
+  function I_to_m4(I, unit){ // unit: "mm" or "m"
+    if(!(I>0)) return NaN;
+    return (unit === "mm") ? (I * 1e-12) : I;
+  }
+  function c_to_m(c, unit){
+    if(!(c>0)) return NaN;
+    return (unit === "mm") ? (c/1000) : c;
+  }
+
+  // ---------- section properties (SI) ----------
+  function sectionProps(){
+    const t = document.getElementById("secType").value;
+
+    if(t === "rect"){
+      const b = toNum(document.getElementById("b").value, NaN);
+      const h = toNum(document.getElementById("h").value, NaN);
+      const u = document.getElementById("dimUnit").value;
+      const bm = dim_to_m(b, u), hm = dim_to_m(h, u);
+      if(!(bm>0) || !(hm>0)) return null;
+      const I = (bm*Math.pow(hm,3))/12;
+      const c = hm/2;
+      return {I, c, desc:`rect b=${bm} m, h=${hm} m`};
+    }
+
+    if(t === "solid_round"){
+      const d = toNum(document.getElementById("d").value, NaN);
+      const u = document.getElementById("dimUnit").value;
+      const dm = dim_to_m(d, u);
+      if(!(dm>0)) return null;
+      const I = Math.PI*Math.pow(dm,4)/64;
+      const c = dm/2;
+      return {I, c, desc:`solid d=${dm} m`};
+    }
+
+    if(t === "hollow_round"){
+      const D = toNum(document.getElementById("D").value, NaN);
+      const di = toNum(document.getElementById("di").value, NaN);
+      const u = document.getElementById("dimUnit").value;
+      const Dm = dim_to_m(D, u), dim = dim_to_m(di, u);
+      if(!(Dm>0) || !(dim>0) || !(Dm>dim)) return null;
+      const I = Math.PI*(Math.pow(Dm,4)-Math.pow(dim,4))/64;
+      const c = Dm/2;
+      return {I, c, desc:`hollow D=${Dm} m, d=${dim} m`};
+    }
+
+    // custom
+    const Iin = toNum(document.getElementById("I").value, NaN);
+    const cin = toNum(document.getElementById("c").value, NaN);
+    const u = document.getElementById("Iunit").value; // "m" or "mm"
+    const I = I_to_m4(Iin, u);
+    const c = c_to_m(cin, u);
+    if(!(I>0) || !(c>0)) return null;
+    return {I, c, desc:`custom`};
+  }
+
+  // ---------- core formulas ----------
+  // Simply supported:
+  // Mid point load P: Mmax = P*L/4 ; delta = P*L^3/(48 E I)
+  // Full-span UDL w:  Mmax = w*L^2/8 ; delta = 5 w L^4/(384 E I)
+  let lastComputed = null;
+
+  function calc(){
+    const L = toNum(document.getElementById("L").value, NaN);
+    const Lm = L_to_m(L, document.getElementById("Lunit").value);
+
+    const loadCase = document.getElementById("loadCase").value;
+    let Pn = null, wn = null;
+
+    if(loadCase === "mid_point"){
+      const P = toNum(document.getElementById("P").value, NaN);
+      Pn = P_to_N(P, document.getElementById("Punit").value);
+      if(!(Pn>=0)) Pn = NaN;
+    }else{
+      const w = toNum(document.getElementById("w").value, NaN);
+      wn = w_to_N_per_m(w, document.getElementById("wunit").value);
+      if(!(wn>=0)) wn = NaN;
+    }
+
+    const sec = sectionProps();
+    if(!(Lm>0) || !sec || !(sec.I>0) || !(sec.c>0) || (loadCase==="mid_point" ? !(Pn>0) : !(wn>0))){
+      alert(dict[lang].errBase);
+      return;
+    }
+
+    const Eraw = toNum(document.getElementById("E").value, NaN);
+    const EPa = E_to_Pa(Eraw, document.getElementById("Eunit").value);
+
+    // moment
+    let M = NaN;
+    if(loadCase === "mid_point"){
+      M = Pn*Lm/4;
+    }else{
+      M = wn*Lm*Lm/8;
+    }
+
+    // stress
+    const sigma = M * sec.c / sec.I; // Pa
+
+    // deflection (needs E)
+    let delta = NaN;
+    if(EPa>0){
+      if(loadCase === "mid_point"){
+        delta = Pn*Math.pow(Lm,3)/(48*EPa*sec.I);
+      }else{
+        delta = 5*wn*Math.pow(Lm,4)/(384*EPa*sec.I);
+      }
+    }else{
+      // allow calculating moment/stress without E, but show deflection as —
+      delta = NaN;
+    }
+
+    const out = {Lm, loadCase, Pn, wn, I:sec.I, c:sec.c, Z:sec.I/sec.c, M, sigma, delta, EPa};
+    lastComputed = out;
+    paint(out);
+  }
+
+  function paint(o){
+    // Moment
+    const kNm = o.M/1000;
+    document.getElementById("Mmax").textContent = `${fmt(kNm, 3)} kN·m`;
+    document.getElementById("MmaxSub").textContent = dict[lang].outM
+      .replace("{Nm}", fmt(o.M, 3))
+      .replace("{kNm}", fmt(kNm, 3));
+
+    // Stress
+    const MPa = o.sigma/1e6;
+    document.getElementById("Smax").textContent = `${fmt(MPa, 2)} MPa`;
+    document.getElementById("SmaxSub").textContent = dict[lang].outS.replace("{MPa}", fmt(MPa, 3));
+
+    // Deflection
+    if(isFinite(o.delta)){
+      const mm = o.delta*1000;
+      document.getElementById("Dmax").textContent = `${fmt(mm, 3)} mm`;
+      document.getElementById("DmaxSub").textContent = dict[lang].outD
+        .replace("{mm}", fmt(mm, 6))
+        .replace("{m}", fmt(o.delta, 9));
+    }else{
+      document.getElementById("Dmax").textContent = "—";
+      document.getElementById("DmaxSub").textContent = (toNum(document.getElementById("E").value, NaN) > 0)
+        ? "—"
+        : (lang==="zh" ? "未提供 E，撓度不計算。" : "E not provided; deflection not computed.");
+    }
+
+    // Section
+    document.getElementById("secOut").textContent = dict[lang].secOutTpl
+      .replace("{I}", fmtSci(o.I, 4))
+      .replace("{c}", fmtSci(o.c, 4))
+      .replace("{Z}", fmtSci(o.Z, 4));
+
+    // Judgement (optional)
+    const allowRaw = toNum(document.getElementById("allow").value, NaN);
+    const allowPa = stress_to_Pa(allowRaw, document.getElementById("allowUnit").value);
+    const SFraw = toNum(document.getElementById("SF").value, NaN);
+    const SF = (isFinite(SFraw) && SFraw>0) ? SFraw : 1;
+
+    const row = document.getElementById("judgementRow");
+    if(isFinite(allowPa) && allowPa>0){
+      row.style.display = "";
+      const implied = allowPa / o.sigma;
+      document.getElementById("badgeSF").textContent = dict[lang].sfOutTpl.replace("{sf}", fmt(implied, 2));
+
+      const limit = allowPa / SF;
+      const ok = (o.sigma <= limit);
+
+      const cmp = ok ? dict[lang].cmpOK : dict[lang].cmpBad;
+      const checkText = dict[lang].checkTpl.replace("{cmp}", cmp);
+
+      const badgeCheck = document.getElementById("badgeCheck");
+      badgeCheck.textContent = checkText;
+
+      badgeCheck.classList.remove("ok","warn","bad");
+      document.getElementById("badgeSF").classList.remove("ok","warn","bad");
+
+      if(ok){
+        badgeCheck.classList.add("ok");
+        document.getElementById("badgeSF").classList.add("ok");
+      }else{
+        badgeCheck.classList.add("bad");
+        document.getElementById("badgeSF").classList.add("bad");
+      }
+    }else{
+      row.style.display = "none";
+    }
+  }
+
+  // ---------- CSV ----------
+  function downloadCSV(){
+    if(!lastComputed){
+      alert(lang==="zh" ? "請先計算後再下載。" : "Please calculate first, then download.");
+      return;
+    }
+    const o = lastComputed;
+    const headersZh = ["項目","值","單位"];
+    const headersEn = ["Item","Value","Unit"];
+    const headers = (lang==="zh") ? headersZh : headersEn;
+
+    const rows = [];
+    rows.push(headers);
+
+    rows.push([lang==="zh" ? "跨距 L" : "Span L", o.Lm, "m"]);
+    if(o.loadCase==="mid_point"){
+      rows.push([lang==="zh" ? "載重 P" : "Load P", o.Pn, "N"]);
+    }else{
+      rows.push([lang==="zh" ? "均佈載重 w" : "UDL w", o.wn, "N/m"]);
+    }
+    rows.push(["I", o.I, "m^4"]);
+    rows.push(["c", o.c, "m"]);
+    rows.push(["Z=I/c", o.Z, "m^3"]);
+    rows.push([lang==="zh" ? "最大彎矩 Mmax" : "Max moment Mmax", o.M, "N·m"]);
+    rows.push([lang==="zh" ? "最大彎曲應力 σmax" : "Max stress σmax", o.sigma, "Pa"]);
+    if(isFinite(o.delta)) rows.push([lang==="zh" ? "最大撓度 δmax" : "Max deflection δmax", o.delta, "m"]);
+
+    const csv = rows.map(r => r.map(x=>{
+      const s = String(x);
+      return (s.includes(",") || s.includes('"') || s.includes("\n")) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")).join("\n");
+
+    const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "anycals_beam_calc.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function resetAll(){
+    document.getElementById("loadCase").value = "mid_point";
+    document.getElementById("L").value = "";
+    document.getElementById("Lunit").value = "m";
+    document.getElementById("P").value = "";
+    document.getElementById("Punit").value = "N";
+    document.getElementById("w").value = "";
+    document.getElementById("wunit").value = "N_per_m";
+
+    document.getElementById("secType").value = "rect";
+    document.getElementById("b").value = "";
+    document.getElementById("h").value = "";
+    document.getElementById("d").value = "";
+    document.getElementById("D").value = "";
+    document.getElementById("di").value = "";
+    document.getElementById("dimUnit").value = "mm";
+
+    document.getElementById("I").value = "";
+    document.getElementById("c").value = "";
+    document.getElementById("Iunit").value = "m";
+
+    document.getElementById("E").value = "";
+    document.getElementById("Eunit").value = "GPa";
+    document.getElementById("allow").value = "";
+    document.getElementById("allowUnit").value = "MPa";
+    document.getElementById("SF").value = "";
+
+    lastComputed = null;
+
+    document.getElementById("Mmax").textContent = "—";
+    document.getElementById("MmaxSub").textContent = "—";
+    document.getElementById("Smax").textContent = "—";
+    document.getElementById("SmaxSub").textContent = "—";
+    document.getElementById("Dmax").textContent = "—";
+    document.getElementById("DmaxSub").textContent = "—";
+    document.getElementById("secOut").textContent = "—";
+    document.getElementById("judgementRow").style.display = "none";
+
+    syncLoadCaseUI();
+    syncSectionUI();
+  }
+
+  // ---------- init ----------
+  syncLoadCaseUI();
+  syncSectionUI();
+
+  // Contact mailto
+  (function(){
+    const contact = document.getElementById("contactLink");
+    if(contact){
+      const subj = encodeURIComponent(lang==="zh" ? "AnyCals 工程計算器：樑撓度/應力" : "AnyCals Engineering: Beam Deflection/Stress");
+      contact.href = `mailto:anycals.contact@gmail.com?subject=${subj}`;
+    }
+  })();
+</script>
+</body>
+</html>
