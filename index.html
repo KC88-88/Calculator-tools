@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <title id="pageTitle">AnyCals | 計算一切</title>
-  <meta id="pageDesc" name="description" content="AnyCals：計算機工具集合。快速搜尋、熱門、分類一頁搞定。" />
+  <meta id="pageDesc" name="description" content="種類最全的計算機" />
 
   <style>
     :root{
@@ -48,6 +48,7 @@
     .sub{color:var(--muted);line-height:1.6}
     .note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:10px;overflow-wrap:anywhere}
 
+    /* Search */
     .searchRow{display:flex;gap:10px;flex-wrap:wrap}
     .searchRow input{
       flex:1;min-width:220px;
@@ -56,13 +57,12 @@
     .primary{background:var(--fg);color:#fff;border-color:transparent}
     .ghost{background:#f3f4f6}
 
+    /* Tool list */
     .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     .tool{
       border:1px solid var(--border);border-radius:var(--r2);
-      padding:12px;background:#fff;
-      transition:transform .08s ease, box-shadow .08s ease
+      padding:12px;background:#fff
     }
-    .tool:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,0,0,.08)}
     .tool .t{font-weight:900}
     .tool .d{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.5}
 
@@ -96,35 +96,35 @@
         <div class="sectionTitle">
           <h1 id="s1Title">搜尋工具</h1>
         </div>
-        <div class="sub" id="s1Sub">輸入：房貸 / BMI / TDEE / 心率 / 配速 / 蛋白質 / 梁（beam）</div>
+        <div class="sub" id="s1Sub">輸入：房貸 / BMI / TDEE / 心率 / 配速 / 蛋白質 / 梁 / 全能計算機</div>
 
         <div class="searchRow" style="margin-top:12px">
-          <input id="q" type="search" placeholder="例如：房貸 / 心率 / beam" />
+          <input id="q" type="search" placeholder="例如：房貸 / 心率 / 梁 / calculator" />
           <button class="btn primary" onclick="runSearch()" id="searchBtn">搜尋</button>
           <button class="btn ghost" onclick="clearSearch()" id="clearBtn">清除</button>
         </div>
       </section>
 
-      <!-- 2) 搜尋結果 -->
+      <!-- 2) 搜尋結果（只有有搜尋時才顯示） -->
       <section class="card" id="resultsCard" style="display:none">
         <div class="sectionTitle">
           <h2 id="s2Title">搜尋結果</h2>
           <a class="smallLink" href="#" onclick="clearSearch();return false;" id="clearSmall">清除搜尋</a>
         </div>
         <div class="tools" id="results"></div>
-        <div class="note" id="noResult" style="display:none">找不到符合的工具。換個關鍵字或切英文試試。</div>
+        <div class="note" id="noResult" style="display:none">找不到符合的工具。你可以改用更短的關鍵字或英文試試。</div>
       </section>
 
       <!-- 3) 熱門 -->
       <section class="card">
         <div class="sectionTitle">
           <h2 id="s3Title">熱門</h2>
-          <span class="note" id="hotHint">先手動，之後可接流量排序</span>
+          <span class="note" id="hotHint">（可先用手動配置，之後再接流量排序）</span>
         </div>
         <div class="tools" id="hot"></div>
       </section>
 
-      <!-- 4) 分類（只顯示 PRO） -->
+      <!-- 4) 分類列表 -->
       <section class="card">
         <div class="sectionTitle">
           <h2 id="s4Title">分類</h2>
@@ -132,7 +132,7 @@
         <div class="tools" id="cats"></div>
 
         <div class="note" id="footerNote">
-          ※ 工具為估算與一般資訊，不構成醫療/法律/投資建議。
+          ※ AnyCals 目標：只要世界上能算的東西，我都能算。工具內容為估算與一般資訊，不構成專業診斷或法律/醫療建議。
         </div>
       </section>
 
@@ -140,128 +140,149 @@
   </div>
 
   <script>
+    // ==== 聯絡信箱（固定）====
     const contactEmail = "anycals.contact@gmail.com";
-    const feedbackFormUrl = ""; // 填入 viewform URL 才會顯示按鈕
 
-    // 工具清單（UI 不顯示 tags，但搜尋會用）
+    // ==== Google Form 回饋 ====
+    // 沒填就自動隱藏按鈕
+    const feedbackFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLScGW6os45zCHs1uE4UuId-ilYQwGDPNd5z0G8iE4DZ7Vp4OVw/viewform?usp=header";
+
+    // ==== 工具資料：路徑按你現有結構 ====
+    // 注意：tags 不顯示在卡片上，只用來提升搜尋命中率
     const tools = [
-      // Finance
       {
         id:"mortgage",
-        zh:{name:"房貸試算器", desc:"本息/本金、攤還表。", tags:["房貸","利率","本息","本金","mortgage","loan","finance"]},
-        en:{name:"Mortgage", desc:"Annuity / equal principal.", tags:["mortgage","loan","interest","finance"]},
+        zh:{name:"房貸試算器", desc:"本息/本金、攤還表。", tags:["房貸","利率","mortgage","loan","finance"]},
+        en:{name:"Mortgage", desc:"Annuity / equal principal.", tags:["mortgage","loan","finance"]},
         href:"./finance/mortgage/index.html",
         category:"finance"
       },
-
-      // Health
       {
         id:"bmi",
-        zh:{name:"BMI 計算器", desc:"BMI＋正常區間。", tags:["BMI","身高","體重","bmi","health"]},
-        en:{name:"BMI", desc:"BMI + reference range.", tags:["bmi","height","weight","health"]},
+        zh:{name:"BMI 計算器", desc:"BMI、正常區間。", tags:["BMI","身高","體重","health"]},
+        en:{name:"BMI", desc:"BMI + reference range.", tags:["bmi","weight","health"]},
         href:"./health/bmi/index.html",
         category:"health"
       },
       {
         id:"tdee",
-        zh:{name:"TDEE 熱量", desc:"BMR/TDEE、目標熱量。", tags:["TDEE","BMR","熱量","減脂","增肌","calories","health"]},
-        en:{name:"TDEE", desc:"BMR/TDEE + targets.", tags:["tdee","bmr","calories","cut","bulk","health"]},
+        zh:{name:"TDEE 熱量", desc:"BMR/TDEE、目標熱量。", tags:["TDEE","BMR","熱量","health"]},
+        en:{name:"TDEE", desc:"BMR/TDEE + targets.", tags:["tdee","calories","health"]},
         href:"./health/TDEE/index.html",
         category:"health"
       },
       {
         id:"hrz",
-        zh:{name:"心率區間 Zone 1–5", desc:"%HRmax / Karvonen。", tags:["心率","zone","zones","karvonen","HRR","health"]},
-        en:{name:"HR Zones", desc:"%HRmax / Karvonen.", tags:["heart rate","zones","karvonen","hrr","health"]},
+        zh:{name:"心率區間 Zone 1–5", desc:"%HRmax / Karvonen。", tags:["心率","zone","karvonen","health"]},
+        en:{name:"HR Zones", desc:"%HRmax / Karvonen.", tags:["heart","zones","karvonen","health"]},
         href:"./health/heart-rate/index.html",
         category:"health"
       },
       {
         id:"pace",
-        zh:{name:"跑步配速換算", desc:"配速↔速度↔完賽時間。", tags:["配速","跑步","pace","running","km","mile","health"]},
-        en:{name:"Pace Converter", desc:"Pace ↔ speed ↔ finish time.", tags:["pace","running","speed","finish time","health"]},
+        zh:{name:"跑步配速換算", desc:"配速↔速度↔完賽時間。", tags:["配速","跑步","pace","health"]},
+        en:{name:"Pace Converter", desc:"Pace ↔ speed ↔ finish time.", tags:["pace","running","health"]},
         href:"./health/pace/index.html",
         category:"health"
       },
       {
         id:"protein",
-        zh:{name:"蛋白質需求", desc:"依目標估算 g/day。", tags:["蛋白質","營養","protein","nutrition","g/day","health"]},
-        en:{name:"Protein", desc:"Estimate g/day by goal.", tags:["protein","nutrition","grams","health"]},
+        zh:{name:"蛋白質需求", desc:"依目標估算 g/day。", tags:["蛋白質","營養","protein","health"]},
+        en:{name:"Protein", desc:"Estimate g/day by goal.", tags:["protein","nutrition","health"]},
         href:"./health/protein/index.html",
         category:"health"
       },
 
-      // Pro
+      // Pro（新增）
       {
-        id:"pro_calc",
-        zh:{name:"Pro 計算器（總表）", desc:"進階工具入口（建構中）。", tags:["pro","專業","calculator","advanced"]},
-        en:{name:"Pro Calculator (Hub)", desc:"Advanced tools entry (WIP).", tags:["pro","calculator","advanced"]},
+        id:"calculator",
+        zh:{name:"全能計算機", desc:"多功能快速計算（建構中）。", tags:["全能計算機","calculator","pro"]},
+        en:{name:"All-in-one Calculator", desc:"Multi-purpose quick calculator (WIP).", tags:["calculator","pro"]},
         href:"./pro/calculator/index.html",
         category:"pro"
       },
       {
         id:"beam",
-        zh:{name:"梁設計（Beam）", desc:"工程梁基本計算（建構中）。", tags:["梁","beam","engineering","pro","結構","撓度","應力"]},
-        en:{name:"Beam (Engineering)", desc:"Basic beam calculations (WIP).", tags:["beam","engineering","pro","deflection","stress"]},
+        zh:{name:"梁計算（Beam）", desc:"工程樑基本計算（建構中）。", tags:["梁","beam","engineering","pro"]},
+        en:{name:"Beam (Engineering)", desc:"Basic beam calculations (WIP).", tags:["beam","engineering","pro"]},
         href:"./pro/engineering/beam/index.html",
         category:"pro"
       }
     ];
 
-    // 熱門：把 Pro 放進來（你不想的話刪掉 pro_calc / beam 就好）
-    const hotOrder = ["mortgage","bmi","tdee","hrz","pace","protein","pro_calc","beam"];
+    // ==== 熱門：沿用你原本的習慣，不硬塞新工具 ====
+    const hotOrder = ["mortgage","bmi","tdee","hrz"];
 
-    // 分類：只顯示 PRO（Math 不顯示，避免首頁雜亂）
+    // ==== 分類：在原有 finance/health 基礎上新增 math/pro ====
     const categories = [
       {
+        id:"finance",
+        zh:{name:"財務 Finance", desc:"房貸、投資、稅務等。"},
+        en:{name:"Finance", desc:"Mortgage, investing, tax, etc."},
+        href:"#cat=finance"
+      },
+      {
+        id:"health",
+        zh:{name:"健康 Health", desc:"熱量、心率、營養、跑步等。"},
+        en:{name:"Health", desc:"Calories, heart, nutrition, running."},
+        href:"#cat=health"
+      },
+      {
         id:"pro",
-        zh:{name:"Pro（建構中）", desc:"專業計算工具（含 Engineering 子類）。"},
-        en:{name:"Pro (WIP)", desc:"Professional tools (incl. Engineering subcategory)."},
+        zh:{name:"專業 Pro（建構中）", desc:"工程、統計、科學等專業工具。"},
+        en:{name:"Pro (WIP)", desc:"Engineering, stats, science tools."},
         href:"#cat=pro"
+      },
+      {
+        id:"math",
+        zh:{name:"數學 Math（尚未建構）", desc:"線代、數值法、轉換等。"},
+        en:{name:"Math (Planned)", desc:"Linear algebra, numerical methods, transforms."},
+        href:"#cat=math"
       }
     ];
 
+    // ==== i18n ====
     let lang = "zh";
     const i18n = {
       zh:{
         brand:"AnyCals | 計算一切",
         tag:"搜尋 / 熱門 / 分類，一頁搞定",
         title:"AnyCals | 計算一切",
-        desc:"AnyCals：計算機工具集合。快速搜尋、熱門、分類一頁搞定。",
+        desc:"種類最全的計算機",
         contact:"聯繫我",
         feedback:"回饋表單",
         s1Title:"搜尋工具",
-        s1Sub:"輸入：房貸 / BMI / TDEE / 心率 / 配速 / 蛋白質 / 梁（beam）",
-        placeholder:"例如：房貸 / 心率 / beam",
+        s1Sub:"輸入：房貸 / BMI / TDEE / 心率 / 配速 / 蛋白質 / 梁 / 全能計算機",
+        placeholder:"例如：房貸 / 心率 / 梁 / calculator",
         search:"搜尋",
         clear:"清除",
         s2Title:"搜尋結果",
         clearSmall:"清除搜尋",
         s3Title:"熱門",
-        hotHint:"先手動，之後可接流量排序",
+        hotHint:"（可先用手動配置，之後再接流量排序）",
         s4Title:"分類",
-        noResult:"找不到符合的工具。換個關鍵字或切英文試試。",
-        footer:"※ 工具為估算與一般資訊，不構成醫療/法律/投資建議。"
+        noResult:"找不到符合的工具。你可以改用更短的關鍵字或英文試試。",
+        footer:"※ AnyCals 目標：只要世界上能算的東西，我都能算。工具內容為估算與一般資訊，不構成專業診斷或法律/醫療建議。"
       },
       en:{
         brand:"AnyCals | Calculate Anything",
         tag:"Search / Popular / Categories",
         title:"AnyCals | Calculate Anything",
-        desc:"AnyCals: a calculator hub with search, popular tools, and categories.",
+        desc:"The most comprehensive calculator collection",
         contact:"Contact",
         feedback:"Feedback",
         s1Title:"Search tools",
-        s1Sub:"Try: mortgage / BMI / TDEE / zones / pace / protein / beam",
-        placeholder:"e.g., mortgage / zones / beam",
+        s1Sub:"Try: mortgage / BMI / TDEE / zones / pace / protein / beam / calculator",
+        placeholder:"e.g. mortgage / zones / beam / calculator",
         search:"Search",
         clear:"Clear",
-        s2Title:"Results",
+        s2Title:"Search results",
         clearSmall:"Clear search",
         s3Title:"Popular",
-        hotHint:"Manual for now; later rank by traffic",
+        hotHint:"(Manual for now; later rank by traffic)",
         s4Title:"Categories",
-        noResult:"No matching tools. Try another keyword or switch language.",
-        footer:"* Tools are estimates and general info, not medical/legal/investment advice."
+        noResult:"No matching tools. Try shorter keywords or switch language.",
+        footer:"* Tools are estimates and general info, not medical/legal advice."
       }
     };
 
@@ -273,15 +294,19 @@
       lang = l;
       document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
 
+      // SEO
       document.getElementById("pageTitle").textContent = i18n[l].title;
       document.getElementById("pageDesc").setAttribute("content", i18n[l].desc);
 
+      // Header
       document.getElementById("brandText").textContent = i18n[l].brand;
       document.getElementById("tagText").textContent = i18n[l].tag;
 
+      // Buttons
       document.getElementById("contactLink").textContent = i18n[l].contact;
       document.getElementById("feedbackLink").textContent = i18n[l].feedback;
 
+      // Sections
       document.getElementById("s1Title").textContent = i18n[l].s1Title;
       document.getElementById("s1Sub").textContent = i18n[l].s1Sub;
       document.getElementById("q").placeholder = i18n[l].placeholder;
@@ -317,6 +342,7 @@
       }
     }
 
+    // 卡片：只顯示標題 + 描述（不顯示 tags/chips）
     function toolCard(t){
       const data = (lang==="zh") ? t.zh : t.en;
       return `
@@ -351,7 +377,9 @@
     }
 
     function openCategory(catId){
-      document.getElementById("q").value = (lang==="zh") ? "Pro" : "pro";
+      document.getElementById("q").value = (lang==="zh")
+        ? (catId==="health" ? "健康" : catId==="finance" ? "房貸" : catId==="pro" ? "pro" : "math")
+        : catId;
       runSearch(catId);
       window.location.hash = `cat=${catId}`;
     }
@@ -366,7 +394,7 @@
 
       const hit = tools.filter(t=>{
         if(cat && t.category !== cat) return false;
-        if(!q && cat) return true;
+        if(!q && cat) return true; // category-only browse
         if(!q) return false;
         const data = (lang==="zh") ? t.zh : t.en;
         const hay = [data.name, data.desc, ...(data.tags||[])].join(" ").toLowerCase();
@@ -407,6 +435,7 @@
       return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
+    // Enter key to search
     document.addEventListener("DOMContentLoaded", ()=>{
       document.getElementById("q").addEventListener("keydown", (e)=>{
         if(e.key==="Enter") runSearch();
@@ -417,7 +446,9 @@
       renderCategories();
 
       const cat = parseHashCategory();
-      if(cat){ runSearch(cat); }
+      if(cat){
+        runSearch(cat);
+      }
     });
   </script>
 </body>
