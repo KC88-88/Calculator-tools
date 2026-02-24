@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title id="pageTitle">工程用計算機｜一般/工程模式切換｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals 最全計算機：一般計算機/工程計算機切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、FIX/SCI/ENG 格式、記憶體與歷史。" />
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
+      --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
+      --radius:16px; --soft:#f3f4f6; --danger:#ef4444; --ok:#10b981;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{
+      margin:0;padding:24px;
+      font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg);color:var(--fg)
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto}
+    header{
+      display:flex;flex-wrap:wrap;gap:12px;
+      align-items:flex-end;justify-content:space-between;margin-bottom:12px
+    }
+    .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
+    .sub{color:var(--muted);line-height:1.6;margin-top:6px}
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      display:inline-block;background:var(--card);border:1px solid var(--border);
+      border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
+      box-shadow:var(--shadow);text-decoration:none;color:var(--fg)
+    }
+    .btn{
+      border:1px solid var(--border);background:var(--card);
+      border-radius:12px;padding:8px 10px;cursor:pointer;
+      box-shadow:var(--shadow);font-size:14px;
+      display:inline-flex;align-items:center;gap:8px;height:40px;
+      user-select:none;
+    }
+    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
+    .btn.small{height:36px;padding:6px 10px;font-size:13px;border-radius:10px}
+    .btn:active{transform:translateY(1px)}
+    .btn[aria-pressed="true"]{background:var(--fg);color:#fff;border-color:transparent}
+
+    .grid{display:grid;grid-template-columns: 1.05fr .95fr;gap:14px}
+    .card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)
+    }
+    h2{margin:0 0 10px;font-size:16px}
+
+    .display{
+      border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,#fff 0%, #fbfbfd 100%);
+      padding:12px;box-shadow:0 10px 24px rgba(0,0,0,.04);
+    }
+    .expr{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:14px;color:#374151;line-height:1.4;
+      min-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .res{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-weight:900;font-size:26px;line-height:1.2;margin-top:8px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .aux{
+      margin-top:8px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+      color:var(--muted);font-size:12px;line-height:1.6;
+    }
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      border:1px solid var(--border);background:#f9fafb;border-radius:999px;
+      padding:6px 10px;font-size:12px;color:#374151
+    }
+    .chip strong{font-weight:900}
+
+    .pad{ margin-top:12px; display:grid; gap:10px; }
+    .pad.eng{ grid-template-columns: repeat(6, 1fr); }
+    .pad.basic{ grid-template-columns: repeat(4, 1fr); }
+
+    .key{
+      height:44px;border-radius:14px;border:1px solid var(--border);
+      background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.04);
+      cursor:pointer;font-size:14px;font-weight:900;
+      display:flex;align-items:center;justify-content:center;
+      user-select:none; padding:0 8px;
+    }
+    .key:active{transform:translateY(1px)}
+    .key.op{background:#fcfcfd}
+    .key.fn{background:#f9fafb}
+    .key.eq{background:var(--fg);color:#fff;border-color:transparent}
+    .key.danger{color:var(--danger);border-color:rgba(239,68,68,.45)}
+    .key.wide{grid-column: span 2}
+    .hidden{display:none !important}
+
+    .histTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .hist{
+      margin-top:10px;border:1px solid var(--border);
+      border-radius:14px; overflow:hidden; background:#fff;
+    }
+    .histList{max-height:420px;overflow:auto}
+    .row{
+      padding:10px 12px;border-bottom:1px solid var(--border);
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between
+    }
+    .row:last-child{border-bottom:none}
+    .row .l{min-width:0;flex:1}
+    .row .e{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:12px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .row .r{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-weight:900;font-size:13px;color:#111827;white-space:nowrap;
+    }
+    .row button{
+      border:1px solid var(--border);background:#fff;border-radius:10px;
+      padding:6px 8px;cursor:pointer;box-shadow:var(--shadow);font-size:12px;font-weight:900
+    }
+
+    @media(max-width:980px){
+      .grid{grid-template-columns:1fr}
+      .right{justify-content:flex-start}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="title" id="h1Title">最全計算機</h1>
+        <div class="sub" id="h1Sub">一般計算機 / 工程計算機一鍵切換，含三角、log、階乘、組合排列、Deg/Rad、FIX/SCI/ENG、記憶體與歷史。</div>
+      </div>
+      <div class="right">
+        <a class="pill" href="https://anycals.com/index.html">回首頁</a>
+        <a class="pill" id="contactLink" href="#">聯繫我</a>
+        <button class="btn" type="button" id="uiToggleBtn" onclick="toggleUI()" aria-pressed="false">工程模式</button>
+        <button class="btn" type="button" onclick="toggleMode()" id="degRadBtn" aria-pressed="false">DEG</button>
+        <button class="btn" type="button" onclick="cycleFormat()" id="fmtBtn">AUTO</button>
+        <button class="btn" type="button" onclick="copyResult()">複製</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Calculator -->
+      <div class="card">
+        <h2 id="panelCalcTitle">計算</h2>
+
+        <div class="display" role="group" aria-label="calculator display">
+          <div class="expr" id="exprText">—</div>
+          <div class="res" id="resText">0</div>
+
+          <div class="aux">
+            <div class="chips">
+              <span class="chip"><strong>UI</strong>：<span id="uiText">BASIC</span></span>
+              <span class="chip"><strong>Mode</strong>：<span id="modeText">DEG</span></span>
+              <span class="chip"><strong>Fmt</strong>：<span id="fmtText">AUTO</span></span>
+              <span class="chip"><strong>M</strong>：<span id="memText">0</span></span>
+              <span class="chip"><strong>Ans</strong>：<span id="ansText">0</span></span>
+            </div>
+            <div id="hintText">鍵盤：Enter=、Backspace、Esc 清除。支援 sin()、log()、nCr()…</div>
+          </div>
+        </div>
+
+        <!-- BASIC keypad -->
+        <div class="pad basic" id="basicPad" aria-label="basic keypad">
+          <div class="key fn danger" onclick="allClear()">AC</div>
+          <div class="key fn danger" onclick="backspace()">⌫</div>
+          <div class="key fn" onclick="insertToken('%')">%</div>
+          <div class="key op" onclick="insertOp('/')">÷</div>
+
+          <div class="key" onclick="insertToken('7')">7</div>
+          <div class="key" onclick="insertToken('8')">8</div>
+          <div class="key" onclick="insertToken('9')">9</div>
+          <div class="key op" onclick="insertOp('*')">×</div>
+
+          <div class="key" onclick="insertToken('4')">4</div>
+          <div class="key" onclick="insertToken('5')">5</div>
+          <div class="key" onclick="insertToken('6')">6</div>
+          <div class="key op" onclick="insertOp('-')">−</div>
+
+          <div class="key" onclick="insertToken('1')">1</div>
+          <div class="key" onclick="insertToken('2')">2</div>
+          <div class="key" onclick="insertToken('3')">3</div>
+          <div class="key op" onclick="insertOp('+')">+</div>
+
+          <div class="key fn" onclick="toggleSign()">±</div>
+          <div class="key" onclick="insertToken('0')">0</div>
+          <div class="key" onclick="insertToken('.')">.</div>
+          <div class="key eq" onclick="evaluateExpr()">=</div>
+        </div>
+
+        <!-- ENGINEERING keypad -->
+        <div class="pad eng hidden" id="engPad" aria-label="engineering keypad">
+          <!-- Row 1 -->
+          <div class="key fn danger" onclick="allClear()">AC</div>
+          <div class="key fn danger" onclick="backspace()">⌫</div>
+          <div class="key fn" onclick="insertToken('(')">(</div>
+          <div class="key fn" onclick="insertToken(')')">)</div>
+          <div class="key fn" onclick="insertConst('pi')">π</div>
+          <div class="key fn" onclick="insertConst('e')">e</div>
+
+          <!-- Row 2 -->
+          <div class="key fn" onclick="insertFunc('sin')">sin</div>
+          <div class="key fn" onclick="insertFunc('cos')">cos</div>
+          <div class="key fn" onclick="insertFunc('tan')">tan</div>
+          <div class="key fn" onclick="insertFunc('asin')">asin</div>
+          <div class="key fn" onclick="insertFunc('acos')">acos</div>
+          <div class="key fn" onclick="insertFunc('atan')">atan</div>
+
+          <!-- Row 3 -->
+          <div class="key fn" onclick="insertFunc('sinh')">sinh</div>
+          <div class="key fn" onclick="insertFunc('cosh')">cosh</div>
+          <div class="key fn" onclick="insertFunc('tanh')">tanh</div>
+          <div class="key fn" onclick="insertFunc('asinh')">asinh</div>
+          <div class="key fn" onclick="insertFunc('acosh')">acosh</div>
+          <div class="key fn" onclick="insertFunc('atanh')">atanh</div>
+
+          <!-- Row 4 -->
+          <div class="key fn" onclick="insertFunc('ln')">ln</div>
+          <div class="key fn" onclick="insertFunc('log')">log</div>
+          <div class="key fn" onclick="insertFunc('exp')">exp</div>
+          <div class="key fn" onclick="insertOp('^')">xʸ</div>
+          <div class="key fn" onclick="insertFunc('sqrt')">√</div>
+          <div class="key fn" onclick="insertAns()">Ans</div>
+
+          <!-- Row 5 -->
+          <div class="key fn" onclick="insertFunc('abs')">abs</div>
+          <div class="key fn" onclick="insertFunc('floor')">floor</div>
+          <div class="key fn" onclick="insertFunc('ceil')">ceil</div>
+          <div class="key fn" onclick="insertFunc('round')">round</div>
+          <div class="key fn" onclick="insertFunc('min')">min</div>
+          <div class="key fn" onclick="insertFunc('max')">max</div>
+
+          <!-- Row 6 -->
+          <div class="key fn" onclick="insertFunc('fact')">n!</div>
+          <div class="key fn" onclick="insertFunc('nPr')">nPr</div>
+          <div class="key fn" onclick="insertFunc('nCr')">nCr</div>
+          <div class="key fn" onclick="insertFunc('mod')">mod</div>
+          <div class="key fn" onclick="insertFunc('rand')">rand</div>
+          <div class="key fn" onclick="insertToken('%')">%</div>
+
+          <!-- Row 7 -->
+          <div class="key fn" onclick="memClear()">MC</div>
+          <div class="key fn" onclick="memRecall()">MR</div>
+          <div class="key fn" onclick="memPlus()">M+</div>
+          <div class="key fn" onclick="memMinus()">M-</div>
+          <div class="key op" onclick="insertOp('/')">÷</div>
+          <div class="key op" onclick="insertOp('*')">×</div>
+
+          <!-- Row 8 -->
+          <div class="key" onclick="insertToken('7')">7</div>
+          <div class="key" onclick="insertToken('8')">8</div>
+          <div class="key" onclick="insertToken('9')">9</div>
+          <div class="key op" onclick="insertOp('-')">−</div>
+          <div class="key fn" onclick="toggleSign()">±</div>
+          <div class="key fn" onclick="insertToken(',')">,</div>
+
+          <!-- Row 9 -->
+          <div class="key" onclick="insertToken('4')">4</div>
+          <div class="key" onclick="insertToken('5')">5</div>
+          <div class="key" onclick="insertToken('6')">6</div>
+          <div class="key op" onclick="insertOp('+')">+</div>
+          <div class="key fn" onclick="insertToken(' ')">␠</div>
+          <div class="key fn" onclick="insertToken('.')">.</div>
+
+          <!-- Row 10 -->
+          <div class="key" onclick="insertToken('1')">1</div>
+          <div class="key" onclick="insertToken('2')">2</div>
+          <div class="key" onclick="insertToken('3')">3</div>
+          <div class="key fn wide" onclick="insertToken('0')">0</div>
+          <div class="key eq wide" onclick="evaluateExpr()">=</div>
+        </div>
+
+        <div class="aux" style="margin-top:12px">
+          <div style="color:var(--muted)">
+            <strong>支援：</strong>
+            sin/cos/tan、反三角、雙曲、log/ln、exp、^、sqrt、abs、floor/ceil/round、min/max、n!、nPr/nCr、mod、rand、Ans、M 記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="histTop">
+          <h2 style="margin:0">歷史</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn small" type="button" onclick="clearHistory()">清空</button>
+            <button class="btn small" type="button" onclick="exportHistory()">匯出</button>
+          </div>
+        </div>
+
+        <div class="hist" aria-label="history">
+          <div class="histList" id="histList">
+            <div class="row">
+              <div class="l">
+                <div class="e">尚無紀錄。按「=」後會出現在這裡。</div>
+              </div>
+              <div class="r">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="aux">
+          <div>點「Use」把結果塞回輸入（當作下一次的起點）。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------------- state ----------------
+  let expr = "";
+  let ans = 0;
+  let mem = 0;
+  let mode = "DEG";     // DEG / RAD
+  let ui = "BASIC";     // BASIC / ENG
+  // format: AUTO | FIX:n | SCI:n | ENG:n
+  let fmt = { type:"AUTO", n:6 };
+
+  let history = []; // {expr, result, ts}
+
+  // ---------------- contact ----------------
+  (function(){
+    const contact = document.getElementById("contactLink");
+    if(contact){
+      contact.href = "mailto:anycals.contact@gmail.com?subject=AnyCals%20Calculator%20Feedback";
+    }
+  })();
+
+  // ---------------- UI sync ----------------
+  function sync(){
+    document.getElementById("exprText").textContent = expr ? expr : "—";
+    document.getElementById("uiText").textContent = ui;
+    document.getElementById("modeText").textContent = mode;
+    document.getElementById("memText").textContent = formatNumber(mem);
+    document.getElementById("ansText").textContent = formatNumber(ans);
+
+    // result shows formatted
+    document.getElementById("resText").textContent = formatNumber(ans);
+
+    document.getElementById("degRadBtn").textContent = mode;
+    document.getElementById("degRadBtn").setAttribute("aria-pressed", mode==="RAD" ? "true":"false");
+
+    document.getElementById("fmtText").textContent = fmtLabel();
+    document.getElementById("fmtBtn").textContent = fmtLabel();
+
+    const uiBtn = document.getElementById("uiToggleBtn");
+    uiBtn.textContent = (ui==="BASIC") ? "工程模式" : "一般模式";
+    uiBtn.setAttribute("aria-pressed", ui==="ENG" ? "true" : "false");
+
+    // pad visibility
+    document.getElementById("basicPad").classList.toggle("hidden", ui!=="BASIC");
+    document.getElementById("engPad").classList.toggle("hidden", ui!=="ENG");
+
+    // subtitle / hint
+    const sub = document.getElementById("h1Sub");
+    const hint = document.getElementById("hintText");
+    if(ui==="BASIC"){
+      sub.textContent = "一般計算機 / 工程計算機一鍵切換。Basic 介面專注快速四則運算。";
+      hint.textContent = "鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 sin()/log()/nCr()…";
+    }else{
+      sub.textContent = "一般計算機 / 工程計算機一鍵切換。Engineering 介面提供完整科學/工程常用功能。";
+      hint.textContent = "鍵盤：Enter=、Backspace、Esc 清除。函數例：sin(30)、log(100)、nCr(10,3)、fact(5)。";
+    }
+  }
+
+  function fmtLabel(){
+    if(fmt.type==="AUTO") return "AUTO";
+    return `${fmt.type}:${fmt.n}`;
+  }
+
+  function formatNumber(x){
+    if(!isFinite(x)) return String(x);
+
+    if(fmt.type==="AUTO"){
+      const ax = Math.abs(x);
+      if(ax !== 0 && (ax >= 1e12 || ax < 1e-6)){
+        return x.toExponential(8).replace(/\.?0+e/,"e");
+      }
+      // trim noise
+      const s = (Math.round(x*1e12)/1e12).toString();
+      return s;
+    }
+
+    const n = Math.max(0, Math.min(12, fmt.n|0));
+    if(fmt.type==="FIX"){
+      return x.toFixed(n);
+    }
+    if(fmt.type==="SCI"){
+      return x.toExponential(n).replace(/\.?0+e/,"e");
+    }
+    if(fmt.type==="ENG"){
+      return toEngineering(x, n);
+    }
+    return String(x);
+  }
+
+  function toEngineering(x, digits){
+    if(x === 0) return (0).toFixed(digits);
+    const sign = x < 0 ? "-" : "";
+    const ax = Math.abs(x);
+    const exp = Math.floor(Math.log10(ax));
+    const engExp = exp - (exp % 3);
+    const mant = ax / Math.pow(10, engExp);
+    // keep mantissa in [1,1000)
+    const m = mant.toFixed(digits);
+    return `${sign}${m}e${engExp}`;
+  }
+
+  // ---------------- UI toggles ----------------
+  function toggleUI(){
+    ui = (ui==="BASIC") ? "ENG" : "BASIC";
+    sync();
+    saveLocal();
+  }
+  function toggleMode(){
+    mode = (mode==="DEG") ? "RAD" : "DEG";
+    sync();
+    saveLocal();
+  }
+  function cycleFormat(){
+    // AUTO -> FIX:6 -> SCI:6 -> ENG:6 -> AUTO
+    if(fmt.type==="AUTO") fmt = {type:"FIX", n:6};
+    else if(fmt.type==="FIX") fmt = {type:"SCI", n:6};
+    else if(fmt.type==="SCI") fmt = {type:"ENG", n:6};
+    else fmt = {type:"AUTO", n:6};
+    sync();
+    saveLocal();
+  }
+
+  // ---------------- input helpers ----------------
+  function insertToken(t){
+    if(expr.length > 800){ toast("算式太長（安全限制）"); return; }
+    expr += t;
+    sync();
+  }
+  function insertOp(op){
+    if(expr.length > 800){ toast("算式太長（安全限制）"); return; }
+    expr += op;
+    sync();
+  }
+  function insertConst(c){
+    if(c === "pi") insertToken("pi");
+    else if(c === "e") insertToken("e");
+  }
+  function insertFunc(name){
+    if(expr.length > 800){ toast("算式太長（安全限制）"); return; }
+    expr += name + "(";
+    sync();
+  }
+  function insertAns(){
+    insertToken("Ans");
+  }
+  function backspace(){
+    if(!expr) return;
+    expr = expr.slice(0,-1);
+    sync();
+  }
+  function allClear(){
+    expr = "";
+    ans = 0;
+    sync();
+  }
+  function toggleSign(){
+    const t = expr.trim();
+    if(!t){
+      expr = "-";
+    }else if(/^-?\d+(\.\d+)?$/.test(t)){
+      expr = t.startsWith("-") ? t.slice(1) : ("-" + t);
+    }else{
+      expr = "(" + t + ")*-1";
+    }
+    sync();
+  }
+
+  // ---------------- memory ----------------
+  function memClear(){ mem = 0; sync(); saveLocal(); }
+  function memRecall(){ insertToken(String(mem)); }
+  function memPlus(){ mem += safeEvalCurrentOrAns(); sync(); saveLocal(); }
+  function memMinus(){ mem -= safeEvalCurrentOrAns(); sync(); saveLocal(); }
+  function safeEvalCurrentOrAns(){
+    const t = expr.trim();
+    if(!t) return ans;
+    try{
+      const v = safeEval(t);
+      if(isFinite(v)) return v;
+    }catch(_){}
+    return ans;
+  }
+
+  // ---------------- math utils ----------------
+  function clampInt(n){ return Math.trunc(n); }
+
+  function gamma(z){
+    // Lanczos approximation (good enough for calculator)
+    const g = 7;
+    const p = [
+      0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+      771.32342877765313, -176.61502916214059, 12.507343278686905,
+      -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+    ];
+    if(z < 0.5){
+      return Math.PI / (Math.sin(Math.PI*z) * gamma(1 - z));
+    }
+    z -= 1;
+    let x = p[0];
+    for(let i=1;i<p.length;i++) x += p[i] / (z + i);
+    const t = z + g + 0.5;
+    return Math.sqrt(2*Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+  }
+
+  function factorial(n){
+    // exact for integers 0..170; fallback gamma for others
+    if(!isFinite(n)) return NaN;
+    if(Math.abs(n - Math.round(n)) < 1e-12){
+      n = Math.round(n);
+      if(n < 0) return NaN;
+      if(n > 170) return Infinity;
+      let r = 1;
+      for(let i=2;i<=n;i++) r *= i;
+      return r;
+    }
+    if(n < 0) return NaN;
+    // Γ(n+1)
+    const v = gamma(n + 1);
+    return v;
+  }
+
+  function nCr(n, r){
+    n = Math.round(n); r = Math.round(r);
+    if(r < 0 || n < 0 || r > n) return 0;
+    r = Math.min(r, n-r);
+    let num = 1, den = 1;
+    for(let i=1;i<=r;i++){
+      num *= (n - r + i);
+      den *= i;
+    }
+    return num / den;
+  }
+
+  function nPr(n, r){
+    n = Math.round(n); r = Math.round(r);
+    if(r < 0 || n < 0 || r > n) return 0;
+    let out = 1;
+    for(let i=0;i<r;i++) out *= (n - i);
+    return out;
+  }
+
+  function mod(a,b){
+    if(b===0) return NaN;
+    return ((a % b) + b) % b;
+  }
+
+  function replaceCaretPowers(s){
+    const primary =
+      `(?:` +
+        `\\([^()]*\\)` +
+        `|` +
+        `\\-?\\d+(?:\\.\\d+)?` +
+        `|` +
+        `[A-Za-z_]\\w*\\([^()]*\\)` +
+      `)`;
+
+    let prev, cur = s;
+    const re = new RegExp(`(${primary})\\s*\\^\\s*(${primary})`);
+    for(let i=0;i<30;i++){
+      prev = cur;
+      cur = cur.replace(re, `pow($1,$2)`);
+      if(cur === prev) break;
+    }
+    return cur;
+  }
+
+  // ---------------- safe evaluation ----------------
+  function safeEval(input){
+    let s = String(input);
+    s = s.replace(/×/g,"*").replace(/÷/g,"/").replace(/−/g,"-");
+
+    s = s.replace(/\bAns\b/g, `(${ans})`);
+    s = s.replace(/\bpi\b/gi, `(${Math.PI})`);
+    s = s.replace(/\be\b/g, `(${Math.E})`);
+
+    s = replaceCaretPowers(s);
+
+    // allow digits/operators/parentheses/commas/spaces/letters/underscore/dot
+    if(!/^[0-9+\-*/().,\sA-Za-z_]*$/.test(s)) throw new Error("bad chars");
+
+    const toRad = (x)=> mode==="DEG" ? (x*Math.PI/180) : x;
+    const toDeg = (x)=> mode==="DEG" ? (x*180/Math.PI) : x;
+
+    const f = {
+      // basic
+      abs:(x)=>Math.abs(x),
+      sqrt:(x)=>Math.sqrt(x),
+      ln:(x)=>Math.log(x),
+      log:(x)=>Math.log10(x),
+      exp:(x)=>Math.exp(x),
+      pow:(a,b)=>Math.pow(a,b),
+      min:(...xs)=>Math.min(...xs),
+      max:(...xs)=>Math.max(...xs),
+      floor:(x)=>Math.floor(x),
+      ceil:(x)=>Math.ceil(x),
+      round:(x)=>Math.round(x),
+
+      // trig (deg/rad aware)
+      sin:(x)=>Math.sin(toRad(x)),
+      cos:(x)=>Math.cos(toRad(x)),
+      tan:(x)=>Math.tan(toRad(x)),
+      asin:(x)=>toDeg(Math.asin(x)),
+      acos:(x)=>toDeg(Math.acos(x)),
+      atan:(x)=>toDeg(Math.atan(x)),
+
+      // hyperbolic
+      sinh:(x)=>Math.sinh(x),
+      cosh:(x)=>Math.cosh(x),
+      tanh:(x)=>Math.tanh(x),
+      asinh:(x)=>Math.asinh(x),
+      acosh:(x)=>Math.acosh(x),
+      atanh:(x)=>Math.atanh(x),
+
+      // combinatorics / integer-ish
+      fact:(x)=>factorial(x),
+      nCr:(n,r)=>nCr(n,r),
+      nPr:(n,r)=>nPr(n,r),
+
+      // misc
+      mod:(a,b)=>mod(a,b),
+      rand:()=>Math.random(),
+    };
+
+    const ids = (s.match(/[A-Za-z_]\w*/g) || []);
+    const allow = new Set(Object.keys(f));
+    for(const id of ids){
+      if(!allow.has(id)) throw new Error("unknown id: " + id);
+    }
+
+    // eslint-disable-next-line no-new-func
+    const fn = new Function(...Object.keys(f), `"use strict"; return (${s});`);
+    const out = fn(...Object.values(f));
+    return Number(out);
+  }
+
+  function evaluateExpr(){
+    const t = expr.trim();
+    if(!t){ sync(); return; }
+    try{
+      const v = safeEval(t);
+      if(!isFinite(v)) throw new Error("non-finite");
+      ans = v;
+      pushHistory(t, v);
+      expr = "";
+      sync();
+      renderHistory();
+      saveLocal();
+    }catch(e){
+      toast("算式錯誤");
+    }
+  }
+
+  // ---------------- history ----------------
+  function pushHistory(e, r){
+    history.unshift({expr:e, result:r, ts:Date.now()});
+    if(history.length > 120) history.pop();
+  }
+  function clearHistory(){
+    history = [];
+    renderHistory();
+    saveLocal();
+  }
+  function useHistory(i){
+    const item = history[i];
+    if(!item) return;
+    expr = String(item.result);
+    sync();
+  }
+  function renderHistory(){
+    const box = document.getElementById("histList");
+    if(!history.length){
+      box.innerHTML = `
+        <div class="row">
+          <div class="l"><div class="e">尚無紀錄。按「=」後會出現在這裡。</div></div>
+          <div class="r">—</div>
+        </div>`;
+      return;
+    }
+    box.innerHTML = history.map((x, i)=>`
+      <div class="row">
+        <div class="l">
+          <div class="e" title="${escapeHtml(x.expr)}">${escapeHtml(x.expr)}</div>
+          <div class="r">${escapeHtml(formatNumber(x.result))}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button onclick="useHistory(${i})">Use</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function exportHistory(){
+    if(!history.length){ toast("—"); return; }
+    const lines = history.slice().reverse().map(x=>{
+      const d = new Date(x.ts);
+      const ts = d.toISOString().replace("T"," ").replace("Z","");
+      return `[${ts}] ${x.expr} = ${formatNumber(x.result)}`;
+    });
+    const blob = new Blob([lines.join("\n")], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "anycals_calculator_history.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------- copy / toast ----------------
+  function copyResult(){
+    const text = String(formatNumber(ans));
+    navigator.clipboard?.writeText(text).then(()=>toast("已複製")).catch(()=>toast(text));
+  }
+  let toastTimer = null;
+  function toast(msg){
+    const el = document.getElementById("resText");
+    const old = el.textContent;
+    el.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ el.textContent = formatNumber(ans); }, 900);
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------------- keyboard support ----------------
+  document.addEventListener("keydown", (e)=>{
+    if(e.ctrlKey || e.metaKey) return;
+    const k = e.key;
+
+    if(k === "Enter"){ e.preventDefault(); evaluateExpr(); return; }
+    if(k === "Backspace"){ e.preventDefault(); backspace(); return; }
+    if(k === "Escape"){ e.preventDefault(); allClear(); return; }
+
+    if(/^[0-9+\-*/().,\s]$/.test(k)){ e.preventDefault(); insertToken(k); return; }
+    if(k === "^"){ e.preventDefault(); insertOp("^"); return; }
+  });
+
+  // ---------------- persistence ----------------
+  function saveLocal(){
+    try{
+      localStorage.setItem("anycals_calc_state", JSON.stringify({history, ans, mem, mode, ui, fmt}));
+    }catch(_){}
+  }
+  function loadLocal(){
+    try{
+      const raw = localStorage.getItem("anycals_calc_state");
+      if(!raw) return;
+      const o = JSON.parse(raw);
+      if(o && Array.isArray(o.history)) history = o.history.slice(0,120);
+      if(typeof o.ans === "number") ans = o.ans;
+      if(typeof o.mem === "number") mem = o.mem;
+      if(o.mode === "DEG" || o.mode === "RAD") mode = o.mode;
+      if(o.ui === "BASIC" || o.ui === "ENG") ui = o.ui;
+      if(o.fmt && typeof o.fmt === "object"){
+        const t = o.fmt.type;
+        const n = o.fmt.n;
+        if(["AUTO","FIX","SCI","ENG"].includes(t)){
+          fmt = { type:t, n: (typeof n==="number"?n:6) };
+        }
+      }
+    }catch(_){}
+  }
+
+  // ---------------- init ----------------
+  loadLocal();
+  sync();
+  renderHistory();
+  window.addEventListener("beforeunload", saveLocal);
+</script>
+</body>
+</html>
