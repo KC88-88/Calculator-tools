@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title id="pageTitle">工程用計算機｜一般/工程模式切換｜AnyCals</title>
-  <meta name="description" id="pageDesc" content="AnyCals 最全計算機：一般計算機/工程計算機切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、FIX/SCI/ENG 格式、記憶體與歷史。" />
+  <title id="pageTitle">全能計算機｜一般/工程模式切換｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals 全能計算機：一般計算機/工程計算機切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、FIX/SCI/ENG 格式、記憶體與歷史。" />
 
   <style>
     :root{
@@ -21,6 +21,7 @@
     }
     a{color:inherit;text-decoration:none}
     .wrap{max-width:1100px;margin:0 auto}
+
     header{
       display:flex;flex-wrap:wrap;gap:12px;
       align-items:flex-end;justify-content:space-between;margin-bottom:12px
@@ -28,29 +29,58 @@
     .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
     .sub{color:var(--muted);line-height:1.6;margin-top:6px}
     .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+
     .pill{
       display:inline-block;background:var(--card);border:1px solid var(--border);
       border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
       box-shadow:var(--shadow);text-decoration:none;color:var(--fg)
     }
+
+    /* general buttons */
     .btn{
       border:1px solid var(--border);background:var(--card);
       border-radius:12px;padding:8px 10px;cursor:pointer;
       box-shadow:var(--shadow);font-size:14px;
       display:inline-flex;align-items:center;gap:8px;height:40px;
       user-select:none;
+      white-space:nowrap;
     }
-    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
-    .btn.small{height:36px;padding:6px 10px;font-size:13px;border-radius:10px}
     .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
     .btn[aria-pressed="true"]{background:var(--fg);color:#fff;border-color:transparent}
 
-    .grid{display:grid;grid-template-columns: 1.05fr .95fr;gap:14px}
+    /* compact buttons for calc toolbar */
+    .btn.compact{
+      height:34px;
+      padding:6px 10px;
+      font-size:13px;
+      border-radius:10px;
+      box-shadow:0 4px 14px rgba(0,0,0,.06);
+    }
+
+    /* layout: calculator wider, history narrower */
+    .grid{display:grid;grid-template-columns: 1.25fr .75fr;gap:14px}
     .card{
       background:var(--card);border:1px solid var(--border);
       border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)
     }
-    h2{margin:0 0 10px;font-size:16px}
+
+    /* card header row */
+    .cardHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    h2{margin:0;font-size:16px}
+    .calcTools{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
 
     .display{
       border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,#fff 0%, #fbfbfd 100%);
@@ -78,9 +108,10 @@
     }
     .chip strong{font-weight:900}
 
-    .pad{ margin-top:12px; display:grid; gap:10px; }
-    .pad.eng{ grid-template-columns: repeat(6, 1fr); }
-    .pad.basic{ grid-template-columns: repeat(4, 1fr); }
+    /* keypad */
+    .pad{ margin-top:12px; display:grid; }
+    .pad.eng{ grid-template-columns: repeat(6, 1fr); gap:8px; }
+    .pad.basic{ grid-template-columns: repeat(4, 1fr); gap:10px; }
 
     .key{
       height:44px;border-radius:14px;border:1px solid var(--border);
@@ -97,6 +128,15 @@
     .key.wide{grid-column: span 2}
     .hidden{display:none !important}
 
+    /* compact keys for engineering mode */
+    .pad.eng .key{
+      height:40px;
+      border-radius:12px;
+      font-size:13px;
+      box-shadow:0 8px 20px rgba(0,0,0,.04);
+    }
+
+    /* history */
     .histTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
     .hist{
       margin-top:10px;border:1px solid var(--border);
@@ -119,12 +159,26 @@
     }
     .row button{
       border:1px solid var(--border);background:#fff;border-radius:10px;
-      padding:6px 8px;cursor:pointer;box-shadow:var(--shadow);font-size:12px;font-weight:900
+      padding:6px 8px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);font-size:12px;font-weight:900
     }
 
+    /* responsive */
     @media(max-width:980px){
       .grid{grid-template-columns:1fr}
       .right{justify-content:flex-start}
+    }
+    @media(max-width:620px){
+      body{padding:16px}
+      .btn{height:38px}
+      .display{padding:10px}
+      .res{font-size:24px}
+      .pad.eng{grid-template-columns: repeat(5, 1fr);} /* reduce width pressure */
+    }
+    @media(max-width:480px){
+      .pad.eng{grid-template-columns: repeat(4, 1fr);} /* safest for small screens */
+      .pad.eng .key{height:40px;font-size:12px}
+      .pad.basic .key{height:44px}
+      .calcTools{justify-content:flex-start} /* toolbar wraps nicely */
     }
   </style>
 </head>
@@ -133,23 +187,33 @@
   <div class="wrap">
     <header>
       <div>
-        <h1 class="title" id="h1Title">最全計算機</h1>
+        <h1 class="title" id="h1Title">全能計算機</h1>
         <div class="sub" id="h1Sub">一般計算機 / 工程計算機一鍵切換，含三角、log、階乘、組合排列、Deg/Rad、FIX/SCI/ENG、記憶體與歷史。</div>
       </div>
+
+      <!-- Header only keeps site-level actions -->
       <div class="right">
-        <a class="pill" href="https://anycals.com/index.html">回首頁</a>
+        <a class="pill" href="https://anycals.com/index.html" id="backHome">回首頁</a>
         <a class="pill" id="contactLink" href="#">聯繫我</a>
-        <button class="btn" type="button" id="uiToggleBtn" onclick="toggleUI()" aria-pressed="false">工程模式</button>
-        <button class="btn" type="button" onclick="toggleMode()" id="degRadBtn" aria-pressed="false">DEG</button>
-        <button class="btn" type="button" onclick="cycleFormat()" id="fmtBtn">AUTO</button>
-        <button class="btn" type="button" onclick="copyResult()">複製</button>
+        <button class="btn" type="button" onclick="setLang('zh')" id="langZh">中文</button>
+        <button class="btn" type="button" onclick="setLang('en')" id="langEn">EN</button>
       </div>
     </header>
 
     <div class="grid">
       <!-- Calculator -->
       <div class="card">
-        <h2 id="panelCalcTitle">計算</h2>
+        <div class="cardHead">
+          <h2 id="panelCalcTitle">計算</h2>
+
+          <!-- Tools moved into the "計算" card, top-right -->
+          <div class="calcTools" aria-label="calculator toolbar">
+            <button class="btn compact" type="button" id="uiToggleBtn" onclick="toggleUI()" aria-pressed="false">工程模式</button>
+            <button class="btn compact" type="button" onclick="toggleMode()" id="degRadBtn" aria-pressed="false">DEG</button>
+            <button class="btn compact" type="button" onclick="cycleFormat()" id="fmtBtn">AUTO</button>
+            <button class="btn compact" type="button" onclick="copyResult()" id="copyBtn">複製</button>
+          </div>
+        </div>
 
         <div class="display" role="group" aria-label="calculator display">
           <div class="expr" id="exprText">—</div>
@@ -158,12 +222,12 @@
           <div class="aux">
             <div class="chips">
               <span class="chip"><strong>UI</strong>：<span id="uiText">BASIC</span></span>
-              <span class="chip"><strong>Mode</strong>：<span id="modeText">DEG</span></span>
-              <span class="chip"><strong>Fmt</strong>：<span id="fmtText">AUTO</span></span>
-              <span class="chip"><strong>M</strong>：<span id="memText">0</span></span>
+              <span class="chip"><strong id="modeLbl">模式</strong>：<span id="modeText">DEG</span></span>
+              <span class="chip"><strong id="fmtLbl">格式</strong>：<span id="fmtText">AUTO</span></span>
+              <span class="chip"><strong id="memLbl">記憶</strong>：<span id="memText">0</span></span>
               <span class="chip"><strong>Ans</strong>：<span id="ansText">0</span></span>
             </div>
-            <div id="hintText">鍵盤：Enter=、Backspace、Esc 清除。支援 sin()、log()、nCr()…</div>
+            <div id="hintText">鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 sin()/log()/nCr()…</div>
           </div>
         </div>
 
@@ -195,7 +259,7 @@
           <div class="key eq" onclick="evaluateExpr()">=</div>
         </div>
 
-        <!-- ENGINEERING keypad -->
+        <!-- ENGINEERING keypad (compact) -->
         <div class="pad eng hidden" id="engPad" aria-label="engineering keypad">
           <!-- Row 1 -->
           <div class="key fn danger" onclick="allClear()">AC</div>
@@ -278,7 +342,7 @@
         </div>
 
         <div class="aux" style="margin-top:12px">
-          <div style="color:var(--muted)">
+          <div style="color:var(--muted)" id="supportText">
             <strong>支援：</strong>
             sin/cos/tan、反三角、雙曲、log/ln、exp、^、sqrt、abs、floor/ceil/round、min/max、n!、nPr/nCr、mod、rand、Ans、M 記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。
           </div>
@@ -288,10 +352,10 @@
       <!-- History -->
       <div class="card">
         <div class="histTop">
-          <h2 style="margin:0">歷史</h2>
+          <h2 style="margin:0" id="histTitle">歷史</h2>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn small" type="button" onclick="clearHistory()">清空</button>
-            <button class="btn small" type="button" onclick="exportHistory()">匯出</button>
+            <button class="btn compact" type="button" onclick="clearHistory()" id="clearBtn">清空</button>
+            <button class="btn compact" type="button" onclick="exportHistory()" id="exportBtn">匯出</button>
           </div>
         </div>
 
@@ -299,7 +363,7 @@
           <div class="histList" id="histList">
             <div class="row">
               <div class="l">
-                <div class="e">尚無紀錄。按「=」後會出現在這裡。</div>
+                <div class="e" id="histEmptyText">尚無紀錄。按「=」後會出現在這裡。</div>
               </div>
               <div class="r">—</div>
             </div>
@@ -307,13 +371,101 @@
         </div>
 
         <div class="aux">
-          <div>點「Use」把結果塞回輸入（當作下一次的起點）。</div>
+          <div id="histHint">點「Use」把結果塞回輸入（當作下一次的起點）。</div>
         </div>
       </div>
     </div>
   </div>
 
 <script>
+  // ---------------- i18n ----------------
+  let lang = "zh";
+  const i18n = {
+    zh:{
+      pageTitle:"全能計算機｜一般/工程模式切換｜AnyCals",
+      pageDesc:"AnyCals 全能計算機：一般計算機/工程計算機切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、FIX/SCI/ENG 格式、記憶體與歷史。",
+      h1:"全能計算機",
+      sub:"一般計算機 / 工程計算機一鍵切換，含三角、log、階乘、組合排列、Deg/Rad、FIX/SCI/ENG、記憶體與歷史。",
+      back:"回首頁",
+      contact:"聯繫我",
+      calc:"計算",
+      hist:"歷史",
+      uiEng:"工程模式",
+      uiBasic:"一般模式",
+      copy:"複製",
+      copied:"已複製",
+      modeLbl:"模式",
+      fmtLbl:"格式",
+      memLbl:"記憶",
+      hintBasic:"鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 sin()/log()/nCr()…",
+      hintEng:"鍵盤：Enter=、Backspace、Esc 清除。例：sin(30)、log(100)、nCr(10,3)、fact(5)。",
+      support:"支援：sin/cos/tan、反三角、雙曲、log/ln、exp、^、sqrt、abs、floor/ceil/round、min/max、n!、nPr/nCr、mod、rand、Ans、M 記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。",
+      clear:"清空",
+      export:"匯出",
+      histEmpty:"尚無紀錄。按「=」後會出現在這裡。",
+      histHint:"點「Use」把結果塞回輸入（當作下一次的起點）。",
+      err:"算式錯誤",
+      tooLong:"算式太長（安全限制）"
+    },
+    en:{
+      pageTitle:"Engineering Calculator | Basic/Engineering UI | AnyCals",
+      pageDesc:"AnyCals all-in-one calculator: Basic/Engineering UI, trig & inverse trig & hyperbolic, log/ln, power/sqrt, factorial, nCr/nPr, mod, Deg/Rad, AUTO/FIX/SCI/ENG formats, memory & history.",
+      h1:"All-in-One Calculator",
+      sub:"Switch between Basic and Engineering UI. Trig/log/factorial/combinatorics, Deg/Rad, AUTO/FIX/SCI/ENG, memory & history.",
+      back:"Home",
+      contact:"Contact",
+      calc:"Calculator",
+      hist:"History",
+      uiEng:"Engineering",
+      uiBasic:"Basic",
+      copy:"Copy",
+      copied:"Copied",
+      modeLbl:"Mode",
+      fmtLbl:"Fmt",
+      memLbl:"Mem",
+      hintBasic:"Keyboard: Enter=, Backspace, Esc=clear. Switch to Engineering UI for sin()/log()/nCr()…",
+      hintEng:"Keyboard: Enter=, Backspace, Esc=clear. Examples: sin(30), log(100), nCr(10,3), fact(5).",
+      support:"Supports: trig/inverse trig/hyperbolic, log/ln/exp, power/sqrt, abs/floor/ceil/round, min/max, factorial, nPr/nCr, mod/rand, Ans, memory, Deg/Rad, AUTO/FIX/SCI/ENG.",
+      clear:"Clear",
+      export:"Export",
+      histEmpty:"No history yet. Press “=” to add entries here.",
+      histHint:"Click “Use” to push the result back into input.",
+      err:"Invalid expression",
+      tooLong:"Expression too long (safety limit)"
+    }
+  };
+
+  function setLang(l){
+    lang = l;
+    document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
+    document.getElementById("pageTitle").textContent = i18n[l].pageTitle;
+    document.getElementById("pageDesc").setAttribute("content", i18n[l].pageDesc);
+
+    document.getElementById("h1Title").textContent = i18n[l].h1;
+    document.getElementById("h1Sub").textContent = i18n[l].sub;
+
+    document.getElementById("backHome").textContent = i18n[l].back;
+    document.getElementById("contactLink").textContent = i18n[l].contact;
+
+    document.getElementById("panelCalcTitle").textContent = i18n[l].calc;
+    document.getElementById("histTitle").textContent = i18n[l].hist;
+
+    document.getElementById("modeLbl").textContent = i18n[l].modeLbl;
+    document.getElementById("fmtLbl").textContent = i18n[l].fmtLbl;
+    document.getElementById("memLbl").textContent = i18n[l].memLbl;
+
+    document.getElementById("copyBtn").textContent = i18n[l].copy;
+    document.getElementById("clearBtn").textContent = i18n[l].clear;
+    document.getElementById("exportBtn").textContent = i18n[l].export;
+
+    document.getElementById("supportText").innerHTML = `<strong>${(l==="zh")?"支援：":"Supports:"}</strong> ${escapeHtml(i18n[l].support.replace(/^支援：/,'').replace(/^Supports:\s*/,''))}`;
+    document.getElementById("histHint").textContent = i18n[l].histHint;
+
+    sync(); // update hint + ui button label
+    renderHistory();
+    saveLocal();
+  }
+
   // ---------------- state ----------------
   let expr = "";
   let ans = 0;
@@ -336,14 +488,15 @@
   // ---------------- UI sync ----------------
   function sync(){
     document.getElementById("exprText").textContent = expr ? expr : "—";
+
     document.getElementById("uiText").textContent = ui;
     document.getElementById("modeText").textContent = mode;
     document.getElementById("memText").textContent = formatNumber(mem);
     document.getElementById("ansText").textContent = formatNumber(ans);
 
-    // result shows formatted
     document.getElementById("resText").textContent = formatNumber(ans);
 
+    // update toolbar buttons
     document.getElementById("degRadBtn").textContent = mode;
     document.getElementById("degRadBtn").setAttribute("aria-pressed", mode==="RAD" ? "true":"false");
 
@@ -351,23 +504,18 @@
     document.getElementById("fmtBtn").textContent = fmtLabel();
 
     const uiBtn = document.getElementById("uiToggleBtn");
-    uiBtn.textContent = (ui==="BASIC") ? "工程模式" : "一般模式";
+    uiBtn.textContent = (ui==="BASIC") ? i18n[lang].uiEng : i18n[lang].uiBasic;
     uiBtn.setAttribute("aria-pressed", ui==="ENG" ? "true" : "false");
 
     // pad visibility
     document.getElementById("basicPad").classList.toggle("hidden", ui!=="BASIC");
     document.getElementById("engPad").classList.toggle("hidden", ui!=="ENG");
 
-    // subtitle / hint
-    const sub = document.getElementById("h1Sub");
+    // hint
     const hint = document.getElementById("hintText");
-    if(ui==="BASIC"){
-      sub.textContent = "一般計算機 / 工程計算機一鍵切換。Basic 介面專注快速四則運算。";
-      hint.textContent = "鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 sin()/log()/nCr()…";
-    }else{
-      sub.textContent = "一般計算機 / 工程計算機一鍵切換。Engineering 介面提供完整科學/工程常用功能。";
-      hint.textContent = "鍵盤：Enter=、Backspace、Esc 清除。函數例：sin(30)、log(100)、nCr(10,3)、fact(5)。";
-    }
+    hint.textContent = (ui==="BASIC") ? i18n[lang].hintBasic : i18n[lang].hintEng;
+
+    // keep header sub consistent (optional: keep as-is)
   }
 
   function fmtLabel(){
@@ -383,21 +531,14 @@
       if(ax !== 0 && (ax >= 1e12 || ax < 1e-6)){
         return x.toExponential(8).replace(/\.?0+e/,"e");
       }
-      // trim noise
       const s = (Math.round(x*1e12)/1e12).toString();
       return s;
     }
 
     const n = Math.max(0, Math.min(12, fmt.n|0));
-    if(fmt.type==="FIX"){
-      return x.toFixed(n);
-    }
-    if(fmt.type==="SCI"){
-      return x.toExponential(n).replace(/\.?0+e/,"e");
-    }
-    if(fmt.type==="ENG"){
-      return toEngineering(x, n);
-    }
+    if(fmt.type==="FIX") return x.toFixed(n);
+    if(fmt.type==="SCI") return x.toExponential(n).replace(/\.?0+e/,"e");
+    if(fmt.type==="ENG") return toEngineering(x, n);
     return String(x);
   }
 
@@ -408,12 +549,11 @@
     const exp = Math.floor(Math.log10(ax));
     const engExp = exp - (exp % 3);
     const mant = ax / Math.pow(10, engExp);
-    // keep mantissa in [1,1000)
     const m = mant.toFixed(digits);
     return `${sign}${m}e${engExp}`;
   }
 
-  // ---------------- UI toggles ----------------
+  // ---------------- toggles ----------------
   function toggleUI(){
     ui = (ui==="BASIC") ? "ENG" : "BASIC";
     sync();
@@ -436,12 +576,12 @@
 
   // ---------------- input helpers ----------------
   function insertToken(t){
-    if(expr.length > 800){ toast("算式太長（安全限制）"); return; }
+    if(expr.length > 800){ toast(i18n[lang].tooLong); return; }
     expr += t;
     sync();
   }
   function insertOp(op){
-    if(expr.length > 800){ toast("算式太長（安全限制）"); return; }
+    if(expr.length > 800){ toast(i18n[lang].tooLong); return; }
     expr += op;
     sync();
   }
@@ -450,7 +590,7 @@
     else if(c === "e") insertToken("e");
   }
   function insertFunc(name){
-    if(expr.length > 800){ toast("算式太長（安全限制）"); return; }
+    if(expr.length > 800){ toast(i18n[lang].tooLong); return; }
     expr += name + "(";
     sync();
   }
@@ -495,10 +635,8 @@
   }
 
   // ---------------- math utils ----------------
-  function clampInt(n){ return Math.trunc(n); }
-
   function gamma(z){
-    // Lanczos approximation (good enough for calculator)
+    // Lanczos approximation
     const g = 7;
     const p = [
       0.99999999999980993, 676.5203681218851, -1259.1392167224028,
@@ -516,7 +654,6 @@
   }
 
   function factorial(n){
-    // exact for integers 0..170; fallback gamma for others
     if(!isFinite(n)) return NaN;
     if(Math.abs(n - Math.round(n)) < 1e-12){
       n = Math.round(n);
@@ -527,9 +664,7 @@
       return r;
     }
     if(n < 0) return NaN;
-    // Γ(n+1)
-    const v = gamma(n + 1);
-    return v;
+    return gamma(n + 1);
   }
 
   function nCr(n, r){
@@ -588,14 +723,12 @@
 
     s = replaceCaretPowers(s);
 
-    // allow digits/operators/parentheses/commas/spaces/letters/underscore/dot
     if(!/^[0-9+\-*/().,\sA-Za-z_]*$/.test(s)) throw new Error("bad chars");
 
     const toRad = (x)=> mode==="DEG" ? (x*Math.PI/180) : x;
     const toDeg = (x)=> mode==="DEG" ? (x*180/Math.PI) : x;
 
     const f = {
-      // basic
       abs:(x)=>Math.abs(x),
       sqrt:(x)=>Math.sqrt(x),
       ln:(x)=>Math.log(x),
@@ -608,7 +741,6 @@
       ceil:(x)=>Math.ceil(x),
       round:(x)=>Math.round(x),
 
-      // trig (deg/rad aware)
       sin:(x)=>Math.sin(toRad(x)),
       cos:(x)=>Math.cos(toRad(x)),
       tan:(x)=>Math.tan(toRad(x)),
@@ -616,7 +748,6 @@
       acos:(x)=>toDeg(Math.acos(x)),
       atan:(x)=>toDeg(Math.atan(x)),
 
-      // hyperbolic
       sinh:(x)=>Math.sinh(x),
       cosh:(x)=>Math.cosh(x),
       tanh:(x)=>Math.tanh(x),
@@ -624,12 +755,10 @@
       acosh:(x)=>Math.acosh(x),
       atanh:(x)=>Math.atanh(x),
 
-      // combinatorics / integer-ish
       fact:(x)=>factorial(x),
       nCr:(n,r)=>nCr(n,r),
       nPr:(n,r)=>nPr(n,r),
 
-      // misc
       mod:(a,b)=>mod(a,b),
       rand:()=>Math.random(),
     };
@@ -642,8 +771,7 @@
 
     // eslint-disable-next-line no-new-func
     const fn = new Function(...Object.keys(f), `"use strict"; return (${s});`);
-    const out = fn(...Object.values(f));
-    return Number(out);
+    return Number(fn(...Object.values(f)));
   }
 
   function evaluateExpr(){
@@ -659,7 +787,7 @@
       renderHistory();
       saveLocal();
     }catch(e){
-      toast("算式錯誤");
+      toast(i18n[lang].err);
     }
   }
 
@@ -682,11 +810,7 @@
   function renderHistory(){
     const box = document.getElementById("histList");
     if(!history.length){
-      box.innerHTML = `
-        <div class="row">
-          <div class="l"><div class="e">尚無紀錄。按「=」後會出現在這裡。</div></div>
-          <div class="r">—</div>
-        </div>`;
+      document.getElementById("histEmptyText").textContent = i18n[lang].histEmpty;
       return;
     }
     box.innerHTML = history.map((x, i)=>`
@@ -723,12 +847,11 @@
   // ---------------- copy / toast ----------------
   function copyResult(){
     const text = String(formatNumber(ans));
-    navigator.clipboard?.writeText(text).then(()=>toast("已複製")).catch(()=>toast(text));
+    navigator.clipboard?.writeText(text).then(()=>toast(i18n[lang].copied)).catch(()=>toast(text));
   }
   let toastTimer = null;
   function toast(msg){
     const el = document.getElementById("resText");
-    const old = el.textContent;
     el.textContent = msg;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(()=>{ el.textContent = formatNumber(ans); }, 900);
@@ -753,7 +876,7 @@
   // ---------------- persistence ----------------
   function saveLocal(){
     try{
-      localStorage.setItem("anycals_calc_state", JSON.stringify({history, ans, mem, mode, ui, fmt}));
+      localStorage.setItem("anycals_calc_state", JSON.stringify({history, ans, mem, mode, ui, fmt, lang}));
     }catch(_){}
   }
   function loadLocal(){
@@ -773,11 +896,13 @@
           fmt = { type:t, n: (typeof n==="number"?n:6) };
         }
       }
+      if(o.lang === "zh" || o.lang === "en") lang = o.lang;
     }catch(_){}
   }
 
   // ---------------- init ----------------
   loadLocal();
+  setLang(lang);
   sync();
   renderHistory();
   window.addEventListener("beforeunload", saveLocal);
