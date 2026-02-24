@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title id="pageTitle">全能計算機｜一般/工程模式切換｜AnyCals</title>
-  <meta name="description" id="pageDesc" content="AnyCals 全能計算機：一般計算機/工程計算機切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、FIX/SCI/ENG 格式、記憶體與歷史。" />
+  <title id="pageTitle">全能計算機｜可切換一般/工程模式｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals 全能計算機：可切換一般/工程模式，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、AUTO/FIX/SCI/ENG、記憶體與歷史。" />
 
   <style>
     :root{
       --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
       --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
-      --radius:16px; --soft:#f3f4f6; --danger:#ef4444; --ok:#10b981;
+      --radius:16px; --danger:#ef4444;
     }
     *,*::before,*::after{box-sizing:border-box;}
     body{
@@ -29,58 +29,39 @@
     .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
     .sub{color:var(--muted);line-height:1.6;margin-top:6px}
     .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-
     .pill{
       display:inline-block;background:var(--card);border:1px solid var(--border);
       border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
       box-shadow:var(--shadow);text-decoration:none;color:var(--fg)
     }
 
-    /* general buttons */
     .btn{
       border:1px solid var(--border);background:var(--card);
       border-radius:12px;padding:8px 10px;cursor:pointer;
       box-shadow:var(--shadow);font-size:14px;
       display:inline-flex;align-items:center;gap:8px;height:40px;
-      user-select:none;
-      white-space:nowrap;
+      user-select:none;white-space:nowrap;
     }
     .btn:active{transform:translateY(1px)}
-    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
     .btn[aria-pressed="true"]{background:var(--fg);color:#fff;border-color:transparent}
-
-    /* compact buttons for calc toolbar */
     .btn.compact{
-      height:34px;
-      padding:6px 10px;
-      font-size:13px;
-      border-radius:10px;
+      height:34px;padding:6px 10px;font-size:13px;border-radius:10px;
       box-shadow:0 4px 14px rgba(0,0,0,.06);
     }
 
-    /* layout: calculator wider, history narrower */
-    .grid{display:grid;grid-template-columns: 1.25fr .75fr;gap:14px}
+    /* layout: calc wider, history narrower */
+    .grid{display:grid;grid-template-columns: 1.28fr .72fr;gap:14px}
     .card{
       background:var(--card);border:1px solid var(--border);
       border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)
     }
 
-    /* card header row */
     .cardHead{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
+      display:flex;align-items:flex-start;justify-content:space-between;
+      gap:10px;flex-wrap:wrap;margin-bottom:10px;
     }
     h2{margin:0;font-size:16px}
-    .calcTools{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+    .calcTools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 
     .display{
       border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,#fff 0%, #fbfbfd 100%);
@@ -97,8 +78,8 @@
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .aux{
-      margin-top:8px;
-      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+      margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;
+      align-items:center;justify-content:space-between;
       color:var(--muted);font-size:12px;line-height:1.6;
     }
     .chips{display:flex;gap:8px;flex-wrap:wrap}
@@ -107,10 +88,12 @@
       padding:6px 10px;font-size:12px;color:#374151
     }
     .chip strong{font-weight:900}
+    .chip.badge{
+      background:#111827;color:#fff;border-color:transparent;
+    }
 
-    /* keypad */
+    /* keypads */
     .pad{ margin-top:12px; display:grid; }
-    .pad.eng{ grid-template-columns: repeat(6, 1fr); gap:8px; }
     .pad.basic{ grid-template-columns: repeat(4, 1fr); gap:10px; }
 
     .key{
@@ -119,6 +102,7 @@
       cursor:pointer;font-size:14px;font-weight:900;
       display:flex;align-items:center;justify-content:center;
       user-select:none; padding:0 8px;
+      -webkit-tap-highlight-color: transparent;
     }
     .key:active{transform:translateY(1px)}
     .key.op{background:#fcfcfd}
@@ -128,12 +112,30 @@
     .key.wide{grid-column: span 2}
     .hidden{display:none !important}
 
-    /* compact keys for engineering mode */
+    /* engineering: fixed 6 columns, in a scroll wrapper */
+    .padScroll{
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      padding-bottom:6px;              /* keep scrollbar from covering keys */
+      border-radius:14px;
+      touch-action: pan-x;             /* encourage horizontal scroll */
+    }
+    .padScroll::-webkit-scrollbar{height:8px}
+    .padScroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:999px}
+    .padScroll::-webkit-scrollbar-track{background:transparent}
+
+    .pad.eng{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap:8px;
+      min-width: 430px;               /* key: prevents squish + reflow */
+    }
     .pad.eng .key{
-      height:40px;
-      border-radius:12px;
-      font-size:13px;
+      height:40px;border-radius:12px;font-size:13px;
       box-shadow:0 8px 20px rgba(0,0,0,.04);
+    }
+    .key.shiftOn{
+      background:#111827;color:#fff;border-color:transparent;
     }
 
     /* history */
@@ -154,12 +156,13 @@
       font-size:12px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .row .r{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","CourierNew", monospace;
       font-weight:900;font-size:13px;color:#111827;white-space:nowrap;
     }
     .row button{
       border:1px solid var(--border);background:#fff;border-radius:10px;
-      padding:6px 8px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);font-size:12px;font-weight:900
+      padding:6px 8px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);
+      font-size:12px;font-weight:900
     }
 
     /* responsive */
@@ -167,18 +170,13 @@
       .grid{grid-template-columns:1fr}
       .right{justify-content:flex-start}
     }
-    @media(max-width:620px){
+    @media(max-width:520px){
       body{padding:16px}
-      .btn{height:38px}
       .display{padding:10px}
       .res{font-size:24px}
-      .pad.eng{grid-template-columns: repeat(5, 1fr);} /* reduce width pressure */
-    }
-    @media(max-width:480px){
-      .pad.eng{grid-template-columns: repeat(4, 1fr);} /* safest for small screens */
-      .pad.eng .key{height:40px;font-size:12px}
-      .pad.basic .key{height:44px}
-      .calcTools{justify-content:flex-start} /* toolbar wraps nicely */
+      .pad.eng{min-width: 400px; gap:7px;}
+      .pad.eng .key{height:38px;font-size:12px}
+      .calcTools{justify-content:flex-start}
     }
   </style>
 </head>
@@ -188,7 +186,7 @@
     <header>
       <div>
         <h1 class="title" id="h1Title">全能計算機</h1>
-        <div class="sub" id="h1Sub">一般計算機 / 工程計算機一鍵切換，含三角、log、階乘、組合排列、Deg/Rad、FIX/SCI/ENG、記憶體與歷史。</div>
+        <div class="sub" id="h1Sub">一般計算機 / 工程計算機一鍵切換。工程模式含 Shift 兩層鍵盤與手機橫向滑動（不亂版）。</div>
       </div>
 
       <!-- Header only keeps site-level actions -->
@@ -226,125 +224,113 @@
               <span class="chip"><strong id="fmtLbl">格式</strong>：<span id="fmtText">AUTO</span></span>
               <span class="chip"><strong id="memLbl">記憶</strong>：<span id="memText">0</span></span>
               <span class="chip"><strong>Ans</strong>：<span id="ansText">0</span></span>
+              <span class="chip badge hidden" id="shiftChip">SHIFT</span>
             </div>
-            <div id="hintText">鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 sin()/log()/nCr()…</div>
+            <div id="hintText">鍵盤：Enter=、Backspace、Esc 清除。工程模式支援 Shift 兩層鍵盤。</div>
           </div>
         </div>
 
         <!-- BASIC keypad -->
         <div class="pad basic" id="basicPad" aria-label="basic keypad">
-          <div class="key fn danger" onclick="allClear()">AC</div>
-          <div class="key fn danger" onclick="backspace()">⌫</div>
-          <div class="key fn" onclick="insertToken('%')">%</div>
-          <div class="key op" onclick="insertOp('/')">÷</div>
+          <div class="key fn danger" onclick="K('ac')">AC</div>
+          <div class="key fn danger" onclick="K('bs')">⌫</div>
+          <div class="key fn" onclick="K('tok','%')">%</div>
+          <div class="key op" onclick="K('op','/')">÷</div>
 
-          <div class="key" onclick="insertToken('7')">7</div>
-          <div class="key" onclick="insertToken('8')">8</div>
-          <div class="key" onclick="insertToken('9')">9</div>
-          <div class="key op" onclick="insertOp('*')">×</div>
+          <div class="key" onclick="K('tok','7')">7</div>
+          <div class="key" onclick="K('tok','8')">8</div>
+          <div class="key" onclick="K('tok','9')">9</div>
+          <div class="key op" onclick="K('op','*')">×</div>
 
-          <div class="key" onclick="insertToken('4')">4</div>
-          <div class="key" onclick="insertToken('5')">5</div>
-          <div class="key" onclick="insertToken('6')">6</div>
-          <div class="key op" onclick="insertOp('-')">−</div>
+          <div class="key" onclick="K('tok','4')">4</div>
+          <div class="key" onclick="K('tok','5')">5</div>
+          <div class="key" onclick="K('tok','6')">6</div>
+          <div class="key op" onclick="K('op','-')">−</div>
 
-          <div class="key" onclick="insertToken('1')">1</div>
-          <div class="key" onclick="insertToken('2')">2</div>
-          <div class="key" onclick="insertToken('3')">3</div>
-          <div class="key op" onclick="insertOp('+')">+</div>
+          <div class="key" onclick="K('tok','1')">1</div>
+          <div class="key" onclick="K('tok','2')">2</div>
+          <div class="key" onclick="K('tok','3')">3</div>
+          <div class="key op" onclick="K('op','+')">+</div>
 
-          <div class="key fn" onclick="toggleSign()">±</div>
-          <div class="key" onclick="insertToken('0')">0</div>
-          <div class="key" onclick="insertToken('.')">.</div>
-          <div class="key eq" onclick="evaluateExpr()">=</div>
+          <div class="key fn" onclick="K('sign')">±</div>
+          <div class="key" onclick="K('tok','0')">0</div>
+          <div class="key" onclick="K('tok','.')">.</div>
+          <div class="key eq" onclick="K('eq')">=</div>
         </div>
 
-        <!-- ENGINEERING keypad (compact) -->
-        <div class="pad eng hidden" id="engPad" aria-label="engineering keypad">
-          <!-- Row 1 -->
-          <div class="key fn danger" onclick="allClear()">AC</div>
-          <div class="key fn danger" onclick="backspace()">⌫</div>
-          <div class="key fn" onclick="insertToken('(')">(</div>
-          <div class="key fn" onclick="insertToken(')')">)</div>
-          <div class="key fn" onclick="insertConst('pi')">π</div>
-          <div class="key fn" onclick="insertConst('e')">e</div>
+        <!-- ENGINEERING keypad (fixed 6 cols + horizontal scroll) -->
+        <div class="padScroll hidden" id="engPadScroll" aria-label="engineering keypad scroll">
+          <div class="pad eng" id="engPad" aria-label="engineering keypad">
+            <!-- Row 1 -->
+            <div class="key fn danger" onclick="K('ac')">AC</div>
+            <div class="key fn danger" onclick="K('bs')">⌫</div>
+            <div class="key fn" onclick="K('tok','(')">(</div>
+            <div class="key fn" onclick="K('tok',')')">)</div>
+            <div class="key fn" onclick="K('const','pi')">π</div>
+            <div class="key fn" onclick="K('const','e')">e</div>
 
-          <!-- Row 2 -->
-          <div class="key fn" onclick="insertFunc('sin')">sin</div>
-          <div class="key fn" onclick="insertFunc('cos')">cos</div>
-          <div class="key fn" onclick="insertFunc('tan')">tan</div>
-          <div class="key fn" onclick="insertFunc('asin')">asin</div>
-          <div class="key fn" onclick="insertFunc('acos')">acos</div>
-          <div class="key fn" onclick="insertFunc('atan')">atan</div>
+            <!-- Row 2 (Shift layer: asin/acos/atan, 10^x, e^x) -->
+            <div class="key fn" id="shiftKey" onclick="K('shift')">SHIFT</div>
+            <div class="key fn" data-main-label="sin"  data-shift-label="asin" data-main="sin("  data-shift="asin("  onclick="K('dual',this)">sin</div>
+            <div class="key fn" data-main-label="cos"  data-shift-label="acos" data-main="cos("  data-shift="acos("  onclick="K('dual',this)">cos</div>
+            <div class="key fn" data-main-label="tan"  data-shift-label="atan" data-main="tan("  data-shift="atan("  onclick="K('dual',this)">tan</div>
+            <div class="key fn" data-main-label="log"  data-shift-label="10^x" data-main="log("  data-shift="pow10(" onclick="K('dual',this)">log</div>
+            <div class="key fn" data-main-label="ln"   data-shift-label="e^x"  data-main="ln("   data-shift="exp("   onclick="K('dual',this)">ln</div>
 
-          <!-- Row 3 -->
-          <div class="key fn" onclick="insertFunc('sinh')">sinh</div>
-          <div class="key fn" onclick="insertFunc('cosh')">cosh</div>
-          <div class="key fn" onclick="insertFunc('tanh')">tanh</div>
-          <div class="key fn" onclick="insertFunc('asinh')">asinh</div>
-          <div class="key fn" onclick="insertFunc('acosh')">acosh</div>
-          <div class="key fn" onclick="insertFunc('atanh')">atanh</div>
+            <!-- Row 3 (Shift layer: asinh/acosh/atanh, x², ∛ ) -->
+            <div class="key fn" data-main-label="sinh" data-shift-label="asinh" data-main="sinh(" data-shift="asinh(" onclick="K('dual',this)">sinh</div>
+            <div class="key fn" data-main-label="cosh" data-shift-label="acosh" data-main="cosh(" data-shift="acosh(" onclick="K('dual',this)">cosh</div>
+            <div class="key fn" data-main-label="tanh" data-shift-label="atanh" data-main="tanh(" data-shift="atanh(" onclick="K('dual',this)">tanh</div>
+            <div class="key fn" data-main-label="xʸ"   data-shift-label="x²"    data-main="^"     data-shift="^2"     onclick="K('dualOp',this)">xʸ</div>
+            <div class="key fn" data-main-label="√"    data-shift-label="∛"     data-main="sqrt(" data-shift="cbrt("  onclick="K('dual',this)">√</div>
+            <div class="key fn" onclick="K('ans')">Ans</div>
 
-          <!-- Row 4 -->
-          <div class="key fn" onclick="insertFunc('ln')">ln</div>
-          <div class="key fn" onclick="insertFunc('log')">log</div>
-          <div class="key fn" onclick="insertFunc('exp')">exp</div>
-          <div class="key fn" onclick="insertOp('^')">xʸ</div>
-          <div class="key fn" onclick="insertFunc('sqrt')">√</div>
-          <div class="key fn" onclick="insertAns()">Ans</div>
+            <!-- Row 4 (Shift layer: mod, ceil, rand, nPr, %, ) -->
+            <div class="key fn" data-main-label="abs"   data-shift-label="mod"  data-main="abs("  data-shift="mod("  onclick="K('dual',this)">abs</div>
+            <div class="key fn" data-main-label="floor" data-shift-label="ceil" data-main="floor(" data-shift="ceil(" onclick="K('dual',this)">floor</div>
+            <div class="key fn" data-main-label="round" data-shift-label="rand" data-main="round(" data-shift="rand(" onclick="K('dual',this)">round</div>
+            <div class="key fn" data-main-label="n!"    data-shift-label="nPr"  data-main="fact(" data-shift="nPr("  onclick="K('dual',this)">n!</div>
+            <div class="key fn" data-main-label="nCr"   data-shift-label="%"    data-main="nCr("  data-shift="%"     onclick="K('dualSpecial',this)">nCr</div>
+            <div class="key fn" data-main-label="min"   data-shift-label="max"  data-main="min("  data-shift="max("  onclick="K('dual',this)">min</div>
 
-          <!-- Row 5 -->
-          <div class="key fn" onclick="insertFunc('abs')">abs</div>
-          <div class="key fn" onclick="insertFunc('floor')">floor</div>
-          <div class="key fn" onclick="insertFunc('ceil')">ceil</div>
-          <div class="key fn" onclick="insertFunc('round')">round</div>
-          <div class="key fn" onclick="insertFunc('min')">min</div>
-          <div class="key fn" onclick="insertFunc('max')">max</div>
+            <!-- Row 5 -->
+            <div class="key fn" onclick="K('mc')">MC</div>
+            <div class="key fn" onclick="K('mr')">MR</div>
+            <div class="key fn" onclick="K('mplus')">M+</div>
+            <div class="key fn" onclick="K('mminus')">M-</div>
+            <div class="key op" onclick="K('op','/')">÷</div>
+            <div class="key op" onclick="K('op','*')">×</div>
 
-          <!-- Row 6 -->
-          <div class="key fn" onclick="insertFunc('fact')">n!</div>
-          <div class="key fn" onclick="insertFunc('nPr')">nPr</div>
-          <div class="key fn" onclick="insertFunc('nCr')">nCr</div>
-          <div class="key fn" onclick="insertFunc('mod')">mod</div>
-          <div class="key fn" onclick="insertFunc('rand')">rand</div>
-          <div class="key fn" onclick="insertToken('%')">%</div>
+            <!-- Row 6 -->
+            <div class="key" onclick="K('tok','7')">7</div>
+            <div class="key" onclick="K('tok','8')">8</div>
+            <div class="key" onclick="K('tok','9')">9</div>
+            <div class="key op" onclick="K('op','-')">−</div>
+            <div class="key fn" onclick="K('sign')">±</div>
+            <div class="key fn" onclick="K('tok',',')">,</div>
 
-          <!-- Row 7 -->
-          <div class="key fn" onclick="memClear()">MC</div>
-          <div class="key fn" onclick="memRecall()">MR</div>
-          <div class="key fn" onclick="memPlus()">M+</div>
-          <div class="key fn" onclick="memMinus()">M-</div>
-          <div class="key op" onclick="insertOp('/')">÷</div>
-          <div class="key op" onclick="insertOp('*')">×</div>
+            <!-- Row 7 -->
+            <div class="key" onclick="K('tok','4')">4</div>
+            <div class="key" onclick="K('tok','5')">5</div>
+            <div class="key" onclick="K('tok','6')">6</div>
+            <div class="key op" onclick="K('op','+')">+</div>
+            <div class="key fn" onclick="K('tok',' ')">␠</div>
+            <div class="key fn" onclick="K('tok','.')">.</div>
 
-          <!-- Row 8 -->
-          <div class="key" onclick="insertToken('7')">7</div>
-          <div class="key" onclick="insertToken('8')">8</div>
-          <div class="key" onclick="insertToken('9')">9</div>
-          <div class="key op" onclick="insertOp('-')">−</div>
-          <div class="key fn" onclick="toggleSign()">±</div>
-          <div class="key fn" onclick="insertToken(',')">,</div>
-
-          <!-- Row 9 -->
-          <div class="key" onclick="insertToken('4')">4</div>
-          <div class="key" onclick="insertToken('5')">5</div>
-          <div class="key" onclick="insertToken('6')">6</div>
-          <div class="key op" onclick="insertOp('+')">+</div>
-          <div class="key fn" onclick="insertToken(' ')">␠</div>
-          <div class="key fn" onclick="insertToken('.')">.</div>
-
-          <!-- Row 10 -->
-          <div class="key" onclick="insertToken('1')">1</div>
-          <div class="key" onclick="insertToken('2')">2</div>
-          <div class="key" onclick="insertToken('3')">3</div>
-          <div class="key fn wide" onclick="insertToken('0')">0</div>
-          <div class="key eq wide" onclick="evaluateExpr()">=</div>
+            <!-- Row 8 -->
+            <div class="key" onclick="K('tok','1')">1</div>
+            <div class="key" onclick="K('tok','2')">2</div>
+            <div class="key" onclick="K('tok','3')">3</div>
+            <div class="key wide" onclick="K('tok','0')">0</div>
+            <div class="key eq" onclick="K('eq')">=</div>
+          </div>
         </div>
 
         <div class="aux" style="margin-top:12px">
           <div style="color:var(--muted)" id="supportText">
             <strong>支援：</strong>
-            sin/cos/tan、反三角、雙曲、log/ln、exp、^、sqrt、abs、floor/ceil/round、min/max、n!、nPr/nCr、mod、rand、Ans、M 記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。
+            SHIFT兩層（反三角/反雙曲、10^x、e^x、x²、∛、ceil、rand、nPr、%…）＋
+            sin/cos/tan、sinh/cosh/tanh、log/ln、exp、^、sqrt/cbrt、abs/mod、floor/ceil、round/rand、fact、nCr/nPr、min/max、Ans、記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。
           </div>
         </div>
       </div>
@@ -361,7 +347,7 @@
 
         <div class="hist" aria-label="history">
           <div class="histList" id="histList">
-            <div class="row">
+            <div class="row" id="histEmptyRow">
               <div class="l">
                 <div class="e" id="histEmptyText">尚無紀錄。按「=」後會出現在這裡。</div>
               </div>
@@ -382,10 +368,10 @@
   let lang = "zh";
   const i18n = {
     zh:{
-      pageTitle:"全能計算機｜一般/工程模式切換｜AnyCals",
-      pageDesc:"AnyCals 全能計算機：一般計算機/工程計算機切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、FIX/SCI/ENG 格式、記憶體與歷史。",
+      pageTitle:"全能計算機｜可切換一般/工程模式｜AnyCals",
+      pageDesc:"AnyCals 全能計算機：可切換一般/工程模式，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、AUTO/FIX/SCI/ENG、記憶體與歷史。",
       h1:"全能計算機",
-      sub:"一般計算機 / 工程計算機一鍵切換，含三角、log、階乘、組合排列、Deg/Rad、FIX/SCI/ENG、記憶體與歷史。",
+      sub:"一般計算機 / 工程計算機一鍵切換。工程模式含 Shift 兩層鍵盤與手機橫向滑動（不亂版）。",
       back:"回首頁",
       contact:"聯繫我",
       calc:"計算",
@@ -397,9 +383,8 @@
       modeLbl:"模式",
       fmtLbl:"格式",
       memLbl:"記憶",
-      hintBasic:"鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 sin()/log()/nCr()…",
-      hintEng:"鍵盤：Enter=、Backspace、Esc 清除。例：sin(30)、log(100)、nCr(10,3)、fact(5)。",
-      support:"支援：sin/cos/tan、反三角、雙曲、log/ln、exp、^、sqrt、abs、floor/ceil/round、min/max、n!、nPr/nCr、mod、rand、Ans、M 記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。",
+      hintBasic:"鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 Shift（asin/10^x/x²/∛…）。",
+      hintEng:"提示：Shift 為第二層功能（例：sin→asin、log→10^x、xʸ→x²、√→∛、round→rand、n!→nPr、nCr→%）。",
       clear:"清空",
       export:"匯出",
       histEmpty:"尚無紀錄。按「=」後會出現在這裡。",
@@ -409,9 +394,9 @@
     },
     en:{
       pageTitle:"Engineering Calculator | Basic/Engineering UI | AnyCals",
-      pageDesc:"AnyCals all-in-one calculator: Basic/Engineering UI, trig & inverse trig & hyperbolic, log/ln, power/sqrt, factorial, nCr/nPr, mod, Deg/Rad, AUTO/FIX/SCI/ENG formats, memory & history.",
+      pageDesc:"AnyCals all-in-one calculator: Basic/Engineering UI, trig & inverse trig & hyperbolic, log/ln, power/sqrt, factorial, nCr/nPr, mod, Deg/Rad, AUTO/FIX/SCI/ENG, memory & history.",
       h1:"All-in-One Calculator",
-      sub:"Switch between Basic and Engineering UI. Trig/log/factorial/combinatorics, Deg/Rad, AUTO/FIX/SCI/ENG, memory & history.",
+      sub:"Switch between Basic and Engineering UI. Engineering mode includes Shift (2nd layer) + horizontal scroll on phones (no reflow chaos).",
       back:"Home",
       contact:"Contact",
       calc:"Calculator",
@@ -423,9 +408,8 @@
       modeLbl:"Mode",
       fmtLbl:"Fmt",
       memLbl:"Mem",
-      hintBasic:"Keyboard: Enter=, Backspace, Esc=clear. Switch to Engineering UI for sin()/log()/nCr()…",
-      hintEng:"Keyboard: Enter=, Backspace, Esc=clear. Examples: sin(30), log(100), nCr(10,3), fact(5).",
-      support:"Supports: trig/inverse trig/hyperbolic, log/ln/exp, power/sqrt, abs/floor/ceil/round, min/max, factorial, nPr/nCr, mod/rand, Ans, memory, Deg/Rad, AUTO/FIX/SCI/ENG.",
+      hintBasic:"Keyboard: Enter=, Backspace, Esc=clear. Switch to Engineering UI with Shift (asin/10^x/x²/∛…).",
+      hintEng:"Tip: Shift toggles the 2nd layer (sin→asin, log→10^x, xʸ→x², √→∛, round→rand, n!→nPr, nCr→%).",
       clear:"Clear",
       export:"Export",
       histEmpty:"No history yet. Press “=” to add entries here.",
@@ -458,10 +442,10 @@
     document.getElementById("clearBtn").textContent = i18n[l].clear;
     document.getElementById("exportBtn").textContent = i18n[l].export;
 
-    document.getElementById("supportText").innerHTML = `<strong>${(l==="zh")?"支援：":"Supports:"}</strong> ${escapeHtml(i18n[l].support.replace(/^支援：/,'').replace(/^Supports:\s*/,''))}`;
+    document.getElementById("histEmptyText").textContent = i18n[l].histEmpty;
     document.getElementById("histHint").textContent = i18n[l].histHint;
 
-    sync(); // update hint + ui button label
+    sync();
     renderHistory();
     saveLocal();
   }
@@ -472,10 +456,14 @@
   let mem = 0;
   let mode = "DEG";     // DEG / RAD
   let ui = "BASIC";     // BASIC / ENG
+  let shift = false;    // Shift layer on/off
   // format: AUTO | FIX:n | SCI:n | ENG:n
   let fmt = { type:"AUTO", n:6 };
+  let history = [];     // {expr, result, ts}
 
-  let history = []; // {expr, result, ts}
+  // tap guard for horizontal scroll misclick
+  let tapBlocked = false;
+  let downX=0, downY=0, moved=false, activePointer=false;
 
   // ---------------- contact ----------------
   (function(){
@@ -485,18 +473,30 @@
     }
   })();
 
+  // ---------------- shift label sync ----------------
+  function applyShiftLabels(){
+    const pad = document.getElementById("engPad");
+    pad.querySelectorAll("[data-main]").forEach(el=>{
+      const on = shift;
+      const label = on ? (el.dataset.shiftLabel || el.textContent) : (el.dataset.mainLabel || el.textContent);
+      el.textContent = label;
+    });
+    // shift key visual
+    const sk = document.getElementById("shiftKey");
+    sk.classList.toggle("shiftOn", shift);
+    document.getElementById("shiftChip").classList.toggle("hidden", !shift);
+  }
+
   // ---------------- UI sync ----------------
   function sync(){
     document.getElementById("exprText").textContent = expr ? expr : "—";
-
     document.getElementById("uiText").textContent = ui;
     document.getElementById("modeText").textContent = mode;
     document.getElementById("memText").textContent = formatNumber(mem);
     document.getElementById("ansText").textContent = formatNumber(ans);
-
     document.getElementById("resText").textContent = formatNumber(ans);
 
-    // update toolbar buttons
+    // toolbar buttons
     document.getElementById("degRadBtn").textContent = mode;
     document.getElementById("degRadBtn").setAttribute("aria-pressed", mode==="RAD" ? "true":"false");
 
@@ -509,13 +509,14 @@
 
     // pad visibility
     document.getElementById("basicPad").classList.toggle("hidden", ui!=="BASIC");
-    document.getElementById("engPad").classList.toggle("hidden", ui!=="ENG");
+    document.getElementById("engPadScroll").classList.toggle("hidden", ui!=="ENG");
 
     // hint
-    const hint = document.getElementById("hintText");
-    hint.textContent = (ui==="BASIC") ? i18n[lang].hintBasic : i18n[lang].hintEng;
+    document.getElementById("hintText").textContent = (ui==="BASIC") ? i18n[lang].hintBasic : i18n[lang].hintEng;
 
-    // keep header sub consistent (optional: keep as-is)
+    // shift only meaningful in ENG
+    if(ui !== "ENG"){ shift = false; }
+    applyShiftLabels();
   }
 
   function fmtLabel(){
@@ -531,8 +532,7 @@
       if(ax !== 0 && (ax >= 1e12 || ax < 1e-6)){
         return x.toExponential(8).replace(/\.?0+e/,"e");
       }
-      const s = (Math.round(x*1e12)/1e12).toString();
-      return s;
+      return (Math.round(x*1e12)/1e12).toString();
     }
 
     const n = Math.max(0, Math.min(12, fmt.n|0));
@@ -549,50 +549,142 @@
     const exp = Math.floor(Math.log10(ax));
     const engExp = exp - (exp % 3);
     const mant = ax / Math.pow(10, engExp);
-    const m = mant.toFixed(digits);
-    return `${sign}${m}e${engExp}`;
+    return `${sign}${mant.toFixed(digits)}e${engExp}`;
   }
 
   // ---------------- toggles ----------------
   function toggleUI(){
     ui = (ui==="BASIC") ? "ENG" : "BASIC";
-    sync();
-    saveLocal();
+    if(ui !== "ENG") shift = false;
+    sync(); saveLocal();
   }
   function toggleMode(){
     mode = (mode==="DEG") ? "RAD" : "DEG";
-    sync();
-    saveLocal();
+    sync(); saveLocal();
   }
   function cycleFormat(){
-    // AUTO -> FIX:6 -> SCI:6 -> ENG:6 -> AUTO
     if(fmt.type==="AUTO") fmt = {type:"FIX", n:6};
     else if(fmt.type==="FIX") fmt = {type:"SCI", n:6};
     else if(fmt.type==="SCI") fmt = {type:"ENG", n:6};
     else fmt = {type:"AUTO", n:6};
-    sync();
+    sync(); saveLocal();
+  }
+  function toggleShift(){
+    if(ui!=="ENG") return;
+    shift = !shift;
+    applyShiftLabels();
     saveLocal();
+  }
+
+  // ---------------- tap guard (scroll misclick protection) ----------------
+  (function setupScrollTapGuard(){
+    const sc = document.getElementById("engPadScroll");
+    if(!sc) return;
+
+    const threshold = 10; // px
+    sc.addEventListener("pointerdown", (e)=>{
+      activePointer = true;
+      moved = false;
+      tapBlocked = false;
+      downX = e.clientX; downY = e.clientY;
+    }, {passive:true});
+
+    sc.addEventListener("pointermove", (e)=>{
+      if(!activePointer) return;
+      const dx = Math.abs(e.clientX - downX);
+      const dy = Math.abs(e.clientY - downY);
+      if(dx > threshold && dx > dy){
+        moved = true;
+        tapBlocked = true;
+      }
+    }, {passive:true});
+
+    const end = ()=>{
+      activePointer = false;
+      // if it was a scroll gesture, keep blocking for a short moment to avoid "release tap"
+      if(moved){
+        tapBlocked = true;
+        setTimeout(()=>{ tapBlocked = false; moved=false; }, 140);
+      }else{
+        tapBlocked = false;
+      }
+    };
+    sc.addEventListener("pointerup", end, {passive:true});
+    sc.addEventListener("pointercancel", end, {passive:true});
+    sc.addEventListener("mouseleave", ()=>{ activePointer=false; }, {passive:true});
+  })();
+
+  // ---------------- main key dispatcher ----------------
+  function K(type, val){
+    if(ui==="ENG" && tapBlocked) return; // block accidental clicks while scrolling
+
+    switch(type){
+      case "ac": allClear(); break;
+      case "bs": backspace(); break;
+      case "eq": evaluateExpr(); break;
+      case "op": insertOp(val); break;
+      case "tok": insertToken(val); break;
+      case "const": insertConst(val); break;
+      case "ans": insertAns(); break;
+      case "sign": toggleSign(); break;
+      case "shift": toggleShift(); break;
+
+      // memory
+      case "mc": memClear(); break;
+      case "mr": memRecall(); break;
+      case "mplus": memPlus(); break;
+      case "mminus": memMinus(); break;
+
+      // dual function key: uses shift layer token and auto-off shift after use
+      case "dual":
+        insertToken(shift ? val.dataset.shift : val.dataset.main);
+        if(shift){ shift=false; applyShiftLabels(); saveLocal(); }
+        break;
+
+      // dual operator key: main is '^', shift is '^2' (append properly)
+      case "dualOp":{
+        const t = shift ? val.dataset.shift : val.dataset.main;
+        if(t === "^2"){
+          // best-effort: append ^2 (works with numbers/parentheses end)
+          insertToken("^2");
+        }else{
+          insertOp(t);
+        }
+        if(shift){ shift=false; applyShiftLabels(); saveLocal(); }
+        break;
+      }
+
+      // dual special: shift is a raw token like '%'
+      case "dualSpecial":{
+        const t = shift ? val.dataset.shift : val.dataset.main;
+        if(t === "%") insertToken("%");
+        else insertToken(t);
+        if(shift){ shift=false; applyShiftLabels(); saveLocal(); }
+        break;
+      }
+
+      default: break;
+    }
   }
 
   // ---------------- input helpers ----------------
   function insertToken(t){
-    if(expr.length > 800){ toast(i18n[lang].tooLong); return; }
+    if(expr.length > 900){ toast(i18n[lang].tooLong); return; }
+    // normalize symbols
+    if(t === "×") t = "*";
+    if(t === "÷") t = "/";
+    if(t === "−") t = "-";
     expr += t;
     sync();
   }
   function insertOp(op){
-    if(expr.length > 800){ toast(i18n[lang].tooLong); return; }
+    if(expr.length > 900){ toast(i18n[lang].tooLong); return; }
     expr += op;
     sync();
   }
   function insertConst(c){
     if(c === "pi") insertToken("pi");
     else if(c === "e") insertToken("e");
-  }
-  function insertFunc(name){
-    if(expr.length > 800){ toast(i18n[lang].tooLong); return; }
-    expr += name + "(";
-    sync();
   }
   function insertAns(){
     insertToken("Ans");
@@ -636,7 +728,6 @@
 
   // ---------------- math utils ----------------
   function gamma(z){
-    // Lanczos approximation
     const g = 7;
     const p = [
       0.99999999999980993, 676.5203681218851, -1259.1392167224028,
@@ -701,7 +792,6 @@
         `|` +
         `[A-Za-z_]\\w*\\([^()]*\\)` +
       `)`;
-
     let prev, cur = s;
     const re = new RegExp(`(${primary})\\s*\\^\\s*(${primary})`);
     for(let i=0;i<30;i++){
@@ -716,14 +806,12 @@
   function safeEval(input){
     let s = String(input);
     s = s.replace(/×/g,"*").replace(/÷/g,"/").replace(/−/g,"-");
-
     s = s.replace(/\bAns\b/g, `(${ans})`);
     s = s.replace(/\bpi\b/gi, `(${Math.PI})`);
     s = s.replace(/\be\b/g, `(${Math.E})`);
-
     s = replaceCaretPowers(s);
 
-    if(!/^[0-9+\-*/().,\sA-Za-z_]*$/.test(s)) throw new Error("bad chars");
+    if(!/^[0-9+\-*/().,%\sA-Za-z_]*$/.test(s)) throw new Error("bad chars");
 
     const toRad = (x)=> mode==="DEG" ? (x*Math.PI/180) : x;
     const toDeg = (x)=> mode==="DEG" ? (x*180/Math.PI) : x;
@@ -731,10 +819,13 @@
     const f = {
       abs:(x)=>Math.abs(x),
       sqrt:(x)=>Math.sqrt(x),
+      cbrt:(x)=>Math.cbrt(x),
       ln:(x)=>Math.log(x),
       log:(x)=>Math.log10(x),
       exp:(x)=>Math.exp(x),
       pow:(a,b)=>Math.pow(a,b),
+      pow10:(x)=>Math.pow(10,x),
+
       min:(...xs)=>Math.min(...xs),
       max:(...xs)=>Math.max(...xs),
       floor:(x)=>Math.floor(x),
@@ -763,6 +854,7 @@
       rand:()=>Math.random(),
     };
 
+    // allow only these identifiers
     const ids = (s.match(/[A-Za-z_]\w*/g) || []);
     const allow = new Set(Object.keys(f));
     for(const id of ids){
@@ -810,7 +902,13 @@
   function renderHistory(){
     const box = document.getElementById("histList");
     if(!history.length){
-      document.getElementById("histEmptyText").textContent = i18n[lang].histEmpty;
+      box.innerHTML = `
+        <div class="row" id="histEmptyRow">
+          <div class="l">
+            <div class="e" id="histEmptyText">${escapeHtml(i18n[lang].histEmpty)}</div>
+          </div>
+          <div class="r">—</div>
+        </div>`;
       return;
     }
     box.innerHTML = history.map((x, i)=>`
@@ -869,14 +967,14 @@
     if(k === "Backspace"){ e.preventDefault(); backspace(); return; }
     if(k === "Escape"){ e.preventDefault(); allClear(); return; }
 
-    if(/^[0-9+\-*/().,\s]$/.test(k)){ e.preventDefault(); insertToken(k); return; }
     if(k === "^"){ e.preventDefault(); insertOp("^"); return; }
+    if(/^[0-9+\-*/().,%\s]$/.test(k)){ e.preventDefault(); insertToken(k); return; }
   });
 
   // ---------------- persistence ----------------
   function saveLocal(){
     try{
-      localStorage.setItem("anycals_calc_state", JSON.stringify({history, ans, mem, mode, ui, fmt, lang}));
+      localStorage.setItem("anycals_calc_state", JSON.stringify({history, ans, mem, mode, ui, fmt, lang, shift:false}));
     }catch(_){}
   }
   function loadLocal(){
@@ -897,6 +995,7 @@
         }
       }
       if(o.lang === "zh" || o.lang === "en") lang = o.lang;
+      shift = false; // always start with shift off (more predictable)
     }catch(_){}
   }
 
