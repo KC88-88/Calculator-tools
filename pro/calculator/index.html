@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title id="pageTitle">全能計算機｜可切換一般/工程模式｜AnyCals</title>
-  <meta name="description" id="pageDesc" content="AnyCals 全能計算機：可切換一般/工程模式，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、AUTO/FIX/SCI/ENG、記憶體與歷史。" />
+  <title id="pageTitle">全能計算機｜一般/工程模式切換｜AnyCals</title>
+  <meta name="description" id="pageDesc" content="AnyCals 全能計算機：一般/工程模式切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、AUTO/FIX/SCI/ENG、記憶體與歷史。" />
 
   <style>
     :root{
@@ -116,9 +116,9 @@
     .padScroll{
       overflow-x:auto;
       -webkit-overflow-scrolling:touch;
-      padding-bottom:6px;              /* keep scrollbar from covering keys */
+      padding-bottom:6px;
       border-radius:14px;
-      touch-action: pan-x;             /* encourage horizontal scroll */
+      touch-action: pan-x;
     }
     .padScroll::-webkit-scrollbar{height:8px}
     .padScroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:999px}
@@ -128,7 +128,7 @@
       display:grid;
       grid-template-columns: repeat(6, 1fr);
       gap:8px;
-      min-width: 430px;               /* key: prevents squish + reflow */
+      min-width: 410px; /* smaller */
     }
     .pad.eng .key{
       height:40px;border-radius:12px;font-size:13px;
@@ -156,7 +156,7 @@
       font-size:12px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .row .r{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","CourierNew", monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       font-weight:900;font-size:13px;color:#111827;white-space:nowrap;
     }
     .row button{
@@ -174,7 +174,7 @@
       body{padding:16px}
       .display{padding:10px}
       .res{font-size:24px}
-      .pad.eng{min-width: 400px; gap:7px;}
+      .pad.eng{min-width: 380px; gap:7px;} /* smaller for phone */
       .pad.eng .key{height:38px;font-size:12px}
       .calcTools{justify-content:flex-start}
     }
@@ -186,10 +186,9 @@
     <header>
       <div>
         <h1 class="title" id="h1Title">全能計算機</h1>
-        <div class="sub" id="h1Sub">一般計算機 / 工程計算機一鍵切換。工程模式含 Shift 兩層鍵盤與手機橫向滑動（不亂版）。</div>
+        <div class="sub" id="h1Sub">一般計算機 / 工程計算機一鍵切換</div>
       </div>
 
-      <!-- Header only keeps site-level actions -->
       <div class="right">
         <a class="pill" href="https://anycals.com/index.html" id="backHome">回首頁</a>
         <a class="pill" id="contactLink" href="#">聯繫我</a>
@@ -204,9 +203,8 @@
         <div class="cardHead">
           <h2 id="panelCalcTitle">計算</h2>
 
-          <!-- Tools moved into the "計算" card, top-right -->
           <div class="calcTools" aria-label="calculator toolbar">
-            <button class="btn compact" type="button" id="uiToggleBtn" onclick="toggleUI()" aria-pressed="false">工程模式</button>
+            <button class="btn compact" type="button" id="uiToggleBtn" onclick="toggleUI()" aria-pressed="false">一般模式</button>
             <button class="btn compact" type="button" onclick="toggleMode()" id="degRadBtn" aria-pressed="false">DEG</button>
             <button class="btn compact" type="button" onclick="cycleFormat()" id="fmtBtn">AUTO</button>
             <button class="btn compact" type="button" onclick="copyResult()" id="copyBtn">複製</button>
@@ -226,7 +224,7 @@
               <span class="chip"><strong>Ans</strong>：<span id="ansText">0</span></span>
               <span class="chip badge hidden" id="shiftChip">SHIFT</span>
             </div>
-            <div id="hintText">鍵盤：Enter=、Backspace、Esc 清除。工程模式支援 Shift 兩層鍵盤。</div>
+            <div id="hintText">按 Shift 切換更多功能鍵</div>
           </div>
         </div>
 
@@ -258,7 +256,7 @@
           <div class="key eq" onclick="K('eq')">=</div>
         </div>
 
-        <!-- ENGINEERING keypad (fixed 6 cols + horizontal scroll) -->
+        <!-- ENGINEERING keypad -->
         <div class="padScroll hidden" id="engPadScroll" aria-label="engineering keypad scroll">
           <div class="pad eng" id="engPad" aria-label="engineering keypad">
             <!-- Row 1 -->
@@ -269,7 +267,7 @@
             <div class="key fn" onclick="K('const','pi')">π</div>
             <div class="key fn" onclick="K('const','e')">e</div>
 
-            <!-- Row 2 (Shift layer: asin/acos/atan, 10^x, e^x) -->
+            <!-- Row 2 -->
             <div class="key fn" id="shiftKey" onclick="K('shift')">SHIFT</div>
             <div class="key fn" data-main-label="sin"  data-shift-label="asin" data-main="sin("  data-shift="asin("  onclick="K('dual',this)">sin</div>
             <div class="key fn" data-main-label="cos"  data-shift-label="acos" data-main="cos("  data-shift="acos("  onclick="K('dual',this)">cos</div>
@@ -277,7 +275,7 @@
             <div class="key fn" data-main-label="log"  data-shift-label="10^x" data-main="log("  data-shift="pow10(" onclick="K('dual',this)">log</div>
             <div class="key fn" data-main-label="ln"   data-shift-label="e^x"  data-main="ln("   data-shift="exp("   onclick="K('dual',this)">ln</div>
 
-            <!-- Row 3 (Shift layer: asinh/acosh/atanh, x², ∛ ) -->
+            <!-- Row 3 -->
             <div class="key fn" data-main-label="sinh" data-shift-label="asinh" data-main="sinh(" data-shift="asinh(" onclick="K('dual',this)">sinh</div>
             <div class="key fn" data-main-label="cosh" data-shift-label="acosh" data-main="cosh(" data-shift="acosh(" onclick="K('dual',this)">cosh</div>
             <div class="key fn" data-main-label="tanh" data-shift-label="atanh" data-main="tanh(" data-shift="atanh(" onclick="K('dual',this)">tanh</div>
@@ -285,7 +283,7 @@
             <div class="key fn" data-main-label="√"    data-shift-label="∛"     data-main="sqrt(" data-shift="cbrt("  onclick="K('dual',this)">√</div>
             <div class="key fn" onclick="K('ans')">Ans</div>
 
-            <!-- Row 4 (Shift layer: mod, ceil, rand, nPr, %, ) -->
+            <!-- Row 4 -->
             <div class="key fn" data-main-label="abs"   data-shift-label="mod"  data-main="abs("  data-shift="mod("  onclick="K('dual',this)">abs</div>
             <div class="key fn" data-main-label="floor" data-shift-label="ceil" data-main="floor(" data-shift="ceil(" onclick="K('dual',this)">floor</div>
             <div class="key fn" data-main-label="round" data-shift-label="rand" data-main="round(" data-shift="rand(" onclick="K('dual',this)">round</div>
@@ -326,13 +324,6 @@
           </div>
         </div>
 
-        <div class="aux" style="margin-top:12px">
-          <div style="color:var(--muted)" id="supportText">
-            <strong>支援：</strong>
-            SHIFT兩層（反三角/反雙曲、10^x、e^x、x²、∛、ceil、rand、nPr、%…）＋
-            sin/cos/tan、sinh/cosh/tanh、log/ln、exp、^、sqrt/cbrt、abs/mod、floor/ceil、round/rand、fact、nCr/nPr、min/max、Ans、記憶體、Deg/Rad、AUTO/FIX/SCI/ENG。
-          </div>
-        </div>
       </div>
 
       <!-- History -->
@@ -357,7 +348,7 @@
         </div>
 
         <div class="aux">
-          <div id="histHint">點「Use」把結果塞回輸入（當作下一次的起點）。</div>
+          <div id="histHint">點 Use 把結果帶回輸入</div>
         </div>
       </div>
     </div>
@@ -368,52 +359,50 @@
   let lang = "zh";
   const i18n = {
     zh:{
-      pageTitle:"全能計算機｜可切換一般/工程模式｜AnyCals",
-      pageDesc:"AnyCals 全能計算機：可切換一般/工程模式，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、AUTO/FIX/SCI/ENG、記憶體與歷史。",
+      pageTitle:"全能計算機｜一般/工程模式切換｜AnyCals",
+      pageDesc:"AnyCals 全能計算機：一般/工程模式切換，支援三角/反三角/雙曲、log/ln、次方根號、階乘、組合排列、mod、Deg/Rad、AUTO/FIX/SCI/ENG、記憶體與歷史。",
       h1:"全能計算機",
-      sub:"一般計算機 / 工程計算機一鍵切換。工程模式含 Shift 兩層鍵盤與手機橫向滑動（不亂版）。",
+      sub:"一般計算機 / 工程計算機一鍵切換",
       back:"回首頁",
       contact:"聯繫我",
       calc:"計算",
       hist:"歷史",
-      uiEng:"工程模式",
       uiBasic:"一般模式",
+      uiEng:"工程模式",
       copy:"複製",
       copied:"已複製",
       modeLbl:"模式",
       fmtLbl:"格式",
       memLbl:"記憶",
-      hintBasic:"鍵盤：Enter=、Backspace、Esc 清除。切到工程模式可用 Shift（asin/10^x/x²/∛…）。",
-      hintEng:"提示：Shift 為第二層功能（例：sin→asin、log→10^x、xʸ→x²、√→∛、round→rand、n!→nPr、nCr→%）。",
+      hint:"按 Shift 切換更多功能鍵",
       clear:"清空",
       export:"匯出",
       histEmpty:"尚無紀錄。按「=」後會出現在這裡。",
-      histHint:"點「Use」把結果塞回輸入（當作下一次的起點）。",
+      histHint:"點 Use 把結果帶回輸入",
       err:"算式錯誤",
       tooLong:"算式太長（安全限制）"
     },
     en:{
-      pageTitle:"Engineering Calculator | Basic/Engineering UI | AnyCals",
-      pageDesc:"AnyCals all-in-one calculator: Basic/Engineering UI, trig & inverse trig & hyperbolic, log/ln, power/sqrt, factorial, nCr/nPr, mod, Deg/Rad, AUTO/FIX/SCI/ENG, memory & history.",
+      pageTitle:"All-in-One Calculator | Basic/Engineering Mode | AnyCals",
+      pageDesc:"AnyCals all-in-one calculator: Basic/Engineering mode, trig/inverse/hyperbolic, log/ln, power/sqrt, factorial, nCr/nPr, mod, Deg/Rad, AUTO/FIX/SCI/ENG, memory & history.",
       h1:"All-in-One Calculator",
-      sub:"Switch between Basic and Engineering UI. Engineering mode includes Shift (2nd layer) + horizontal scroll on phones (no reflow chaos).",
+      sub:"Basic / Engineering mode in one tap",
       back:"Home",
       contact:"Contact",
       calc:"Calculator",
       hist:"History",
-      uiEng:"Engineering",
-      uiBasic:"Basic",
+      uiBasic:"Basic mode",
+      uiEng:"Engineering mode",
       copy:"Copy",
       copied:"Copied",
       modeLbl:"Mode",
       fmtLbl:"Fmt",
       memLbl:"Mem",
-      hintBasic:"Keyboard: Enter=, Backspace, Esc=clear. Switch to Engineering UI with Shift (asin/10^x/x²/∛…).",
-      hintEng:"Tip: Shift toggles the 2nd layer (sin→asin, log→10^x, xʸ→x², √→∛, round→rand, n!→nPr, nCr→%).",
+      hint:"Press Shift for more functions",
       clear:"Clear",
       export:"Export",
       histEmpty:"No history yet. Press “=” to add entries here.",
-      histHint:"Click “Use” to push the result back into input.",
+      histHint:"Tap Use to reuse the result",
       err:"Invalid expression",
       tooLong:"Expression too long (safety limit)"
     }
@@ -445,6 +434,8 @@
     document.getElementById("histEmptyText").textContent = i18n[l].histEmpty;
     document.getElementById("histHint").textContent = i18n[l].histHint;
 
+    document.getElementById("hintText").textContent = i18n[l].hint;
+
     sync();
     renderHistory();
     saveLocal();
@@ -457,9 +448,8 @@
   let mode = "DEG";     // DEG / RAD
   let ui = "BASIC";     // BASIC / ENG
   let shift = false;    // Shift layer on/off
-  // format: AUTO | FIX:n | SCI:n | ENG:n
   let fmt = { type:"AUTO", n:6 };
-  let history = [];     // {expr, result, ts}
+  let history = [];
 
   // tap guard for horizontal scroll misclick
   let tapBlocked = false;
@@ -477,11 +467,9 @@
   function applyShiftLabels(){
     const pad = document.getElementById("engPad");
     pad.querySelectorAll("[data-main]").forEach(el=>{
-      const on = shift;
-      const label = on ? (el.dataset.shiftLabel || el.textContent) : (el.dataset.mainLabel || el.textContent);
+      const label = shift ? (el.dataset.shiftLabel || el.textContent) : (el.dataset.mainLabel || el.textContent);
       el.textContent = label;
     });
-    // shift key visual
     const sk = document.getElementById("shiftKey");
     sk.classList.toggle("shiftOn", shift);
     document.getElementById("shiftChip").classList.toggle("hidden", !shift);
@@ -496,23 +484,19 @@
     document.getElementById("ansText").textContent = formatNumber(ans);
     document.getElementById("resText").textContent = formatNumber(ans);
 
-    // toolbar buttons
     document.getElementById("degRadBtn").textContent = mode;
     document.getElementById("degRadBtn").setAttribute("aria-pressed", mode==="RAD" ? "true":"false");
 
     document.getElementById("fmtText").textContent = fmtLabel();
     document.getElementById("fmtBtn").textContent = fmtLabel();
 
+    // ui toggle button shows CURRENT mode (not the target)
     const uiBtn = document.getElementById("uiToggleBtn");
-    uiBtn.textContent = (ui==="BASIC") ? i18n[lang].uiEng : i18n[lang].uiBasic;
+    uiBtn.textContent = (ui==="BASIC") ? i18n[lang].uiBasic : i18n[lang].uiEng;
     uiBtn.setAttribute("aria-pressed", ui==="ENG" ? "true" : "false");
 
-    // pad visibility
     document.getElementById("basicPad").classList.toggle("hidden", ui!=="BASIC");
     document.getElementById("engPadScroll").classList.toggle("hidden", ui!=="ENG");
-
-    // hint
-    document.getElementById("hintText").textContent = (ui==="BASIC") ? i18n[lang].hintBasic : i18n[lang].hintEng;
 
     // shift only meaningful in ENG
     if(ui !== "ENG"){ shift = false; }
@@ -601,7 +585,6 @@
 
     const end = ()=>{
       activePointer = false;
-      // if it was a scroll gesture, keep blocking for a short moment to avoid "release tap"
       if(moved){
         tapBlocked = true;
         setTimeout(()=>{ tapBlocked = false; moved=false; }, 140);
@@ -616,7 +599,7 @@
 
   // ---------------- main key dispatcher ----------------
   function K(type, val){
-    if(ui==="ENG" && tapBlocked) return; // block accidental clicks while scrolling
+    if(ui==="ENG" && tapBlocked) return;
 
     switch(type){
       case "ac": allClear(); break;
@@ -635,26 +618,19 @@
       case "mplus": memPlus(); break;
       case "mminus": memMinus(); break;
 
-      // dual function key: uses shift layer token and auto-off shift after use
       case "dual":
         insertToken(shift ? val.dataset.shift : val.dataset.main);
         if(shift){ shift=false; applyShiftLabels(); saveLocal(); }
         break;
 
-      // dual operator key: main is '^', shift is '^2' (append properly)
       case "dualOp":{
         const t = shift ? val.dataset.shift : val.dataset.main;
-        if(t === "^2"){
-          // best-effort: append ^2 (works with numbers/parentheses end)
-          insertToken("^2");
-        }else{
-          insertOp(t);
-        }
+        if(t === "^2") insertToken("^2");
+        else insertOp(t);
         if(shift){ shift=false; applyShiftLabels(); saveLocal(); }
         break;
       }
 
-      // dual special: shift is a raw token like '%'
       case "dualSpecial":{
         const t = shift ? val.dataset.shift : val.dataset.main;
         if(t === "%") insertToken("%");
@@ -662,15 +638,12 @@
         if(shift){ shift=false; applyShiftLabels(); saveLocal(); }
         break;
       }
-
-      default: break;
     }
   }
 
   // ---------------- input helpers ----------------
   function insertToken(t){
     if(expr.length > 900){ toast(i18n[lang].tooLong); return; }
-    // normalize symbols
     if(t === "×") t = "*";
     if(t === "÷") t = "/";
     if(t === "−") t = "-";
@@ -686,9 +659,7 @@
     if(c === "pi") insertToken("pi");
     else if(c === "e") insertToken("e");
   }
-  function insertAns(){
-    insertToken("Ans");
-  }
+  function insertAns(){ insertToken("Ans"); }
   function backspace(){
     if(!expr) return;
     expr = expr.slice(0,-1);
@@ -743,7 +714,6 @@
     const t = z + g + 0.5;
     return Math.sqrt(2*Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
   }
-
   function factorial(n){
     if(!isFinite(n)) return NaN;
     if(Math.abs(n - Math.round(n)) < 1e-12){
@@ -757,7 +727,6 @@
     if(n < 0) return NaN;
     return gamma(n + 1);
   }
-
   function nCr(n, r){
     n = Math.round(n); r = Math.round(r);
     if(r < 0 || n < 0 || r > n) return 0;
@@ -769,7 +738,6 @@
     }
     return num / den;
   }
-
   function nPr(n, r){
     n = Math.round(n); r = Math.round(r);
     if(r < 0 || n < 0 || r > n) return 0;
@@ -777,21 +745,13 @@
     for(let i=0;i<r;i++) out *= (n - i);
     return out;
   }
-
   function mod(a,b){
     if(b===0) return NaN;
     return ((a % b) + b) % b;
   }
-
   function replaceCaretPowers(s){
     const primary =
-      `(?:` +
-        `\\([^()]*\\)` +
-        `|` +
-        `\\-?\\d+(?:\\.\\d+)?` +
-        `|` +
-        `[A-Za-z_]\\w*\\([^()]*\\)` +
-      `)`;
+      `(?:\\([^()]*\\)|\\-?\\d+(?:\\.\\d+)?|[A-Za-z_]\\w*\\([^()]*\\))`;
     let prev, cur = s;
     const re = new RegExp(`(${primary})\\s*\\^\\s*(${primary})`);
     for(let i=0;i<30;i++){
@@ -825,36 +785,30 @@
       exp:(x)=>Math.exp(x),
       pow:(a,b)=>Math.pow(a,b),
       pow10:(x)=>Math.pow(10,x),
-
       min:(...xs)=>Math.min(...xs),
       max:(...xs)=>Math.max(...xs),
       floor:(x)=>Math.floor(x),
       ceil:(x)=>Math.ceil(x),
       round:(x)=>Math.round(x),
-
       sin:(x)=>Math.sin(toRad(x)),
       cos:(x)=>Math.cos(toRad(x)),
       tan:(x)=>Math.tan(toRad(x)),
       asin:(x)=>toDeg(Math.asin(x)),
       acos:(x)=>toDeg(Math.acos(x)),
       atan:(x)=>toDeg(Math.atan(x)),
-
       sinh:(x)=>Math.sinh(x),
       cosh:(x)=>Math.cosh(x),
       tanh:(x)=>Math.tanh(x),
       asinh:(x)=>Math.asinh(x),
       acosh:(x)=>Math.acosh(x),
       atanh:(x)=>Math.atanh(x),
-
       fact:(x)=>factorial(x),
       nCr:(n,r)=>nCr(n,r),
       nPr:(n,r)=>nPr(n,r),
-
       mod:(a,b)=>mod(a,b),
       rand:()=>Math.random(),
     };
 
-    // allow only these identifiers
     const ids = (s.match(/[A-Za-z_]\w*/g) || []);
     const allow = new Set(Object.keys(f));
     for(const id of ids){
@@ -903,10 +857,8 @@
     const box = document.getElementById("histList");
     if(!history.length){
       box.innerHTML = `
-        <div class="row" id="histEmptyRow">
-          <div class="l">
-            <div class="e" id="histEmptyText">${escapeHtml(i18n[lang].histEmpty)}</div>
-          </div>
+        <div class="row">
+          <div class="l"><div class="e">${escapeHtml(i18n[lang].histEmpty)}</div></div>
           <div class="r">—</div>
         </div>`;
       return;
@@ -962,11 +914,9 @@
   document.addEventListener("keydown", (e)=>{
     if(e.ctrlKey || e.metaKey) return;
     const k = e.key;
-
     if(k === "Enter"){ e.preventDefault(); evaluateExpr(); return; }
     if(k === "Backspace"){ e.preventDefault(); backspace(); return; }
     if(k === "Escape"){ e.preventDefault(); allClear(); return; }
-
     if(k === "^"){ e.preventDefault(); insertOp("^"); return; }
     if(/^[0-9+\-*/().,%\s]$/.test(k)){ e.preventDefault(); insertToken(k); return; }
   });
@@ -995,11 +945,11 @@
         }
       }
       if(o.lang === "zh" || o.lang === "en") lang = o.lang;
-      shift = false; // always start with shift off (more predictable)
+      shift = false;
     }catch(_){}
   }
 
-  // ---------------- init ----------------
+  // init
   loadLocal();
   setLang(lang);
   sync();
