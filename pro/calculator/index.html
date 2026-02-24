@@ -326,7 +326,7 @@
           </div>
         </div>
 
-        <!-- SHIFT hint moved here (below calc area) -->
+        <!-- SHIFT hint below -->
         <div class="hintBelow" id="hintText">按 Shift 切換更多功能鍵</div>
       </div>
 
@@ -341,14 +341,7 @@
         </div>
 
         <div class="hist" aria-label="history">
-          <div class="histList" id="histList">
-            <div class="row" id="histEmptyRow">
-              <div class="l">
-                <div class="e" id="histEmptyText">尚無紀錄。按「=」後會出現在這裡。</div>
-              </div>
-              <div class="r">—</div>
-            </div>
-          </div>
+          <div class="histList" id="histList"></div>
         </div>
 
         <div class="aux">
@@ -359,6 +352,7 @@
   </div>
 
 <script>
+  // ---------------- i18n ----------------
   let lang = "zh";
   const i18n = {
     zh:{
@@ -434,22 +428,21 @@
     document.getElementById("clearBtn").textContent = i18n[l].clear;
     document.getElementById("exportBtn").textContent = i18n[l].export;
 
-    document.getElementById("histEmptyText").textContent = i18n[l].histEmpty;
-    document.getElementById("histHint").textContent = i18n[l].histHint;
-
     document.getElementById("hintText").textContent = i18n[l].hint;
+    document.getElementById("histHint").textContent = i18n[l].histHint;
 
     sync();
     renderHistory();
     saveLocal();
   }
 
+  // ---------------- state ----------------
   let expr = "";
   let ans = 0;
   let mem = 0;
-  let mode = "DEG";
-  let ui = "BASIC";
-  let shift = false;
+  let mode = "DEG";     // DEG / RAD
+  let ui = "BASIC";     // BASIC / ENG
+  let shift = false;    // Shift layer on/off
   let fmt = { type:"AUTO", n:6 };
   let history = [];
 
@@ -457,6 +450,7 @@
   let tapBlocked = false;
   let downX=0, downY=0, moved=false, activePointer=false;
 
+  // ---------------- contact ----------------
   (function(){
     const contact = document.getElementById("contactLink");
     if(contact){
@@ -464,6 +458,7 @@
     }
   })();
 
+  // ---------------- shift label sync ----------------
   function applyShiftLabels(){
     const pad = document.getElementById("engPad");
     pad.querySelectorAll("[data-main]").forEach(el=>{
@@ -474,6 +469,7 @@
     sk.classList.toggle("shiftOn", shift);
   }
 
+  // ---------------- UI sync ----------------
   function sync(){
     document.getElementById("exprText").textContent = expr ? expr : "—";
     document.getElementById("uiText").textContent = ui;
@@ -488,7 +484,7 @@
     document.getElementById("fmtText").textContent = fmtLabel();
     document.getElementById("fmtBtn").textContent = fmtLabel();
 
-    // show CURRENT mode
+    // ui button shows CURRENT mode (localized)
     const uiBtn = document.getElementById("uiToggleBtn");
     uiBtn.textContent = (ui==="BASIC") ? i18n[lang].uiBasic : i18n[lang].uiEng;
     uiBtn.setAttribute("aria-pressed", ui==="ENG" ? "true" : "false");
@@ -533,6 +529,7 @@
     return `${sign}${mant.toFixed(digits)}e${engExp}`;
   }
 
+  // ---------------- toggles ----------------
   function toggleUI(){
     ui = (ui==="BASIC") ? "ENG" : "BASIC";
     if(ui !== "ENG") shift = false;
@@ -556,11 +553,12 @@
     saveLocal();
   }
 
+  // ---------------- tap guard (scroll misclick protection) ----------------
   (function setupScrollTapGuard(){
     const sc = document.getElementById("engPadScroll");
     if(!sc) return;
 
-    const threshold = 10;
+    const threshold = 10; // px
     sc.addEventListener("pointerdown", (e)=>{
       activePointer = true;
       moved = false;
@@ -592,6 +590,7 @@
     sc.addEventListener("mouseleave", ()=>{ activePointer=false; }, {passive:true});
   })();
 
+  // ---------------- main key dispatcher ----------------
   function K(type, val){
     if(ui==="ENG" && tapBlocked) return;
 
@@ -606,6 +605,7 @@
       case "sign": toggleSign(); break;
       case "shift": toggleShift(); break;
 
+      // memory
       case "mc": memClear(); break;
       case "mr": memRecall(); break;
       case "mplus": memPlus(); break;
@@ -634,6 +634,7 @@
     }
   }
 
+  // ---------------- input helpers ----------------
   function insertToken(t){
     if(expr.length > 900){ toast(i18n[lang].tooLong); return; }
     if(t === "×") t = "*";
@@ -674,6 +675,7 @@
     sync();
   }
 
+  // ---------------- memory ----------------
   function memClear(){ mem = 0; sync(); saveLocal(); }
   function memRecall(){ insertToken(String(mem)); }
   function memPlus(){ mem += safeEvalCurrentOrAns(); sync(); saveLocal(); }
@@ -688,6 +690,7 @@
     return ans;
   }
 
+  // ---------------- math utils ----------------
   function gamma(z){
     const g = 7;
     const p = [
@@ -704,6 +707,7 @@
     const t = z + g + 0.5;
     return Math.sqrt(2*Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
   }
+
   function factorial(n){
     if(!isFinite(n)) return NaN;
     if(Math.abs(n - Math.round(n)) < 1e-12){
@@ -717,6 +721,7 @@
     if(n < 0) return NaN;
     return gamma(n + 1);
   }
+
   function nCr(n, r){
     n = Math.round(n); r = Math.round(r);
     if(r < 0 || n < 0 || r > n) return 0;
@@ -728,6 +733,7 @@
     }
     return num / den;
   }
+
   function nPr(n, r){
     n = Math.round(n); r = Math.round(r);
     if(r < 0 || n < 0 || r > n) return 0;
@@ -735,10 +741,12 @@
     for(let i=0;i<r;i++) out *= (n - i);
     return out;
   }
+
   function mod(a,b){
     if(b===0) return NaN;
     return ((a % b) + b) % b;
   }
+
   function replaceCaretPowers(s){
     const primary = `(?:\\([^()]*\\)|\\-?\\d+(?:\\.\\d+)?|[A-Za-z_]\\w*\\([^()]*\\))`;
     let prev, cur = s;
@@ -751,6 +759,7 @@
     return cur;
   }
 
+  // ---------------- safe evaluation ----------------
   function safeEval(input){
     let s = String(input);
     s = s.replace(/×/g,"*").replace(/÷/g,"/").replace(/−/g,"-");
@@ -773,26 +782,31 @@
       exp:(x)=>Math.exp(x),
       pow:(a,b)=>Math.pow(a,b),
       pow10:(x)=>Math.pow(10,x),
+
       min:(...xs)=>Math.min(...xs),
       max:(...xs)=>Math.max(...xs),
       floor:(x)=>Math.floor(x),
       ceil:(x)=>Math.ceil(x),
       round:(x)=>Math.round(x),
+
       sin:(x)=>Math.sin(toRad(x)),
       cos:(x)=>Math.cos(toRad(x)),
       tan:(x)=>Math.tan(toRad(x)),
       asin:(x)=>toDeg(Math.asin(x)),
       acos:(x)=>toDeg(Math.acos(x)),
       atan:(x)=>toDeg(Math.atan(x)),
+
       sinh:(x)=>Math.sinh(x),
       cosh:(x)=>Math.cosh(x),
       tanh:(x)=>Math.tanh(x),
       asinh:(x)=>Math.asinh(x),
       acosh:(x)=>Math.acosh(x),
       atanh:(x)=>Math.atanh(x),
+
       fact:(x)=>factorial(x),
       nCr:(n,r)=>nCr(n,r),
       nPr:(n,r)=>nPr(n,r),
+
       mod:(a,b)=>mod(a,b),
       rand:()=>Math.random(),
     };
@@ -825,6 +839,7 @@
     }
   }
 
+  // ---------------- history ----------------
   function pushHistory(e, r){
     history.unshift({expr:e, result:r, ts:Date.now()});
     if(history.length > 120) history.pop();
@@ -881,6 +896,7 @@
     URL.revokeObjectURL(url);
   }
 
+  // ---------------- copy / toast ----------------
   function copyResult(){
     const text = String(formatNumber(ans));
     navigator.clipboard?.writeText(text).then(()=>toast(i18n[lang].copied)).catch(()=>toast(text));
@@ -896,6 +912,7 @@
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  // ---------------- keyboard support ----------------
   document.addEventListener("keydown", (e)=>{
     if(e.ctrlKey || e.metaKey) return;
     const k = e.key;
@@ -906,6 +923,7 @@
     if(/^[0-9+\-*/().,%\s]$/.test(k)){ e.preventDefault(); insertToken(k); return; }
   });
 
+  // ---------------- persistence ----------------
   function saveLocal(){
     try{
       localStorage.setItem("anycals_calc_state", JSON.stringify({history, ans, mem, mode, ui, fmt, lang, shift:false}));
@@ -933,6 +951,7 @@
     }catch(_){}
   }
 
+  // init
   loadLocal();
   setLang(lang);
   sync();
