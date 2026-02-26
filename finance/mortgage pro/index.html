@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>房貸試算器 2.0｜圖表、提前還款比較、NPV、升息情境｜AnyCals</title>
+  <meta name="description" content="AnyCals 房貸試算器 2.0：本息/本金、寬限期、提前還本（縮期/減額）、攤還表、圖表、提前還款比較、投資vs還款 NPV、升息情境模擬。" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --fg:#111827; --muted:#6b7280;
+      --card:#fff; --border:#e5e7eb; --shadow:0 6px 18px rgba(0,0,0,.06);
+      --radius:16px; --soft:#f3f4f6; --danger:#ef4444;
+      --r2:12px;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{
+      margin:0;padding:24px;
+      font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg);color:var(--fg)
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto}
+    header{
+      display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;
+      margin-bottom:12px
+    }
+    .title{font-weight:900;font-size:22px;letter-spacing:.3px;margin:0}
+    .sub{color:var(--muted);line-height:1.6;margin-top:6px}
+    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      display:inline-block;background:var(--card);border:1px solid var(--border);
+      border-radius:999px;padding:8px 12px;font-size:13px;font-weight:900;
+      box-shadow:var(--shadow);text-decoration:none;color:var(--fg)
+    }
+    .btn{
+      border:1px solid var(--border);background:var(--card);
+      border-radius:12px;padding:8px 10px;cursor:pointer;
+      box-shadow:var(--shadow);font-size:14px;
+      display:inline-flex;align-items:center;gap:8px;height:40px;
+    }
+    .btn.primary{background:var(--fg);color:#fff;border-color:transparent}
+    .btn.ghost{background:#fff}
+    .btn:active{transform:translateY(1px)}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:16px;box-shadow:var(--shadow)
+    }
+    h2{margin:0 0 10px;font-size:16px}
+    label{font-size:13px;color:#374151}
+    input,select{
+      width:100%;padding:10px 12px;border:1px solid #d6d9e0;border-radius:12px;
+      font-size:15px;background:#fff;outline:none;height:40px;
+      max-width:100%;overflow:hidden;text-overflow:ellipsis;
+    }
+    input:focus, select:focus{border-color:#cfd4dd; box-shadow:0 0 0 4px rgba(17,24,39,.06)}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .note{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+    .metric{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+    .metric .k{font-size:12px;color:var(--muted)}
+    .metric .v{font-size:20px;font-weight:900;margin-top:6px}
+    .muted{color:var(--muted);font-size:12px;line-height:1.7;margin-top:10px}
+
+    .adv{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:linear-gradient(180deg,#ffffff 0%, #fbfbfd 100%);
+      box-shadow:0 10px 24px rgba(0,0,0,.05);
+      overflow:hidden;
+    }
+    .advHead{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 12px;
+      cursor:pointer; user-select:none;
+    }
+    .advLeft{display:flex;gap:10px;align-items:center}
+    .advIcon{
+      width:36px;height:36px;border-radius:12px;
+      background:var(--soft);
+      border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+    .advTitle{font-weight:900}
+    .advDesc{color:var(--muted);font-size:12px;line-height:1.5;margin-top:2px}
+    .chev{transition:transform .18s ease}
+    .adv.open .chev{transform:rotate(180deg)}
+    .advBody{display:none;padding:12px;border-top:1px solid var(--border)}
+    .adv.open .advBody{display:block}
+
+    .chipRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{
+      display:flex;align-items:center;gap:8px;
+      border:1px solid var(--border);background:#fff;border-radius:999px;
+      padding:8px 10px;font-size:13px;font-weight:900;cursor:pointer;
+    }
+    .chip input{width:auto;height:auto;margin:0}
+    .chip.active{background:var(--fg);color:#fff;border-color:transparent}
+
+    .divider{height:1px;background:var(--border);margin:10px 0}
+
+    .prepaySummary{
+      display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;
+      background:var(--soft);border:1px solid var(--border);border-radius:12px;
+      padding:10px 12px;margin-top:10px;
+    }
+    .prepaySummary .big{font-weight:900}
+    .prepaySummary .small{color:var(--muted);font-size:12px}
+
+    .prepayList{display:grid;gap:10px;margin-top:10px}
+    .prepayCard{
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(0,0,0,.04);
+      padding:10px;
+    }
+    .prepayRow{
+      display:grid;
+      grid-template-columns: 1fr 1.4fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    .prepayRow .small{font-size:12px;color:var(--muted)}
+    .prepayRow > div:last-child{display:flex;align-items:flex-end}
+    .prepayRow .btn{height:40px}
+    .prepayRow .btn.danger{white-space:nowrap;border-color:rgba(239,68,68,.5);color:var(--danger)}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .tab{border:1px solid var(--border);background:#fff;border-radius:999px;padding:7px 10px;font-size:13px;font-weight:900;cursor:pointer}
+    .tab.active{background:var(--fg);color:#fff;border-color:transparent}
+
+    table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    th,td{padding:10px 10px;border-bottom:1px solid var(--border);text-align:right;font-size:13px}
+    th{text-align:right;background:#fafafa;color:#374151;font-weight:900}
+    td:first-child, th:first-child{text-align:center}
+    tr:last-child td{border-bottom:none}
+    .tableWrap{max-height:520px;overflow:auto;border-radius:12px;border:1px solid var(--border)}
+
+    .twoCols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .chartCard{border:1px solid var(--border);border-radius:14px;padding:12px;background:#fff}
+    .chartTitle{font-weight:900;font-size:13px;margin-bottom:8px;color:#374151}
+    canvas{width:100%;height:260px}
+
+    @media(max-width:980px){
+      .grid{grid-template-columns:1fr}
+      .right{justify-content:flex-start}
+      .form{grid-template-columns:1fr}
+      .twoCols{grid-template-columns:1fr}
+    }
+    @media(max-width:520px){
+      .prepayRow{grid-template-columns:1fr}
+      .prepayRow .btn{width:100%}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 class="title">房貸試算器 2.0</h1>
+        <div class="sub">圖表＋提前還款比較＋投資 vs 還款 NPV＋升息情境模擬。延續 AnyCals 風格。</div>
+      </div>
+      <div class="right">
+        <a class="pill" href="https://anycals.com/index.html">回首頁</a>
+        <a class="pill" id="contactLink" href="#">聯繫我</a>
+        <button class="btn" type="button" onclick="setLang('zh')">中文</button>
+        <button class="btn" type="button" onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Inputs -->
+      <div class="card">
+        <h2 data-i18n="inputTitle">輸入</h2>
+
+        <div class="form">
+          <div class="full">
+            <label data-i18n="planLbl">還款方式</label>
+            <select id="plan">
+              <option value="annuity" data-i18n-opt="planA">本息均攤（每月固定）</option>
+              <option value="equal_principal" data-i18n-opt="planB">本金均攤（逐月遞減）</option>
+            </select>
+          </div>
+
+          <div>
+            <label data-i18n="amountLbl">貸款金額</label>
+            <input id="amount" type="number" min="1" step="1" placeholder="例如 10000000">
+          </div>
+          <div>
+            <label data-i18n="rateLbl">年利率（%）</label>
+            <input id="rate" type="number" min="0" step="0.01" placeholder="例如 2.10">
+          </div>
+
+          <div>
+            <label data-i18n="yearsLbl">年限（年）</label>
+            <input id="years" type="number" min="1" step="1" placeholder="例如 30">
+          </div>
+          <div>
+            <label data-i18n="graceLbl">寬限期（月，可選）</label>
+            <input id="grace" type="number" min="0" step="1" placeholder="例如 24">
+          </div>
+
+          <div class="full">
+            <label data-i18n="startLbl">起算月份（可選）</label>
+            <input id="start" type="month">
+            <div class="note" data-i18n="startHint">若不填，攤還表仍會用「第 1 期、第 2 期…」表示。</div>
+          </div>
+
+          <!-- Advanced: extra principal + NPV + rate scenario -->
+          <div class="full">
+            <div class="adv" id="adv">
+              <div class="advHead" onclick="toggleAdv()">
+                <div class="advLeft">
+                  <div class="advIcon">⚙</div>
+                  <div>
+                    <div class="advTitle" data-i18n="advTitle">進階設定</div>
+                    <div class="advDesc" data-i18n="advHint">
+                      提前還本金可選縮期/減額；並可比較「不提前 vs 提前」與投資機會成本（NPV），另提供升息情境。
+                    </div>
+                  </div>
+                </div>
+                <div class="chev">▾</div>
+              </div>
+
+              <div class="advBody">
+                <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayModeLbl">提前還本模式</div>
+                <div class="chipRow" id="modeChips">
+                  <label class="chip active" id="chipShort">
+                    <input type="radio" name="prepayMode" value="shorten" checked onchange="syncModeChips()">
+                    <span data-i18n="prepayModeShort">縮期（預設）</span>
+                  </label>
+                  <label class="chip" id="chipRecast">
+                    <input type="radio" name="prepayMode" value="recast" onchange="syncModeChips()">
+                    <span data-i18n="prepayModeRecast">減額（重新計算月付）</span>
+                  </label>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="twoCols">
+                  <div>
+                    <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="npvTitle">投資 vs 還款（NPV）</div>
+                    <div class="note" data-i18n="npvHint">用「投資報酬率」把每月現金流折現比較：提前還款省下的未來付款 vs 把同等金額拿去投資。</div>
+                    <label style="margin-top:6px;display:block" data-i18n="invRateLbl">投資年化報酬（%）</label>
+                    <input id="invRate" type="number" min="0" step="0.1" placeholder="例如 5.0" value="5.0">
+                    <div class="note" data-i18n="npvNote">※ 這是近似模型：忽略稅、手續費、風險與利率浮動。</div>
+                  </div>
+
+                  <div>
+                    <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="scenarioTitle">升息情境</div>
+                    <div class="note" data-i18n="scenarioHint">用 +0.5%（可改）模擬升息後：月付、總利息、期數的變化（用同一套提前還款設定）。</div>
+                    <label style="margin-top:6px;display:block" data-i18n="bumpLbl">利率增加（%）</label>
+                    <input id="rateBump" type="number" step="0.1" value="0.5">
+                    <div class="note" data-i18n="scenarioNote">※ 若你要做 ARM，可再拆成獨立工具頁（建議）。</div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                  <div>
+                    <div style="font-size:13px;color:#374151;font-weight:900" data-i18n="prepayTitle">額外還本金</div>
+                    <div class="note" style="margin-top:6px" data-i18n="prepayHint">
+                      指定第幾期額外還本金；可用於比較「不提前 vs 提前」，並影響圖表與 NPV。
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn" type="button" onclick="addPrepayRow()" data-i18n="prepayAdd">新增一筆</button>
+                    <button class="btn" type="button" onclick="clearPrepay(); updatePrepaySummary();" data-i18n="prepayClear">清空</button>
+                  </div>
+                </div>
+
+                <div class="prepaySummary" id="prepaySummary">
+                  <div>
+                    <div class="big" id="prepayTotal">0</div>
+                    <div class="small" data-i18n="prepayTotalLbl">總額外還本（加總）</div>
+                  </div>
+                  <div class="small" id="prepayCount">0</div>
+                </div>
+
+                <div class="prepayList" id="prepayList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="full actions">
+            <button class="btn primary" type="button" onclick="runAll()" data-i18n="calcBtn">計算</button>
+            <button class="btn" type="button" onclick="resetAll()" data-i18n="resetBtn">清除</button>
+            <button class="btn" type="button" onclick="downloadCSV('base')" data-i18n="csvBtn">下載 CSV（基準）</button>
+          </div>
+
+          <div class="note" data-i18n="methodNote">
+            ※ 寬限期期間只繳息且本金不減；寬限期結束後進入正常攤還。提前還本金會影響剩餘本金與後續利息。
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card">
+        <h2 data-i18n="resultTitle">結果總覽</h2>
+
+        <div class="metric">
+          <div class="k" data-i18n="mPayBase">基準：每月應繳（首期）</div>
+          <div class="v" id="mPayBase">—</div>
+        </div>
+        <div class="metric">
+          <div class="k" data-i18n="tIntBase">基準：總利息</div>
+          <div class="v" id="tIntBase">—</div>
+        </div>
+        <div class="metric">
+          <div class="k" data-i18n="nPayBase">基準：期數</div>
+          <div class="v" id="nPayBase">—</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="metric">
+          <div class="k" data-i18n="tIntCompare">比較：提前 vs 不提前（總利息差）</div>
+          <div class="v" id="tIntDiff">—</div>
+        </div>
+        <div class="metric">
+          <div class="k" data-i18n="nPayCompare">比較：提前 vs 不提前（期數差）</div>
+          <div class="v" id="nPayDiff">—</div>
+        </div>
+        <div class="metric">
+          <div class="k" data-i18n="npvCompare">NPV：投資 vs 還款（正=投資較好）</div>
+          <div class="v" id="npvDiff">—</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="metric">
+          <div class="k" data-i18n="scenarioDelta">升息情境（+Δ利率）總利息增加</div>
+          <div class="v" id="scenarioIntUp">—</div>
+        </div>
+
+        <div class="muted" data-i18n="disc">
+          ※ 試算僅供參考。實際月付金可能因銀行計息規則、天數基準、費用與條款而不同。
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="card" style="margin-top:14px">
+      <h2 data-i18n="chartTitle">視覺化</h2>
+      <div class="twoCols">
+        <div class="chartCard">
+          <div class="chartTitle" data-i18n="pieTitle">本金 vs 利息（基準）</div>
+          <canvas id="pie"></canvas>
+        </div>
+        <div class="chartCard">
+          <div class="chartTitle" data-i18n="lineTitle">剩餘本金曲線（不提前 vs 提前 vs 升息）</div>
+          <canvas id="line"></canvas>
+        </div>
+      </div>
+      <div class="note" data-i18n="chartHint">提示：折線圖使用每月月底的剩餘本金；「升息」以同一套提前還本設定重新計算。</div>
+    </div>
+
+    <!-- Amortization -->
+    <div class="card" style="margin-top:14px">
+      <div class="tabs">
+        <button class="tab active" id="tabBase" type="button" onclick="setTableMode('base')" data-i18n="tabBase">基準（含提前設定）</button>
+        <button class="tab" id="tabNoExtra" type="button" onclick="setTableMode('noextra')" data-i18n="tabNoExtra">不提前（對照）</button>
+        <button class="tab" id="tabScenario" type="button" onclick="setTableMode('scenario')" data-i18n="tabScenario">升息情境</button>
+        <button class="tab" id="tab12" type="button" onclick="setTableMode('12')" data-i18n="tab12">前 12 期</button>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="thP">期數</th>
+              <th data-i18n="thDate">月份</th>
+              <th data-i18n="thPay">應繳</th>
+              <th data-i18n="thPrin">本金</th>
+              <th data-i18n="thExtra">額外還本</th>
+              <th data-i18n="thInt">利息</th>
+              <th data-i18n="thBal">剩餘本金</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="7" style="text-align:center;color:#6b7280;padding:18px" data-i18n="empty">請先計算以產生攤還表。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="muted" id="tableHint"></div>
+
+      <div class="actions" style="margin-top:12px">
+        <button class="btn" type="button" onclick="downloadCSV(currentTableKey)" data-i18n="csvAnyBtn">下載 CSV（目前表）</button>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ====== i18n (minimal; keep AnyCals feel) ======
+  let lang = "zh";
+  const dict = {
+    zh:{
+      inputTitle:"輸入",
+      planLbl:"還款方式",
+      planA:"本息均攤（每月固定）",
+      planB:"本金均攤（逐月遞減）",
+      amountLbl:"貸款金額",
+      rateLbl:"年利率（%）",
+      yearsLbl:"年限（年）",
+      graceLbl:"寬限期（月，可選）",
+      startLbl:"起算月份（可選）",
+      startHint:"若不填，攤還表仍會用「第 1 期、第 2 期…」表示。",
+      advTitle:"進階設定",
+      advHint:"提前還本金可選縮期/減額；並可比較「不提前 vs 提前」與投資機會成本（NPV），另提供升息情境。",
+      prepayModeLbl:"提前還本模式",
+      prepayModeShort:"縮期（預設）",
+      prepayModeRecast:"減額（重新計算月付）",
+      npvTitle:"投資 vs 還款（NPV）",
+      npvHint:"用投資報酬率折現比較：提前還款省下的未來付款 vs 把同等金額拿去投資。",
+      invRateLbl:"投資年化報酬（%）",
+      npvNote:"※ 近似模型：忽略稅、手續費、風險與利率浮動。",
+      scenarioTitle:"升息情境",
+      scenarioHint:"用 +0.5%（可改）模擬升息後差異（用同一套提前還款設定）。",
+      bumpLbl:"利率增加（%）",
+      scenarioNote:"※ 若要做 ARM，建議拆成獨立工具頁。",
+      prepayTitle:"額外還本金",
+      prepayHint:"指定第幾期額外還本金；可用於比較「不提前 vs 提前」，並影響圖表與 NPV。",
+      prepayAdd:"新增一筆",
+      prepayClear:"清空",
+      prepayP:"期數",
+      prepayAmt:"額外還本金",
+      prepayRemove:"移除",
+      prepayTotalLbl:"總額外還本（加總）",
+      prepayCountTpl:"共 {n} 筆",
+
+      calcBtn:"計算",
+      resetBtn:"清除",
+      csvBtn:"下載 CSV（基準）",
+      csvAnyBtn:"下載 CSV（目前表）",
+      methodNote:"※ 寬限期期間只繳息且本金不減；寬限期結束後進入正常攤還。提前還本金會影響剩餘本金與後續利息。",
+
+      resultTitle:"結果總覽",
+      mPayBase:"基準：每月應繳（首期）",
+      tIntBase:"基準：總利息",
+      nPayBase:"基準：期數",
+      tIntCompare:"比較：提前 vs 不提前（總利息差）",
+      nPayCompare:"比較：提前 vs 不提前（期數差）",
+      npvCompare:"NPV：投資 vs 還款（正=投資較好）",
+      scenarioDelta:"升息情境（+Δ利率）總利息增加",
+      disc:"※ 試算僅供參考。實際月付金可能因銀行計息規則、天數基準、費用與條款而不同。",
+
+      chartTitle:"視覺化",
+      pieTitle:"本金 vs 利息（基準）",
+      lineTitle:"剩餘本金曲線（不提前 vs 提前 vs 升息）",
+      chartHint:"提示：折線圖使用每月月底的剩餘本金；「升息」以同一套提前還本設定重新計算。",
+
+      tabBase:"基準（含提前設定）",
+      tabNoExtra:"不提前（對照）",
+      tabScenario:"升息情境",
+      tab12:"前 12 期",
+
+      thP:"期數",
+      thDate:"月份",
+      thPay:"應繳",
+      thPrin:"本金",
+      thExtra:"額外還本",
+      thInt:"利息",
+      thBal:"剩餘本金",
+      empty:"請先計算以產生攤還表。",
+      hintBase:"顯示基準攤還表（含你設定的提前還本）。",
+      hintNoExtra:"顯示不提前還本的對照表（用同樣利率/年限/寬限期）。",
+      hintScenario:"顯示升息情境（利率 + Δ）的攤還表（含你設定的提前還本）。",
+      hint12:"顯示目前選擇表的前 12 期。",
+
+      errBase:"請輸入有效的貸款金額、年利率與年限（年限請填整數年）。",
+      errGrace:"寬限期不可大於總期數。"
+    },
+    en:{
+      inputTitle:"Inputs",
+      planLbl:"Repayment plan",
+      planA:"Annuity (fixed monthly payment)",
+      planB:"Equal principal (payment decreases)",
+      amountLbl:"Loan amount",
+      rateLbl:"Annual rate (%)",
+      yearsLbl:"Term (years)",
+      graceLbl:"Grace period (months, optional)",
+      startLbl:"Start month (optional)",
+      startHint:"If omitted, the schedule shows installment number only.",
+      advTitle:"Advanced settings",
+      advHint:"Choose shorten/recast for extra principal; compare extra vs no extra; include NPV (invest vs repay) and rate-bump scenario.",
+      prepayModeLbl:"Extra principal mode",
+      prepayModeShort:"Shorten term (default)",
+      prepayModeRecast:"Recast payment (reduce monthly)",
+      npvTitle:"Invest vs Repay (NPV)",
+      npvHint:"Discount cashflows using investment return: savings from repaying earlier vs investing the same cash.",
+      invRateLbl:"Investment annual return (%)",
+      npvNote:"* Approximation: ignores tax/fees/risk/variable rates.",
+      scenarioTitle:"Rate bump scenario",
+      scenarioHint:"Simulate rate +0.5% (editable) with the same extra-principal settings.",
+      bumpLbl:"Rate increase (%)",
+      scenarioNote:"* For ARM, better as a separate tool page.",
+      prepayTitle:"Extra principal",
+      prepayHint:"Add extra principal at selected installment(s). Used for compare & charts & NPV.",
+      prepayAdd:"Add",
+      prepayClear:"Clear",
+      prepayP:"Installment",
+      prepayAmt:"Extra principal",
+      prepayRemove:"Remove",
+      prepayTotalLbl:"Total extra principal (sum)",
+      prepayCountTpl:"{n} item(s)",
+
+      calcBtn:"Calculate",
+      resetBtn:"Reset",
+      csvBtn:"Download CSV (base)",
+      csvAnyBtn:"Download CSV (current)",
+      methodNote:"* During grace period, you pay interest only (principal unchanged). Extra principal affects balance and future interest.",
+
+      resultTitle:"Summary",
+      mPayBase:"Base: monthly payment (first)",
+      tIntBase:"Base: total interest",
+      nPayBase:"Base: payments (months)",
+      tIntCompare:"Compare: interest diff (extra vs no extra)",
+      nPayCompare:"Compare: term diff (extra vs no extra)",
+      npvCompare:"NPV: invest vs repay (+ = invest better)",
+      scenarioDelta:"Scenario (+Δ rate): interest increase",
+      disc:"* For reference only. Actual payments may vary by bank rules, fees, and terms.",
+
+      chartTitle:"Visualization",
+      pieTitle:"Principal vs Interest (base)",
+      lineTitle:"Balance curve (no extra vs extra vs scenario)",
+      chartHint:"Hint: line chart uses month-end balance; scenario recalculates with the same extra settings.",
+
+      tabBase:"Base (with extra)",
+      tabNoExtra:"No extra (control)",
+      tabScenario:"Scenario (+Δ rate)",
+      tab12:"First 12",
+
+      thP:"#",
+      thDate:"Month",
+      thPay:"Payment",
+      thPrin:"Principal",
+      thExtra:"Extra",
+      thInt:"Interest",
+      thBal:"Balance",
+      empty:"Run calculation to generate the schedule.",
+      hintBase:"Showing base schedule (with your extra principal settings).",
+      hintNoExtra:"Showing control schedule (no extra principal).",
+      hintScenario:"Showing rate-bump scenario schedule (with extra principal).",
+      hint12:"Showing first 12 rows of the currently selected table.",
+
+      errBase:"Please enter valid amount, rate, and term (term must be an integer year).",
+      errGrace:"Grace period cannot exceed total months."
+    }
+  };
+
+  function setLang(l){
+    lang = l;
+    document.documentElement.lang = (l==="zh") ? "zh-Hant-TW" : "en";
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    document.querySelectorAll("[data-i18n-opt]").forEach(el=>{
+      const k = el.dataset.i18nOpt;
+      if(dict[l][k] !== undefined) el.textContent = dict[l][k];
+    });
+    syncPrepayLabels();
+    syncModeChips();
+    updatePrepaySummary();
+    updateTableHint();
+    renderTable();
+  }
+
+  // ====== helpers ======
+  function toInt(v, def=NaN){
+    const n = Number(v);
+    if(!isFinite(n)) return def;
+    return Math.trunc(n);
+  }
+  function toNum(v, def=NaN){
+    const n = Number(v);
+    return (isFinite(n) ? n : def);
+  }
+  function round0(n){ return Math.round(n); }
+  function fmtMoney(n){
+    if(!isFinite(n)) return "—";
+    return round0(n).toLocaleString(undefined);
+  }
+  function monthAdd(yyyyMm, add){
+    const [y, m] = yyyyMm.split("-").map(Number);
+    const d = new Date(y, (m-1) + add, 1);
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    return `${yy}-${mm}`;
+  }
+  function annuityPayment(P, r, n){
+    if(n <= 0) return 0;
+    if(r === 0) return P / n;
+    const a = Math.pow(1+r, n);
+    return P * (r * a) / (a - 1);
+  }
+  function getPrepayMode(){
+    const v = document.querySelector('input[name="prepayMode"]:checked')?.value;
+    return (v === "recast") ? "recast" : "shorten";
+  }
+
+  // ====== AnyCals Advanced UI ======
+  function toggleAdv(){ document.getElementById("adv").classList.toggle("open"); }
+  function syncModeChips(){
+    const mode = getPrepayMode();
+    document.getElementById("chipShort").classList.toggle("active", mode==="shorten");
+    document.getElementById("chipRecast").classList.toggle("active", mode==="recast");
+  }
+
+  // ====== extra principal UI ======
+  function addPrepayRow(p="", amt=""){
+    const list = document.getElementById("prepayList");
+    const card = document.createElement("div");
+    card.className = "prepayCard";
+
+    const phP = (lang==="zh" ? "例如 12" : "e.g. 12");
+    const phA = (lang==="zh" ? "例如 200000" : "e.g. 200000");
+
+    card.innerHTML = `
+      <div class="prepayRow">
+        <div>
+          <label class="small" data-i18n="prepayP">${dict[lang].prepayP}</label>
+          <input class="pp-idx" type="number" min="1" step="1" placeholder="${phP}" value="${p}">
+        </div>
+        <div>
+          <label class="small" data-i18n="prepayAmt">${dict[lang].prepayAmt}</label>
+          <input class="pp-amt" type="number" min="0" step="1" placeholder="${phA}" value="${amt}">
+        </div>
+        <div>
+          <label class="small" style="visibility:hidden">x</label>
+          <button class="btn danger" type="button"
+            onclick="this.closest('.prepayCard').remove(); syncPrepayLabels(); updatePrepaySummary();"
+            data-i18n="prepayRemove">${dict[lang].prepayRemove}</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+    card.querySelectorAll("input").forEach(inp=> inp.addEventListener("input", updatePrepaySummary));
+    syncPrepayLabels();
+    updatePrepaySummary();
+  }
+  function clearPrepay(){ document.getElementById("prepayList").innerHTML = ""; }
+  function syncPrepayLabels(){
+    document.querySelectorAll("#prepayList [data-i18n]").forEach(el=>{
+      const k = el.dataset.i18n;
+      if(dict[lang][k] !== undefined) el.textContent = dict[lang][k];
+    });
+  }
+  function getPrepayMap(nMax){
+    const map = new Map(); // idx -> sumExtra
+    document.querySelectorAll("#prepayList .prepayCard").forEach(card=>{
+      const idx = toInt(card.querySelector(".pp-idx")?.value, NaN);
+      const amt = toNum(card.querySelector(".pp-amt")?.value, 0);
+      if(Number.isInteger(idx) && idx >= 1 && idx <= nMax && amt > 0){
+        map.set(idx, (map.get(idx) || 0) + amt);
+      }
+    });
+    return map;
+  }
+  function updatePrepaySummary(){
+    const cards = Array.from(document.querySelectorAll("#prepayList .prepayCard"));
+    let sum = 0, count = 0;
+    cards.forEach(c=>{
+      const a = toNum(c.querySelector(".pp-amt")?.value, 0);
+      const i = toInt(c.querySelector(".pp-idx")?.value, NaN);
+      if(a > 0 && Number.isInteger(i) && i >= 1){ sum += a; count += 1; }
+    });
+    document.getElementById("prepayTotal").textContent = Math.round(sum).toLocaleString(undefined);
+    const tpl = dict[lang].prepayCountTpl || "{n}";
+    document.getElementById("prepayCount").textContent = tpl.replace("{n}", String(count));
+  }
+
+  // ====== schedules ======
+  // key: base (with extra), noextra (control), scenario (rate bumped with extra)
+  const schedules = { base:[], noextra:[], scenario:[] };
+  const summaries = { base:null, noextra:null, scenario:null };
+
+  function computeSchedule({P0, annualRatePct, years, grace, plan, start, prepayMap, mode}){
+    const nTotal = years * 12;
+    const r = (annualRatePct/100) / 12;
+    const hasStart = !!start;
+
+    const schedule = []; // {idx,dateStr,pay,prin,extra,intr,bal,isGrace}
+    let bal = P0;
+
+    let totalInterestDisp = 0;
+    let totalPaidDisp = 0;
+
+    function pushRow(idx, isGrace, pay, prin, extra, intr, balAfter){
+      totalInterestDisp += round0(intr);
+      totalPaidDisp += round0(pay);
+      schedule.push({
+        idx,
+        dateStr: hasStart ? monthAdd(start, idx-1) : "",
+        pay, prin, extra, intr,
+        bal: Math.max(0, balAfter),
+        isGrace
+      });
+    }
+
+    // grace: interest-only + extra principal allowed
+    for(let idx=1; idx<=grace; idx++){
+      if(bal <= 0) break;
+      const intr = bal * r;
+      const extraReq = prepayMap.get(idx) || 0;
+      const extraUse = Math.min(extraReq, bal);
+      const prin = 0;
+      const pay = intr + extraUse;
+      bal -= extraUse;
+      pushRow(idx, true, pay, prin, extraUse, intr, bal);
+    }
+    if(bal <= 0){
+      return {schedule, totalInterestDisp, totalPaidDisp, n: schedule.length, firstPay: schedule[0]?.pay ?? null};
+    }
+
+    const startIdx = grace + 1;
+    const monthsRemainAtStart = nTotal - grace;
+
+    let payFixed = null;
+    let prinFixed = null;
+
+    if(plan === "annuity"){
+      payFixed = annuityPayment(bal, r, monthsRemainAtStart);
+    }else{
+      prinFixed = (monthsRemainAtStart > 0) ? (bal / monthsRemainAtStart) : bal;
+    }
+
+    for(let idx=startIdx; idx<=nTotal; idx++){
+      if(bal <= 0) break;
+      const intr = bal * r;
+      const extraReq = prepayMap.get(idx) || 0;
+
+      if(plan === "annuity"){
+        let pay = payFixed;
+        let prin = Math.max(0, pay - intr);
+        if(prin > bal) prin = bal;
+
+        const extraUse = Math.min(extraReq, Math.max(0, bal - prin));
+        let newBal = bal - prin - extraUse;
+
+        if(newBal <= 0){
+          const prinClose = bal;
+          const payClose = intr + prinClose;
+          pushRow(idx, false, payClose, prinClose, 0, intr, 0);
+          bal = 0;
+        }else{
+          pushRow(idx, false, pay, prin, extraUse, intr, newBal);
+          bal = newBal;
+        }
+
+        if(mode === "recast" && extraReq > 0 && bal > 0){
+          const monthsLeftAfterThis = nTotal - idx;
+          if(monthsLeftAfterThis > 0) payFixed = annuityPayment(bal, r, monthsLeftAfterThis);
+        }
+      }else{
+        let prin = prinFixed;
+        if(prin > bal) prin = bal;
+
+        const extraUse = Math.min(extraReq, Math.max(0, bal - prin));
+        let newBal = bal - prin - extraUse;
+        const pay = intr + prin + extraUse;
+
+        if(newBal <= 0){
+          const prinClose = bal;
+          const payClose = intr + prinClose;
+          pushRow(idx, false, payClose, prinClose, 0, intr, 0);
+          bal = 0;
+        }else{
+          pushRow(idx, false, pay, prin, extraUse, intr, newBal);
+          bal = newBal;
+        }
+
+        if(mode === "recast" && extraReq > 0 && bal > 0){
+          const monthsLeftAfterThis = nTotal - idx;
+          if(monthsLeftAfterThis > 0) prinFixed = bal / monthsLeftAfterThis;
+        }
+      }
+    }
+
+    return {
+      schedule,
+      totalInterestDisp,
+      totalPaidDisp,
+      n: schedule.length,
+      firstPay: schedule[0]?.pay ?? null
+    };
+  }
+
+  // ====== Compare + NPV ======
+  // NPV model: compare investing extra cash vs using it to repay (difference in PV of payments).
+  // Here we compute:
+  //   PV_noextra = PV of monthly payments from control schedule discounted by invRate
+  //   PV_extra   = PV of monthly payments from base schedule discounted by invRate
+  // If you invest instead of prepaying, you keep cash and follow control payments.
+  // If you prepay, you follow base payments (includes extra principal).
+  // So PV_diff = PV_noextra - PV_extra. Positive means prepay has lower PV of outflows.
+  // To express "invest vs repay" as user-facing: we use (PV_extra - PV_noextra) so positive => invest better.
+  function pvOfSchedule(schedule, invAnnualPct){
+    const m = (invAnnualPct/100)/12;
+    let pv = 0;
+    for(let i=0; i<schedule.length; i++){
+      const t = i+1;
+      const pay = schedule[i].pay;
+      const df = Math.pow(1+m, t);
+      pv += (pay/df);
+    }
+    return pv;
+  }
+
+  // ====== Charts ======
+  let pieChart = null;
+  let lineChart = null;
+
+  function buildOrUpdateCharts(){
+    const base = schedules.base;
+    const nox  = schedules.noextra;
+    const scn  = schedules.scenario;
+
+    if(!base.length || !nox.length) return;
+
+    // Pie: base principal vs interest
+    const P0 = toNum(document.getElementById("amount").value, 0);
+    const totalInt = summaries.base?.totalInterestDisp ?? 0;
+    const principal = P0;
+
+    const pieData = [principal, totalInt];
+
+    if(pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById("pie"), {
+      type:"pie",
+      data:{
+        labels:[ lang==="zh" ? "本金" : "Principal", lang==="zh" ? "利息" : "Interest" ],
+        datasets:[{ data: pieData }]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } }
+      }
+    });
+
+    // Line: balances over time
+    function balances(s){
+      // month-end balance sequence aligned by idx
+      return s.map(x=>x.bal);
+    }
+
+    const maxLen = Math.max(nox.length, base.length, scn.length);
+    const labels = Array.from({length:maxLen}, (_,i)=> String(i+1));
+
+    function pad(arr){
+      if(arr.length >= maxLen) return arr;
+      const last = arr[arr.length-1] ?? 0;
+      return arr.concat(Array.from({length:maxLen-arr.length}, ()=>last));
+    }
+
+    const dsNo = pad(balances(nox));
+    const dsEx = pad(balances(base));
+    const dsSc = scn.length ? pad(balances(scn)) : pad([]);
+
+    if(lineChart) lineChart.destroy();
+    lineChart = new Chart(document.getElementById("line"), {
+      type:"line",
+      data:{
+        labels,
+        datasets:[
+          { label: lang==="zh" ? "不提前" : "No extra", data: dsNo, pointRadius:0, borderWidth:2, tension:.2 },
+          { label: lang==="zh" ? "提前" : "With extra", data: dsEx, pointRadius:0, borderWidth:2, tension:.2 },
+          { label: lang==="zh" ? "升息" : "Scenario", data: dsSc, pointRadius:0, borderWidth:2, tension:.2 }
+        ]
+      },
+      options:{
+        responsive:true,
+        interaction:{ mode:"index", intersect:false },
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{
+          y:{ ticks:{ callback:(v)=> Number(v).toLocaleString(undefined) } }
+        }
+      }
+    });
+  }
+
+  // ====== Table Rendering ======
+  let currentTableKey = "base";
+  let tableMode = "base"; // base|noextra|scenario|12
+
+  function setTableMode(mode){
+    tableMode = mode;
+    document.getElementById("tabBase").classList.toggle("active", mode==="base");
+    document.getElementById("tabNoExtra").classList.toggle("active", mode==="noextra");
+    document.getElementById("tabScenario").classList.toggle("active", mode==="scenario");
+    document.getElementById("tab12").classList.toggle("active", mode==="12");
+    updateTableHint();
+    renderTable();
+  }
+
+  function updateTableHint(){
+    const hintEl = document.getElementById("tableHint");
+    if(!hintEl) return;
+
+    if(tableMode === "base") hintEl.textContent = dict[lang].hintBase;
+    else if(tableMode === "noextra") hintEl.textContent = dict[lang].hintNoExtra;
+    else if(tableMode === "scenario") hintEl.textContent = dict[lang].hintScenario;
+    else hintEl.textContent = dict[lang].hint12;
+  }
+
+  function getTableRows(){
+    if(tableMode === "base"){ currentTableKey = "base"; return schedules.base; }
+    if(tableMode === "noextra"){ currentTableKey = "noextra"; return schedules.noextra; }
+    if(tableMode === "scenario"){ currentTableKey = "scenario"; return schedules.scenario; }
+    // 12: apply to whichever tab was active last among base/noextra/scenario => use currentTableKey
+    const src = schedules[currentTableKey] || [];
+    return src.slice(0, Math.min(12, src.length));
+  }
+
+  function renderTable(){
+    const tbody = document.getElementById("tbody");
+    if(!tbody) return;
+
+    const any = (schedules.base.length || schedules.noextra.length || schedules.scenario.length);
+    if(!any){
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:18px">${dict[lang].empty}</td></tr>`;
+      return;
+    }
+
+    const rows = getTableRows();
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280;padding:18px">—</td></tr>`;
+      return;
+    }
+
+    const hasDate = !!document.getElementById("start").value;
+    tbody.innerHTML = rows.map(x=>{
+      const dateText = hasDate ? (x.dateStr || "—") : "—";
+      return `
+        <tr>
+          <td>${x.idx}</td>
+          <td style="text-align:center">${dateText}</td>
+          <td>${fmtMoney(x.pay)}</td>
+          <td>${fmtMoney(x.prin)}</td>
+          <td>${fmtMoney(x.extra)}</td>
+          <td>${fmtMoney(x.intr)}</td>
+          <td>${fmtMoney(x.bal)}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // ====== Run All (base/noextra/scenario + charts + summary) ======
+  function runAll(){
+    const P0 = toNum(document.getElementById("amount").value, NaN);
+    const annualRatePct = toNum(document.getElementById("rate").value, NaN);
+    const years = toInt(document.getElementById("years").value, NaN);
+    const grace = Math.max(0, toInt(document.getElementById("grace").value || "0", 0));
+    const plan = document.getElementById("plan").value;
+    const start = document.getElementById("start").value;
+    const nTotal = years * 12;
+
+    if(!(P0 > 0) || !(annualRatePct >= 0) || !(nTotal > 0) || !Number.isInteger(years)){
+      alert(dict[lang].errBase); return;
+    }
+    if(grace > nTotal){
+      alert(dict[lang].errGrace); return;
+    }
+
+    const mode = getPrepayMode();
+    const prepayMap = getPrepayMap(nTotal);
+
+    // base: with extra principal settings
+    summaries.base = computeSchedule({P0, annualRatePct, years, grace, plan, start, prepayMap, mode});
+    schedules.base = summaries.base.schedule;
+
+    // control: no extra
+    const emptyMap = new Map();
+    summaries.noextra = computeSchedule({P0, annualRatePct, years, grace, plan, start, prepayMap: emptyMap, mode:"shorten"});
+    schedules.noextra = summaries.noextra.schedule;
+
+    // scenario: rate bump (with extra)
+    const bump = toNum(document.getElementById("rateBump").value, 0);
+    const bumpedRate = annualRatePct + (isFinite(bump) ? bump : 0);
+    summaries.scenario = computeSchedule({P0, annualRatePct: bumpedRate, years, grace, plan, start, prepayMap, mode});
+    schedules.scenario = summaries.scenario.schedule;
+
+    // Update summary numbers
+    document.getElementById("mPayBase").textContent = fmtMoney(summaries.base.firstPay ?? NaN);
+    document.getElementById("tIntBase").textContent = (summaries.base.totalInterestDisp ?? 0).toLocaleString(undefined);
+    document.getElementById("nPayBase").textContent = String(summaries.base.n ?? 0);
+
+    // Interest diff: extra vs no extra
+    const intDiff = (summaries.noextra.totalInterestDisp ?? 0) - (summaries.base.totalInterestDisp ?? 0);
+    document.getElementById("tIntDiff").textContent = (isFinite(intDiff) ? (round0(intDiff).toLocaleString(undefined)) : "—");
+
+    // Term diff: extra vs no extra (months saved)
+    const nDiff = (summaries.noextra.n ?? 0) - (summaries.base.n ?? 0);
+    document.getElementById("nPayDiff").textContent = (isFinite(nDiff) ? String(nDiff) : "—");
+
+    // NPV diff (invest vs repay)
+    const invRate = toNum(document.getElementById("invRate").value, 0);
+    const pvNo = pvOfSchedule(schedules.noextra, invRate);
+    const pvEx = pvOfSchedule(schedules.base, invRate);
+    // Positive means invest better (as label says) => PV_extra - PV_noextra
+    const npvDiff = pvEx - pvNo;
+    document.getElementById("npvDiff").textContent = (isFinite(npvDiff) ? round0(npvDiff).toLocaleString(undefined) : "—");
+
+    // Scenario interest increase vs base (same extra settings)
+    const scUp = (summaries.scenario.totalInterestDisp ?? 0) - (summaries.base.totalInterestDisp ?? 0);
+    document.getElementById("scenarioIntUp").textContent = (isFinite(scUp) ? round0(scUp).toLocaleString(undefined) : "—");
+
+    // Charts & table
+    buildOrUpdateCharts();
+    updateTableHint();
+    renderTable();
+  }
+
+  // ====== CSV export ======
+  function downloadCSV(key){
+    const s = schedules[key];
+    if(!s || !s.length){
+      alert(lang==="zh" ? "請先計算後再下載。" : "Please calculate first, then download.");
+      return;
+    }
+    const hasDate = !!document.getElementById("start").value;
+    const headersZh = ["期數","月份","應繳","本金","額外還本","利息","剩餘本金","是否寬限期"];
+    const headersEn = ["No.","Month","Payment","Principal","Extra","Interest","Balance","Grace"];
+    const headers = (lang==="zh") ? headersZh : headersEn;
+
+    const lines = [];
+    lines.push(headers.join(","));
+    s.forEach(x=>{
+      const dateText = hasDate ? (x.dateStr || "") : "";
+      const row = [
+        x.idx,
+        `"${dateText}"`,
+        round0(x.pay),
+        round0(x.prin),
+        round0(x.extra),
+        round0(x.intr),
+        round0(x.bal),
+        x.isGrace ? 1 : 0
+      ];
+      lines.push(row.join(","));
+    });
+
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mortgage_${key}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ====== Reset ======
+  function resetAll(){
+    document.getElementById("plan").value = "annuity";
+    document.getElementById("amount").value = "";
+    document.getElementById("rate").value = "";
+    document.getElementById("years").value = "";
+    document.getElementById("grace").value = "";
+    document.getElementById("start").value = "";
+    document.getElementById("invRate").value = "5.0";
+    document.getElementById("rateBump").value = "0.5";
+    document.querySelector('input[name="prepayMode"][value="shorten"]').checked = true;
+    syncModeChips();
+
+    clearPrepay();
+    addPrepayRow();
+    updatePrepaySummary();
+
+    schedules.base=[]; schedules.noextra=[]; schedules.scenario=[];
+    summaries.base=null; summaries.noextra=null; summaries.scenario=null;
+
+    ["mPayBase","tIntBase","nPayBase","tIntDiff","nPayDiff","npvDiff","scenarioIntUp"].forEach(id=>{
+      document.getElementById(id).textContent = "—";
+    });
+
+    if(pieChart){ pieChart.destroy(); pieChart=null; }
+    if(lineChart){ lineChart.destroy(); lineChart=null; }
+
+    tableMode = "base";
+    currentTableKey = "base";
+    updateTableHint();
+    renderTable();
+  }
+
+  // ====== Init ======
+  updateTableHint();
+  addPrepayRow();
+  updatePrepaySummary();
+  syncModeChips();
+
+  // contact
+  (function(){
+    const contact = document.getElementById("contactLink");
+    if(contact){
+      contact.href = "mailto:anycals.contact@gmail.com?subject=AnyCals%20%E6%88%BF%E8%B2%B8%E8%A9%A6%E7%AE%97%E5%99%A8%202.0%20%E5%95%8F%E9%A1%8C";
+    }
+  })();
+</script>
+</body>
+</html>
